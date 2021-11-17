@@ -24,6 +24,8 @@
 *****************************************************************************/
 #pragma once
 
+using namespace Edf;
+
 #define DEF_STATE(Class) \
 		void (Class::*m_State)(Event const *const e); \
 		void (Class::*m_NextState)(Event const *const e); \
@@ -58,7 +60,3 @@
 
 
 
-namespace Edf
-{
-
-} // namespace edf
