@@ -27,11 +27,17 @@
 
 T_HANDLE TaskCreate(	TaskExec pxTaskCode,
                         const char * const pcName,
-                        const uint16_t usStackDepth,
+                        uint16_t usStackDepth,
                         void * const pvParameters,
-                        uint32_t uxPriority )
+                        uint32_t uxPriority, 
+                        Q_HANDLE *Q, 
+                        uint32_t Q_Size)
 {
     T_HANDLE CreatedTask;
+    
+    *Q = QueueCreate(Q_Size, sizeof(void *));
+
+    configASSERT(*Q);
 
     xTaskCreate(pxTaskCode, pcName, usStackDepth, pvParameters, uxPriority, &CreatedTask);
 
@@ -39,7 +45,7 @@ T_HANDLE TaskCreate(	TaskExec pxTaskCode,
 }
 
 
-Q_HANDLE QueueCreate( const uint32_t uxQueueLength, const uint32_t uxItemSize)
+Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 {
     return xQueueCreate(uxQueueLength, uxItemSize);
 }
@@ -53,7 +59,7 @@ uint32_t QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
 
 /*..........................................................................*/
 /*..........................................................................*/
-void QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
+bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 {
 	BaseType_t status;
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -67,6 +73,8 @@ void QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 		status = xQueueSend(q, (void *)&p, (TickType_t)0);
 	}
     configASSERT(status == pdTRUE);
+
+    return status;
 }
 
 
