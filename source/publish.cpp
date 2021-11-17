@@ -78,10 +78,7 @@ void CPublisher::AddTail(CSubscriber **Head, CActive const * const Act)
 {
 	if (*Head == 0)
 	{
-		CSubscriber *s = new CSubscriber();
-		s->Act = Act;
-		s->Next = 0;
-		*Head = s;
+		*Head = new CSubscriber(Act);
 
 		return;
 	}
@@ -98,7 +95,7 @@ void CPublisher::AddHead(CSubscriber **Head, CActive const * const Act)
 {
 	CSubscriber *p = *Head;
 
-	for (; p; p=p->Next)
+	for (; p; p = p->Next)
 	{
 		if (p->Act == Act)
 		{
@@ -106,9 +103,7 @@ void CPublisher::AddHead(CSubscriber **Head, CActive const * const Act)
 		}
 	}
 
-	CSubscriber *s = new CSubscriber();
-	s->Act = Act;
-	s->Next = *Head;
+	CSubscriber *s = new CSubscriber(Act, *Head);
 
 	*Head = s;
 }

@@ -35,6 +35,12 @@ public:
 	CActive const *  Act;
 	CSubscriber *Next;
 
+	CSubscriber(CActive const *  Act, CSubscriber *Next = 0)
+	{
+		this->Act = Act;
+		this->Next = Next;
+	}
+
 	void Update(const Event * const e)
 	{
 		QueueSend(Act->Q(), e);
