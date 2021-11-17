@@ -37,16 +37,18 @@
 
 #define ASSERT   				configASSERT
 
+#define OS_PRINT				
+
 typedef void *Q_HANDLE;
 typedef void *T_HANDLE;
 typedef void (*TaskExec)(void*);
 
 T_HANDLE TaskCreate(TaskExec pxTaskCode, const char *const pcName,
-		const uint16_t usStackDepth, void *const pvParameters,
-		uint32_t uxPriority);
+		uint16_t usStackDepth, void *const pvParameters,
+		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
-Q_HANDLE QueueCreate(const uint32_t uxQueueLength, const uint32_t uxItemSize);
+Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
 uint32_t QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
 
-void QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
+bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
 

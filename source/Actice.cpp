@@ -40,17 +40,12 @@ void CActive::Start()
 void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 {
 
-	this->queue = QueueCreate(
-			EQ_SIZE,            /* queue length - provided by user */
-			sizeof(Event *));     /* item size */
-	ASSERT(this->queue); /* queue must be created */
-
 	this->thread = TaskCreate(
 			&CActive::EventLoop,        /* the thread function */
 			m_Name ,                    /* the name of the task */
 			MINIMAL_STACK_SIZE + 128,                /* stack depth */
 			this,                       /* the 'pvParameters' parameter */
-			prio + tskIDLE_PRIORITY);  /* FreeRTOS priority */
+			prio, &this->queue, EQ_SIZE);  /* FreeRTOS priority */
 
 	ASSERT(this->thread); /* thread must be created */
 }
