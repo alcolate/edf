@@ -27,14 +27,12 @@
 
 #pragma once
 
-#define MilliSecond(t)  ((t) / portTICK_RATE_MS)
-
 namespace Edf
 {
 class CTimeEvent : public Event
 {
 public:
-	Q_HANDLE queue;       /* the AO that requested this TimeEvent */
+	Q_HANDLE queue;       /* the queue that requested this TimeEvent */
 	uint32_t timeout;  /* timeout counter; 0 means not armed */
 	uint32_t interval; /* interval for periodic TimeEvent, 0 means one-shot */
 
@@ -43,10 +41,10 @@ public:
 	CTimeEvent(Signal sig, Q_HANDLE q);
 
 	/*..........................................................................*/
-	void Arm(uint32_t timeout, uint32_t interval) ;
+	void Trigger(uint32_t timeout, uint32_t interval) ;
 
 	/*..........................................................................*/
-	void Disarm() ;
+	void UnTrigger() ;
 };
 
 } // namespace Edf

@@ -48,7 +48,7 @@ CTimeEvent::CTimeEvent(Signal sig, Q_HANDLE q):Event(sig)
 }
 
 /*..........................................................................*/
-void CTimeEvent::Arm(uint32_t timeout, uint32_t interval)
+void CTimeEvent::Trigger(uint32_t timeout, uint32_t interval)
 {
 	//taskENTER_CRITICAL();
 	this->timeout = timeout;
@@ -57,7 +57,7 @@ void CTimeEvent::Arm(uint32_t timeout, uint32_t interval)
 }
 
 /*..........................................................................*/
-void CTimeEvent::Disarm()
+void CTimeEvent::UnTrigger()
 {
 	//taskENTER_CRITICAL();
 	this->timeout = 0U;
@@ -67,15 +67,19 @@ void CTimeEvent::Disarm()
 
 } // namespace Edf
 
-void TimeEvent_tickFromISR() {
+void TimeEvent_tickFromISR()
+{
 	uint_fast8_t i;
-	for (i = 0U; i < Edf::l_tevtNum; ++i) {
+	for (i = 0U; i < Edf::l_tevtNum; ++i)
+	{
 		Edf::CTimeEvent * t = Edf::l_tevt[i];
 		ASSERT(t); /* TimeEvent instance must be registered */
-		if (t->timeout > 0U) { /* is this TimeEvent armed? */
-			if (--t->timeout == 0U) { /* is it expiring now? */
+		if (t->timeout > 0U) /* is this TimeEvent triggered? */
+		{
+			if (--t->timeout == 0U)  /* is it expiring now? */
+			{
 				QueueSend(t->queue, t, true );
-				t->timeout = t->interval; /* rearm or disarm (one-shot) */
+				t->timeout = t->interval;
 			}
 		}
 	}
