@@ -22,7 +22,7 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include "Time.h"
+#include "Active.h"
 
 
 namespace Edf
@@ -31,13 +31,13 @@ namespace Edf
 CTimeEvent *l_tevt[10]; /* all TimeEvents in the application */
 uint_fast8_t l_tevtNum; /* current number of TimeEvents */
 
-CTimeEvent::CTimeEvent(Signal sig, Q_HANDLE q):Event(sig)
+CTimeEvent::CTimeEvent(Signal sig, CActive *Act):Event(sig)
 {
 	/* no critical section because it is presumed that all TimeEvents
 	 * are created *before* multitasking has started.
 	 */
 	this->sig = sig;
-	this->queue = q;
+	this->act = Act;
 	this->timeout = 0U;
 	this->interval = 0U;
 
@@ -78,7 +78,7 @@ void TimeEvent_tickFromISR()
 		{
 			if (--t->timeout == 0U)  /* is it expiring now? */
 			{
-				QueueSend(t->queue, t, true );
+				QueueSend(t->act->Q(), t, true );
 				t->timeout = t->interval;
 			}
 		}

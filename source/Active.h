@@ -32,7 +32,7 @@
 
 namespace Edf
 {
-constexpr uint32_t defPrioity = (configMAX_PRIORITIES - 5);
+constexpr uint32_t defPrioity = (MAX_PRIORITIES - 5);
 
 class CActive
 {
@@ -41,8 +41,7 @@ public:
 
 	void Start();
 
-	void Start(       uint8_t prio,       /* priority (1-based) */
-	                  uint32_t queueLen, uint32_t itemSize);
+	void Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize);
 
 	void Post(Event const *const e);
 

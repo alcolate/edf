@@ -29,10 +29,7 @@ namespace Edf
 CActive::CActive(char *Name)
 {
 	m_Name = Name;
-	queue = QueueCreate(
-			EQ_SIZE,            /* queue length - provided by user */
-			sizeof(Event *));     /* item size */
-	ASSERT(this->queue); /* queue must be created */
+
 }
 
 void CActive::Start()
@@ -40,10 +37,12 @@ void CActive::Start()
 	Start(defPrioity, EQ_SIZE, sizeof(Event *));
 }
 
-void CActive::Start(       uint8_t prio,       /* priority (1-based) */
-		uint32_t queueLen, uint32_t itemSize)
+void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 {
 
+	this->queue = QueueCreate(
+			EQ_SIZE,            /* queue length - provided by user */
+			sizeof(Event *));     /* item size */
 	ASSERT(this->queue); /* queue must be created */
 
 	this->thread = TaskCreate(
