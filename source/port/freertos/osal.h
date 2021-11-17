@@ -33,6 +33,8 @@
 #define MINIMAL_STACK_SIZE 		configMINIMAL_STACK_SIZE
 #define MAX_DELAY 				portMAX_DELAY
 
+#define MilliSecond(t)  		((t) / portTICK_RATE_MS)
+
 #define ASSERT   				configASSERT
 
 typedef void *Q_HANDLE;
