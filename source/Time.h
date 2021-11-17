@@ -23,7 +23,7 @@
 * <9183399@qq.com>
 *****************************************************************************/
 #include <osal.h>
-#include "Event.h"
+#include "Active.h"
 
 #pragma once
 
@@ -32,13 +32,13 @@ namespace Edf
 class CTimeEvent : public Event
 {
 public:
-	Q_HANDLE queue;       /* the queue that requested this TimeEvent */
+	CActive  *act;       /* the active that requested this TimeEvent */
 	uint32_t timeout;  /* timeout counter; 0 means not armed */
 	uint32_t interval; /* interval for periodic TimeEvent, 0 means one-shot */
 
 public:
 	/*..........................................................................*/
-	CTimeEvent(Signal sig, Q_HANDLE q);
+	CTimeEvent(Signal sig, CActive *Act);
 
 	/*..........................................................................*/
 	void Trigger(uint32_t timeout, uint32_t interval) ;
