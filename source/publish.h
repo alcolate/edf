@@ -26,53 +26,13 @@
 
 #pragma once
 
-
 namespace Edf
 {
-class CSubscriber
-{
-public:
-	CActive const *  Act;
-	CSubscriber *Next;
 
-	CSubscriber(CActive const *  Act, CSubscriber *Next = 0)
-	{
-		this->Act = Act;
-		this->Next = Next;
-	}
+void Subscribe(Signal Sig, CActive const * const Act);
 
-	void Update(const Event * const e)
-	{
-		QueueSend(Act->Q(), e);
-	}
-	void UpdateFromISR(const Event * const e)
-	{
-		QueueSend(Act->Q(), e, true);
-	}
-};
+void Publish(Event const * const e, bool FromISR = false);
 
-class CPublisher
-{
-public:
-	static CPublisher *Instance();
-
-	void Subscribe(Signal Sig, CActive const * const Act);
-
-	void Post(const Event * const e);
-
-	void PostFromISR(const Event * const e);
-
-
-private:
-	void AddTail(CSubscriber **Head, CActive const * const Act);
-
-	void AddHead(CSubscriber **Head, CActive const * const Act);
-
-private:
-	CPublisher();
-private:
-	CSubscriber *m_Subs[MAX_SIG];
-
-};
-
+	
 } // namespace Edf
+

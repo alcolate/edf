@@ -28,6 +28,52 @@
 
 namespace Edf
 {
+class CSubscriber
+{
+public:
+	CActive const *  Act;
+	CSubscriber *Next;
+
+	CSubscriber(CActive const *  Act, CSubscriber *Next = 0)
+	{
+		this->Act = Act;
+		this->Next = Next;
+	}
+
+	void Update(const Event * const e, bool FromISR = false)
+	{
+		QueueSend(Act->Q(), e, FromISR);
+	}
+
+};
+
+class CPublisher
+{
+public:
+	static CPublisher *Instance();
+
+	void Subscribe(Signal Sig, CActive const * const Act);
+
+	void Publish(const Event * const e, bool FromISR = false);
+
+
+
+private:
+	void AddTail(CSubscriber **Head, CActive const * const Act);
+
+	void AddHead(CSubscriber **Head, CActive const * const Act);
+
+private:
+	CPublisher();
+private:
+	CSubscriber *m_Subs[MAX_SIG];
+
+};
+
+} // namespace Edf
+
+namespace Edf
+{
 CPublisher * CPublisher::Instance()
 {
 	static CPublisher puber;
@@ -43,7 +89,7 @@ void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
 }
 
 
-void CPublisher::Post(const Event * const e)
+void CPublisher::Publish(const Event * const e, bool FromISR)
 {
 	ASSERT(e->sig < MAX_SIG);
 
@@ -51,23 +97,12 @@ void CPublisher::Post(const Event * const e)
 
 	while (suber)
 	{
-		suber->Update(e);
+		suber->Update(e, FromISR);
 		suber = suber->Next;
 	}
 }
 
-void CPublisher::PostFromISR(const Event * const e)
-{
-	ASSERT(e->sig < MAX_SIG);
 
-	CSubscriber *suber = m_Subs[e->sig];
-
-	while (suber)
-	{
-		suber->UpdateFromISR(e);
-		suber = suber->Next;
-	}
-}
 
 CPublisher::CPublisher()
 {
@@ -110,7 +145,15 @@ void CPublisher::AddHead(CSubscriber **Head, CActive const * const Act)
 
 } // namespace Edf
 
-void PostEventFromISR(Edf::Event const * const e)
+namespace Edf
 {
-	Edf::CPublisher::Instance()->PostFromISR( e);
+void Subscribe(Signal Sig, CActive const * const Act)
+{
+	Edf::CPublisher::Instance()->Subscribe(Sig, Act);
+}
+
+void Publish(Event const * const e, bool FromISR)
+{
+	Edf::CPublisher::Instance()->Publish( e, FromISR);
+}
 }
