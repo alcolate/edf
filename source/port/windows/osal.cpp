@@ -23,8 +23,16 @@
 * <9183399@qq.com>
 *****************************************************************************/
 #include <windows.h>
+#include <stdio.h>
 #include "osal.h"
+#include "edf.h"
 
+static DWORD WINAPI ThreadExe(LPVOID p) 
+{
+    (static_cast<CActive*>(p))->Run();
+
+    return 0;
+}
 
 T_HANDLE TaskCreate(	TaskExec pxTaskCode,
                         const char * const pcName,
@@ -35,14 +43,17 @@ T_HANDLE TaskCreate(	TaskExec pxTaskCode,
                         uint32_t Q_Size)
 {
     T_HANDLE CreatedTask;
+    DWORD id;
 
     CreatedTask = CreateThread(
         NULL,
-        (usStackDepth < 1024U ? 1024U : usStackDepth),
-        &pxTaskCode,
+        1024U,
+        &ThreadExe,
         pvParameters,
         0,
-        &Q);
+        &id);
+
+    *Q = (Q_HANDLE)id;
 
     QueueCreate(Q_Size, 0);
 
@@ -52,50 +63,57 @@ T_HANDLE TaskCreate(	TaskExec pxTaskCode,
 
 Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 {
-    PeekMessage ( &msg , NULL , 0 , 0 , PM_REMOVE );
+    MSG    msg;
+
+    PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
 
     return 0;
 }
 
 bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
 {
-    return GetMessage ( &msg , NULL ,  0 , 0 );            
+    MSG    msg;
+
+    BOOL result = GetMessage(&msg, NULL, 0, 0);
+
+    if (!result)
+    {
+        return FALSE;
+    }
+    else
+    {
+        memcpy(pvBuffer, &(msg.wParam), sizeof(msg.wParam));
+
+        return TRUE;
+    }
 }
 
-
-
 /*..........................................................................*/
 /*..........................................................................*/
-void QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
+bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 {
-	BaseType_t status;
 
-    BOOL status = PostThreadMessage ( (LPDWORD)q ,  (UINT)&p , 0 , 0 );
+    BOOL status = PostThreadMessage ( (DWORD)q , WM_USER, (WPARAM)p, 0 );
 
-
-    //configASSERT(status == pdTRUE);
+    return status;
 }
 
 
 /*..........................................................................*/
-
-
-
 
 extern void TimeEvent_tickFromISR();
 /* Application hooks used in this project ==================================*/
 /* NOTE: only the "FromISR" API variants are allowed in vApplicationTickHook*/
-extern "C"
+
+
+void vApplicationTickHook(void)
 {
+    while (1)
+    {
+        Sleep(TICK_RATE_MS);
+        TimeEvent_tickFromISR();
+    }
+       
 
-void vApplicationTickHook(void) {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-
-    /* perform clock tick processing */
-    TimeEvent_tickFromISR();
-
-    /* notify FreeRTOS to perform context switch from ISR, if needed */
-    portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
 }
-}
+

@@ -22,8 +22,8 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include <osal.h>
 #include <stdint.h>
+#include "osal.h"
 #include "Event.h"
 #include "State.h"
 
@@ -32,7 +32,7 @@
 
 namespace Edf
 {
-constexpr uint32_t defPrioity = (MAX_PRIORITIES - 5);
+constexpr uint8_t defPrioity = (MAX_PRIORITIES - 5);
 
 class CActive
 {
@@ -44,6 +44,11 @@ public:
 	void Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize);
 
 	void Post(Event const *const e);
+
+	void Run(void) 
+	{
+		CActive::EventLoop(this);
+	}
 
 	static void EventLoop(void *pvParameters) ;
 
