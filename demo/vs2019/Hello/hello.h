@@ -22,7 +22,7 @@ public:
 	virtual void Initial()
 	{
 
-		CPublisher::Instance()->Subscribe(RF_WTR_SIG, this);
+		Edf::Subscribe(RF_WTR_SIG, this);
 		INIT_TRANS(&CHello::S_Silence);
 	}
 
