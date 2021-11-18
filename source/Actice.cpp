@@ -89,6 +89,10 @@ void CActive::Dispatcher(Event const * const e)
 
 		break;
 
+	case ENTRY_SIG:
+		RUN_STATE();
+		break;
+
 	case EXIT_SIG:
 		RUN_STATE();
 		TO_NEXT_STATE();
