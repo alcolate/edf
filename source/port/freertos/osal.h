@@ -48,7 +48,7 @@ T_HANDLE TaskCreate(TaskExec pxTaskCode, const char *const pcName,
 		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
 Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
-uint32_t QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
+bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
 
 bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
 

@@ -29,6 +29,8 @@ namespace Edf
 CActive::CActive(char *Name)
 {
 	m_Name = Name;
+	queue = 0;
+	thread = 0;
 
 }
 
@@ -45,7 +47,7 @@ void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 			m_Name ,                    /* the name of the task */
 			MINIMAL_STACK_SIZE + 128,                /* stack depth */
 			this,                       /* the 'pvParameters' parameter */
-			prio, &this->queue, EQ_SIZE);  /* FreeRTOS priority */
+			prio, &(this->queue), EQ_SIZE);  /* FreeRTOS priority */
 
 	ASSERT(this->thread); /* thread must be created */
 }

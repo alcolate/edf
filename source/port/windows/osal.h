@@ -23,17 +23,18 @@
 * <9183399@qq.com>
 *****************************************************************************/
 #include <stdint.h>
+#include <assert.h>
 
 
 #pragma once
 
-#define MAX_PRIORITIES 			configMAX_PRIORITIES
-#define MINIMAL_STACK_SIZE 		configMINIMAL_STACK_SIZE
-#define MAX_DELAY 				portMAX_DELAY
+#define MAX_PRIORITIES 			10
+#define MINIMAL_STACK_SIZE 		1000
+#define MAX_DELAY 				((long)-1)
+#define TICK_RATE_MS			10
+#define MilliSecond(t)  		((t) / TICK_RATE_MS)
 
-#define MilliSecond(t)  		((t) / portTICK_RATE_MS)
-
-#define ASSERT   				configASSERT
+#define ASSERT   				assert
 
 #define OS_PRINT				
 
@@ -46,7 +47,7 @@ T_HANDLE TaskCreate(TaskExec pxTaskCode, const char *const pcName,
 		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
 Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
-uint32_t QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
+bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
 
 bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
 
