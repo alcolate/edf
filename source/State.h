@@ -29,6 +29,8 @@ using namespace Edf;
 #define DEF_STATE(Class) \
 		void (Class::*m_State)(Event const *const e); \
 		void (Class::*m_NextState)(Event const *const e); \
+		const char *m_StateName;\
+		const char *m_NextStateName;\
 		virtual void RunState(Event const * const e)\
 		{\
 			(this->*m_State)(e);\
@@ -36,6 +38,7 @@ using namespace Edf;
 		virtual void ToNextState()\
 		{\
 			m_State = m_NextState;\
+			m_StateName = m_NextStateName; \
 		}
 
 #define STATE() (m_State)
@@ -45,6 +48,7 @@ using namespace Edf;
 #define INIT_TRANS(state) \
 		do {\
 			m_State = state; \
+			m_StateName = #state; \
 			static Event e_entry (ENTRY_SIG);\
 			this->Post(&e_entry); \
 		}while(0)
@@ -54,6 +58,7 @@ using namespace Edf;
 			static Event e_exit (EXIT_SIG);\
 			this->Post(&e_exit); \
 			m_NextState = to;\
+			m_NextStateName = #to;\
 			static Event e_entry (ENTRY_SIG);\
 			this->Post(&e_entry); \
 		}while(0)
