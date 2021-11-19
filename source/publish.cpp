@@ -22,8 +22,6 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include <stdlib.h>
-#include <string.h>
 #include "active.h"
 
 namespace Edf
@@ -103,10 +101,12 @@ void CPublisher::Publish(const Event * const e, bool FromISR)
 }
 
 
-
 CPublisher::CPublisher()
 {
-	memset(m_Subs, 0, sizeof(m_Subs));
+	for (int i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
+	{
+		m_Subs[i] = 0;
+	}
 }
 
 void CPublisher::AddTail(CSubscriber **Head, CActive const * const Act)
