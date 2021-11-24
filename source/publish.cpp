@@ -52,6 +52,8 @@ public:
 
 	void Subscribe(Signal Sig, CActive const * const Act);
 
+	void UnSubscribe(Signal Sig, CActive const * const Act);
+
 	void Publish(const Event * const e, bool FromISR = false);
 
 
@@ -60,6 +62,8 @@ private:
 	void AddTail(CSubscriber **Head, CActive const * const Act);
 
 	void AddHead(CSubscriber **Head, CActive const * const Act);
+
+	void Delete(CSubscriber **Head, CActive const * const Act);
 
 private:
 	CPublisher();
@@ -86,6 +90,12 @@ void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
 
 }
 
+void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
+{
+	ASSERT(Sig < MAX_SIG);
+
+	Delete(&(m_Subs[Sig]), Act);
+}
 
 void CPublisher::Publish(const Event * const e, bool FromISR)
 {
@@ -143,6 +153,26 @@ void CPublisher::AddHead(CSubscriber **Head, CActive const * const Act)
 	*Head = s;
 }
 
+void CPublisher::Delete(CSubscriber **Head, CActive const * const Act)
+{
+	CSubscriber *p = *Head, *q = *Head;
+
+	for (; p; q = p, p = p->Next)
+	{
+		if (p->Act == Act)
+		{
+			if (q == p)
+			{
+				q = p->Next;
+			}
+			else
+			{
+				q->Next = p->Next;
+			}
+		}
+	}
+}
+
 } // namespace Edf
 
 namespace Edf
@@ -150,6 +180,11 @@ namespace Edf
 void Subscribe(Signal Sig, CActive const * const Act)
 {
 	Edf::CPublisher::Instance()->Subscribe(Sig, Act);
+}
+
+void UnSubscribe(Signal Sig, CActive const * const Act)
+{
+	Edf::CPublisher::Instance()->UnSubscribe(Sig, Act);
 }
 
 void Publish(Event const * const e, bool FromISR)

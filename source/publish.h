@@ -31,6 +31,8 @@ namespace Edf
 
 void Subscribe(Signal Sig, CActive const * const Act);
 
+void UnSubscribe(Signal Sig, CActive const * const Act);
+
 void Publish(Event const * const e, bool FromISR = false);
 
 	
