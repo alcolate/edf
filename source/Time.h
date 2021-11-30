@@ -32,13 +32,13 @@ namespace Edf
 class CTimeEvent : public Event
 {
 public:
-	CActive  *act;       /* the active that requested this TimeEvent */
-	uint32_t timeout;  /* timeout counter; 0 means not armed */
-	uint32_t interval; /* interval for periodic TimeEvent, 0 means one-shot */
+	CActive  *m_Act;       /* the active that requested this TimeEvent */
+	uint32_t m_Timeout;  /* timeout counter; 0 means not armed */
+	uint32_t m_Interval; /* interval for periodic TimeEvent, 0 means one-shot */
 
 public:
 	/*..........................................................................*/
-	CTimeEvent(Signal sig, CActive *Act);
+	CTimeEvent(Signal Sig, CActive *Act);
 
 	/*..........................................................................*/
 	void Trigger(uint32_t timeout, uint32_t interval) ;

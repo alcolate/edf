@@ -102,9 +102,6 @@ bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 /*..........................................................................*/
 
 extern void TimeEvent_tickFromISR();
-/* Application hooks used in this project ==================================*/
-/* NOTE: only the "FromISR" API variants are allowed in vApplicationTickHook*/
-
 
 void vApplicationTickHook(void)
 {

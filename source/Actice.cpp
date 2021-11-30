@@ -29,8 +29,8 @@ namespace Edf
 CActive::CActive(char *Name)
 {
 	m_Name = Name;
-	queue = 0;
-	thread = 0;
+	m_Queue = 0;
+	m_Thread = 0;
 
 }
 
@@ -42,14 +42,14 @@ void CActive::Start()
 void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 {
 
-	this->thread = TaskCreate(
-			&CActive::EventLoop,        /* the thread function */
-			m_Name ,                    /* the name of the task */
-			MINIMAL_STACK_SIZE + 128,                /* stack depth */
-			this,                       /* the 'pvParameters' parameter */
-			prio, &(this->queue), EQ_SIZE);  /* FreeRTOS priority */
+	this->m_Thread = TaskCreate(
+			&CActive::EventLoop,        
+			m_Name ,                   
+			MINIMAL_STACK_SIZE + 128,               
+			this,                       
+			prio, &(this->m_Queue), EQ_SIZE);  
 
-	ASSERT(this->thread); /* thread must be created */
+	ASSERT(this->m_Thread); 
 }
 
 void CActive::Post(Event const *const e)
@@ -61,20 +61,19 @@ void CActive::EventLoop(void *pvParameters) {
 	CActive *act = (CActive *)pvParameters;
 	static Event const initEvt = { INIT_SIG };
 
-	ASSERT(act); /* Active object must be provided */
+	ASSERT(act); 
 
-	/* initialize the AO */
+	
 	act->Dispatcher(&initEvt);
 
-	for (;;) /* for-ever "superloop" */
+	for (;;) 
 	{
-		Event *e; /* pointer to event object ("message") */
+		Event *e; 
 
 		/* wait for any event and receive it into object 'e' */
-		if (QueueReceive(act->queue, &e, MAX_DELAY)) /* BLOCKING! */
-		{
-			/* dispatch event to the active object 'act' */
-			act->Dispatcher(e); /* NO BLOCKING! */
+		if (QueueReceive(act->m_Queue, &e, MAX_DELAY))
+		{			
+			act->Dispatcher(e);
 		}
 	}
 }
@@ -82,9 +81,9 @@ void CActive::EventLoop(void *pvParameters) {
 
 void CActive::Dispatcher(Event const * const e)
 {
-	switch (e->sig)
+	switch (e->Sig)
 	{
-	case INIT_SIG: /* intentionally fall through... */
+	case INIT_SIG: 
 		Initial();
 
 		break;

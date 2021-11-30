@@ -27,10 +27,10 @@
 using namespace Edf;
 
 #define DEF_STATE(Class) \
-		void (Class::*m_State)(Event const *const e); \
-		void (Class::*m_NextState)(Event const *const e); \
-		const char *m_StateName;\
-		const char *m_NextStateName;\
+		void (Class::*m_State)(Event const *const e){}; \
+		void (Class::*m_NextState)(Event const *const e){}; \
+		const char *m_StateName{};\
+		const char *m_NextStateName{};\
 		virtual void RunState(Event const * const e)\
 		{\
 			(this->*m_State)(e);\
