@@ -28,7 +28,7 @@ public:
 
 	void S_Silence(Event const* const e)
 	{
-		switch (e->sig)
+		switch (e->Sig)
 		{
 		case ENTRY_SIG:
 			m_Time.Trigger(100, 0U);
@@ -54,7 +54,7 @@ public:
 
 	void S_Noise(Event const* const e)
 	{
-		switch (e->sig)
+		switch (e->Sig)
 		{
 		case ENTRY_SIG:
 			m_Time.Trigger(100, 0U);

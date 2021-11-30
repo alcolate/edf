@@ -59,19 +59,18 @@ public:
 public:
 	Q_HANDLE Q() const
 	{
-		return queue;
+		return m_Queue;
 	}
 
 	//State m_State;
 
 private:
-    T_HANDLE thread;     /* private thread */
-    Q_HANDLE queue;     /* private message queue */
+	T_HANDLE m_Thread;   
+    Q_HANDLE m_Queue;    
 
+	enum {EQ_SIZE = 10};
 
-    enum {EQ_SIZE = 10};
-
-    char *m_Name;
+	char *m_Name;
 
 public:
 	DEF_STATE(CActive);

@@ -31,15 +31,15 @@ namespace Edf
 CTimeEvent *l_tevt[10]; /* all TimeEvents in the application */
 uint_fast8_t l_tevtNum; /* current number of TimeEvents */
 
-CTimeEvent::CTimeEvent(Signal sig, CActive *Act):Event(sig)
+CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 {
 	/* no critical section because it is presumed that all TimeEvents
 	 * are created *before* multitasking has started.
 	 */
-	this->sig = sig;
-	this->act = Act;
-	this->timeout = 0U;
-	this->interval = 0U;
+	this->Sig = Sig;
+	this->m_Act = Act;
+	this->m_Timeout = 0U;
+	this->m_Interval = 0U;
 
 	/* register one more TimeEvent with the application */
 	ASSERT(l_tevtNum < sizeof(l_tevt)/sizeof(l_tevt[0]));
@@ -51,8 +51,8 @@ CTimeEvent::CTimeEvent(Signal sig, CActive *Act):Event(sig)
 void CTimeEvent::Trigger(uint32_t timeout, uint32_t interval)
 {
 	//taskENTER_CRITICAL();
-	this->timeout = timeout;
-	this->interval = interval;
+	this->m_Timeout = timeout;
+	this->m_Interval = interval;
 	//taskEXIT_CRITICAL();
 }
 
@@ -60,7 +60,7 @@ void CTimeEvent::Trigger(uint32_t timeout, uint32_t interval)
 void CTimeEvent::UnTrigger()
 {
 	//taskENTER_CRITICAL();
-	this->timeout = 0U;
+	this->m_Timeout = 0U;
 	//taskEXIT_CRITICAL();
 }
 
@@ -74,12 +74,12 @@ void TimeEvent_tickFromISR()
 	{
 		Edf::CTimeEvent * t = Edf::l_tevt[i];
 		ASSERT(t); /* TimeEvent instance must be registered */
-		if (t->timeout > 0U) /* is this TimeEvent triggered? */
+		if (t->m_Timeout > 0U) /* is this TimeEvent triggered? */
 		{
-			if (--t->timeout == 0U)  /* is it expiring now? */
+			if (--t->m_Timeout == 0U)  /* is it expiring now? */
 			{
-				QueueSend(t->act->Q(), t, true );
-				t->timeout = t->interval;
+				QueueSend(t->m_Act->Q(), t, true );
+				t->m_Timeout = t->m_Interval;
 			}
 		}
 	}

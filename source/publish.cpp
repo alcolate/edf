@@ -29,18 +29,18 @@ namespace Edf
 class CSubscriber
 {
 public:
-	CActive const *  Act;
-	CSubscriber *Next;
+	CActive const *  m_Act;
+	CSubscriber *m_Next;
 
 	CSubscriber(CActive const *  Act, CSubscriber *Next = 0)
 	{
-		this->Act = Act;
-		this->Next = Next;
+		this->m_Act = Act;
+		this->m_Next = Next;
 	}
 
 	void Update(const Event * const e, bool FromISR = false)
 	{
-		QueueSend(Act->Q(), e, FromISR);
+		QueueSend(m_Act->Q(), e, FromISR);
 	}
 
 };
@@ -99,14 +99,14 @@ void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 
 void CPublisher::Publish(const Event * const e, bool FromISR)
 {
-	ASSERT(e->sig < MAX_SIG);
+	ASSERT(e->Sig < MAX_SIG);
 
-	CSubscriber *suber = m_Subs[e->sig];
+	CSubscriber *suber = m_Subs[e->Sig];
 
 	while (suber)
 	{
 		suber->Update(e, FromISR);
-		suber = suber->Next;
+		suber = suber->m_Next;
 	}
 }
 
@@ -128,21 +128,21 @@ void CPublisher::AddTail(CSubscriber **Head, CActive const * const Act)
 		return;
 	}
 
-	if ((*Head)->Act == Act)
+	if ((*Head)->m_Act == Act)
 	{
 		return;
 	}
 
-	AddTail(&((*Head)->Next), Act);
+	AddTail(&((*Head)->m_Next), Act);
 }
 
 void CPublisher::AddHead(CSubscriber **Head, CActive const * const Act)
 {
 	CSubscriber *p = *Head;
 
-	for (; p; p = p->Next)
+	for (; p; p = p->m_Next)
 	{
-		if (p->Act == Act)
+		if (p->m_Act == Act)
 		{
 			return;
 		}
@@ -157,17 +157,17 @@ void CPublisher::Delete(CSubscriber **Head, CActive const * const Act)
 {
 	CSubscriber *p = *Head, *q = *Head;
 
-	for (; p; q = p, p = p->Next)
+	for (; p; q = p, p = p->m_Next)
 	{
-		if (p->Act == Act)
+		if (p->m_Act == Act)
 		{
 			if (q == p)
 			{
-				q = p->Next;
+				q = p->m_Next;
 			}
 			else
 			{
-				q->Next = p->Next;
+				q->m_Next = p->m_Next;
 			}
 		}
 	}

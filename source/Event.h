@@ -43,8 +43,8 @@ enum Signals {
 /* Event base class */
 class Event {
 public:
-	Event(Signal s) : sig(s) {}
-	Signal sig; /* event signal */
+	Event(Signal s) : Sig(s) {}
+	Signal Sig; /* event signal */
 	/* event parameters added in subclasses of Event */
 };
 
