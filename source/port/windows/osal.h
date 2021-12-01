@@ -42,7 +42,7 @@ typedef void *Q_HANDLE;
 typedef void *T_HANDLE;
 typedef void (*TaskExec)(void*);
 
-T_HANDLE TaskCreate(TaskExec pxTaskCode, const char *const pcName,
+T_HANDLE TaskCreate(const char *const pcName,
 		uint16_t usStackDepth, void *const pvParameters,
 		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 

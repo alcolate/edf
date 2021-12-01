@@ -24,9 +24,14 @@
 *****************************************************************************/
 #include <osal.h>
 
+#include "edf.h"
 
-T_HANDLE TaskCreate(	TaskExec pxTaskCode,
-                        const char * const pcName,
+static void ThreadExe(void *p)
+{
+    (static_cast<CActive*>(p))->Run();
+}
+
+T_HANDLE TaskCreate(    const char * const pcName,
                         uint16_t usStackDepth,
                         void * const pvParameters,
                         uint32_t uxPriority, 
@@ -39,7 +44,7 @@ T_HANDLE TaskCreate(	TaskExec pxTaskCode,
 
     configASSERT(*Q);
 
-    xTaskCreate(pxTaskCode, pcName, usStackDepth, pvParameters, uxPriority, &CreatedTask);
+    xTaskCreate(ThreadExe, pcName, usStackDepth, pvParameters, uxPriority, &CreatedTask);
 
     return CreatedTask;
 }
