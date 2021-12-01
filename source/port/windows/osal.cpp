@@ -34,8 +34,7 @@ static DWORD WINAPI ThreadExe(LPVOID p)
     return 0;
 }
 
-T_HANDLE TaskCreate(	TaskExec pxTaskCode,
-                        const char * const pcName,
+T_HANDLE TaskCreate(	const char * const pcName,
                         uint16_t usStackDepth,
                         void * const pvParameters,
                         uint32_t uxPriority, 

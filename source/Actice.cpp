@@ -31,20 +31,20 @@ CActive::CActive(char *Name)
 	m_Name = Name;
 	m_Queue = 0;
 	m_Thread = 0;
+	m_Priority = defPrioity;
 
 }
 
 void CActive::Start()
 {
-	Start(defPrioity, EQ_SIZE, sizeof(Event *));
+	Start(m_Priority, EQ_SIZE, sizeof(Event *));
 }
 
 void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 {
 
 	this->m_Thread = TaskCreate(
-			&CActive::EventLoop,        
-			m_Name ,                   
+			m_Name,
 			MINIMAL_STACK_SIZE + 128,               
 			this,                       
 			prio, &(this->m_Queue), EQ_SIZE);  
@@ -57,23 +57,26 @@ void CActive::Post(Event const *const e)
 	QueueSend(Q(), e);
 }
 
-void CActive::EventLoop(void *pvParameters) {
-	CActive *act = (CActive *)pvParameters;
+void CActive::Run(void)
+{
+	EventLoop();
+}
+
+void CActive::EventLoop()
+{
+
 	static Event const initEvt = { INIT_SIG };
-
-	ASSERT(act); 
-
 	
-	act->Dispatcher(&initEvt);
+	this->Dispatcher(&initEvt);
 
 	for (;;) 
 	{
 		Event *e; 
 
 		/* wait for any event and receive it into object 'e' */
-		if (QueueReceive(act->m_Queue, &e, MAX_DELAY))
+		if (QueueReceive(this->m_Queue, &e, MAX_DELAY))
 		{			
-			act->Dispatcher(e);
+			this->Dispatcher(e);
 		}
 	}
 }

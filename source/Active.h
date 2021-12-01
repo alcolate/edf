@@ -45,16 +45,18 @@ public:
 
 	void Post(Event const *const e);
 
-	void Run(void) 
-	{
-		CActive::EventLoop(this);
-	}
+	void Run(void);
 
-	static void EventLoop(void *pvParameters) ;
+	void EventLoop(void) ;
 
 	virtual void Dispatcher(Event const * const e);
 
 	virtual void Initial() = 0;
+
+	void SetPriority(uint32_t Priority)
+	{
+		m_Priority = Priority;
+	}
 
 public:
 	Q_HANDLE Q() const
@@ -67,13 +69,17 @@ public:
 private:
 	T_HANDLE m_Thread;   
     Q_HANDLE m_Queue;    
+    uint32_t m_Priority;
 
 	enum {EQ_SIZE = 10};
 
 	char *m_Name;
 
 public:
-	DEF_STATE(CActive);
+	DEF_STATE(CActive)
+
+
+	;
 };
     
 } // namespace Edf
