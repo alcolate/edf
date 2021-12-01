@@ -113,7 +113,7 @@ void CPublisher::Publish(const Event * const e, bool FromISR)
 
 CPublisher::CPublisher()
 {
-	for (int i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
+	for (uint32_t i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
 	{
 		m_Subs[i] = 0;
 	}
@@ -148,9 +148,7 @@ void CPublisher::AddHead(CSubscriber **Head, CActive const * const Act)
 		}
 	}
 
-	CSubscriber *s = new CSubscriber(Act, *Head);
-
-	*Head = s;
+	*Head = new CSubscriber(Act, *Head);
 }
 
 void CPublisher::Delete(CSubscriber **Head, CActive const * const Act)

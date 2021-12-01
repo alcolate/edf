@@ -36,7 +36,6 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 	/* no critical section because it is presumed that all TimeEvents
 	 * are created *before* multitasking has started.
 	 */
-	this->Sig = Sig;
 	this->m_Act = Act;
 	this->m_Timeout = 0U;
 	this->m_Interval = 0U;
@@ -73,10 +72,10 @@ void TimeEvent_tickFromISR()
 	for (i = 0U; i < Edf::l_tevtNum; ++i)
 	{
 		Edf::CTimeEvent * t = Edf::l_tevt[i];
-		ASSERT(t); /* TimeEvent instance must be registered */
-		if (t->m_Timeout > 0U) /* is this TimeEvent triggered? */
+		ASSERT(t); 
+		if (t->m_Timeout > 0U) 
 		{
-			if (--t->m_Timeout == 0U)  /* is it expiring now? */
+			if (--t->m_Timeout == 0U)  
 			{
 				QueueSend(t->m_Act->Q(), t, true );
 				t->m_Timeout = t->m_Interval;
