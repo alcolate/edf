@@ -57,13 +57,9 @@ Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 
 bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
 {
-    return xQueueReceive(Q, pvBuffer, TimeOut);
+    return xQueueReceive(Q, pvBuffer, TimeOut) == pdTRUE;
 }
 
-
-
-/*..........................................................................*/
-/*..........................................................................*/
 bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 {
 	BaseType_t status;
@@ -79,7 +75,7 @@ bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 	}
     configASSERT(status == pdTRUE);
 
-    return status;
+    return (status == pdTRUE);
 }
 
 

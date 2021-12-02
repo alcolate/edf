@@ -35,7 +35,7 @@ int main()
 
     CHello::Instance()->Start();
 
-    CHello* atg[6];
+    //CHello* atg[6];
     for (int i = 0; i < 6; i++)
     {
       //  atg[i] = new CHello();

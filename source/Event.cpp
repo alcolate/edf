@@ -22,34 +22,35 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include <stdint.h>
-#include <assert.h>
+#include "Active.h"
 
+namespace Edf
+{
 
-#pragma once
+Event::Event(Signal s, bool DynAlloc) : Sig(s), RefCount(0), DynamicAlloc(DynAlloc) 
+{
 
-#define MAX_PRIORITIES 			10
-#define MINIMAL_STACK_SIZE 		1000
-#define MAX_DELAY 				((long)-1)
-#define TICK_RATE_MS			10
-#define MilliSecond(t)  		((t) / TICK_RATE_MS)
+}
+Event::~Event() 
+{
+    
+}
+void Event::IncRef(void)
+{
+    OS_EnterCritical();
+    RefCount ++;
+    OS_ExitCritical();
+}
+void Event::DecRef(void)
+{
+    OS_EnterCritical();
+    RefCount --;
+    OS_ExitCritical();
 
-#define ASSERT   				assert
+    if (RefCount == 0 && DynamicAlloc)
+    {
+        delete this;
+    }
+}
 
-#define OS_PRINT				
-
-typedef void *Q_HANDLE;
-typedef void *T_HANDLE;
-typedef void (*TaskExec)(void*);
-
-T_HANDLE TaskCreate(const char *const pcName,
-		uint16_t usStackDepth, void *const pvParameters,
-		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
-
-Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
-bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
-
-bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
-
-void OS_EnterCritical(void);
-void OS_ExitCritical(void);
+}

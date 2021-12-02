@@ -87,8 +87,7 @@ bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
     }
 }
 
-/*..........................................................................*/
-/*..........................................................................*/
+
 bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 {
 
@@ -97,6 +96,22 @@ bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
     return status;
 }
 
+HANDLE  g_hMutex = NULL;
+void OS_EnterCritical(void)
+{
+    if (g_hMutex == NULL)
+    {
+        g_hMutex = CreateMutex(NULL, FALSE, NULL);
+        ASSERT(g_hMutex != NULL);   
+    }
+
+    WaitForSingleObject(g_hMutex, INFINITE);
+}
+void OS_ExitCritical(void)
+{
+    ASSERT(g_hMutex != NULL);
+    ReleaseMutex(g_hMutex);
+}
 
 /*..........................................................................*/
 

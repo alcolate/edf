@@ -57,6 +57,10 @@ public:
 		case ENTRY_SIG:
 			m_Time.Trigger(100, 0U);
 			std::cout << "enter " << __FUNCTION__ << std::endl;
+			{
+				Event* de = new Event(RF_WTR_SIG, true);
+				Publish(de);
+			}
 			break;
 		case EXIT_SIG:
 			std::cout <<  "exit " << __FUNCTION__ << std::endl;
@@ -68,7 +72,7 @@ public:
 			TRANS(&CHello::S_Noise);
 			break;
 		case RF_WTR_SIG:
-
+			std::cout << "RF" << std::endl;
 			break;
 
 		default:
@@ -83,6 +87,10 @@ public:
 		case ENTRY_SIG:
 			m_Time.Trigger(100, 0U);
 			std::cout << "enter " << __FUNCTION__ << std::endl;
+			{
+				Event* de = new Event(RF_WTR_SIG, true);
+				Publish(de);
+			}
 			break;
 		case EXIT_SIG:
 			std::cout << "exit " << __FUNCTION__ << std::endl;
@@ -94,6 +102,7 @@ public:
 			break;
 		case RF_WTR_SIG:
 
+			std::cout << "RF" << std::endl;
 			break;
 
 		default:
