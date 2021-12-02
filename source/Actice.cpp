@@ -77,6 +77,8 @@ void CActive::EventLoop()
 		if (QueueReceive(this->m_Queue, &e, MAX_DELAY))
 		{			
 			this->Dispatcher(e);
+
+			e->DecRef();
 		}
 	}
 }

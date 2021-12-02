@@ -28,8 +28,8 @@
 namespace Edf
 {
 
-CTimeEvent *l_tevt[10]; /* all TimeEvents in the application */
-uint_fast8_t l_tevtNum; /* current number of TimeEvents */
+CTimeEvent *gTimeEvts[10]; /* all TimeEvents in the application */
+uint_fast8_t gTimeEvtsNum; /* current number of TimeEvents */
 
 CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 {
@@ -41,26 +41,26 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 	this->m_Interval = 0U;
 
 	/* register one more TimeEvent with the application */
-	ASSERT(l_tevtNum < sizeof(l_tevt)/sizeof(l_tevt[0]));
-	l_tevt[l_tevtNum] = this;
-	++l_tevtNum;
+	ASSERT(gTimeEvtsNum < sizeof(gTimeEvts)/sizeof(gTimeEvts[0]));
+	gTimeEvts[gTimeEvtsNum] = this;
+	++gTimeEvtsNum;
 }
 
 /*..........................................................................*/
-void CTimeEvent::Trigger(uint32_t timeout, uint32_t interval)
+void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 {
-	//taskENTER_CRITICAL();
-	this->m_Timeout = timeout;
-	this->m_Interval = interval;
-	//taskEXIT_CRITICAL();
+	OS_EnterCritical();
+	this->m_Timeout = Timeout;
+	this->m_Interval = Interval;
+	OS_ExitCritical();
 }
 
 /*..........................................................................*/
 void CTimeEvent::UnTrigger()
 {
-	//taskENTER_CRITICAL();
+	OS_EnterCritical();
 	this->m_Timeout = 0U;
-	//taskEXIT_CRITICAL();
+	OS_ExitCritical();
 }
 
 
@@ -69,9 +69,9 @@ void CTimeEvent::UnTrigger()
 void TimeEvent_tickFromISR()
 {
 	uint_fast8_t i;
-	for (i = 0U; i < Edf::l_tevtNum; ++i)
+	for (i = 0U; i < Edf::gTimeEvtsNum; ++i)
 	{
-		Edf::CTimeEvent * t = Edf::l_tevt[i];
+		Edf::CTimeEvent * t = Edf::gTimeEvts[i];
 		ASSERT(t); 
 		if (t->m_Timeout > 0U) 
 		{

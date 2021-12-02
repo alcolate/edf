@@ -52,3 +52,6 @@ bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
 
 bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
 
+#define OS_EnterCritical()  taskENTER_CRITICAL()
+#define OS_ExitCritical()   taskEXIT_CRITICAL()
+

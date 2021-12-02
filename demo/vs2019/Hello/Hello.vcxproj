@@ -142,10 +142,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\Actice.cpp" />
+    <ClCompile Include="..\..\..\source\Event.cpp" />
     <ClCompile Include="..\..\..\source\port\windows\osal.cpp" />
     <ClCompile Include="..\..\..\source\publish.cpp" />
     <ClCompile Include="..\..\..\source\Time.cpp" />
     <ClCompile Include="Hello.cpp" />
+    <ClCompile Include="源.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\edf.h" />

@@ -29,8 +29,9 @@ namespace Edf
 
 typedef uint16_t Signal; /* event signal */
 
-enum Signals {
-	INIT_SIG, /* dispatched to AO before entering event-loop */
+enum Signals 
+{
+	INIT_SIG, 
 	ENTRY_SIG,
 	EXIT_SIG,
 	USER_SIG,  /* first signal available to the users */
@@ -41,11 +42,17 @@ enum Signals {
 
 
 /* Event base class */
-class Event {
+class Event 
+{
 public:
-	Event(Signal s) : Sig(s) {}
-	Signal Sig; /* event signal */
-	/* event parameters added in subclasses of Event */
+	Event(Signal s, bool DynAlloc = false);
+	virtual ~Event();
+	Signal Sig; 
+	uint32_t	RefCount;
+	bool        DynamicAlloc;
+	void IncRef(void);
+	void DecRef(void);
+
 };
 
 } // namaspace Edf

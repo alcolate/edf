@@ -41,7 +41,7 @@ public:
 	CTimeEvent(Signal Sig, CActive *Act);
 
 	/*..........................................................................*/
-	void Trigger(uint32_t timeout, uint32_t interval) ;
+	void Trigger(uint32_t Timeout, uint32_t Interval) ;
 
 	/*..........................................................................*/
 	void UnTrigger() ;
