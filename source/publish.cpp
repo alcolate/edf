@@ -168,6 +168,10 @@ void CPublisher::Delete(CSubscriber **Head, CActive const * const Act)
 			{
 				q->m_Next = p->m_Next;
 			}
+
+			delete p;
+
+			break;
 		}
 	}
 }
