@@ -25,7 +25,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include "osal.h"
-#include "edf.h"
+#include "Edf.h"
 
 static DWORD WINAPI ThreadExe(LPVOID p) 
 {

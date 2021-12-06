@@ -24,7 +24,7 @@
 *****************************************************************************/
 #include <osal.h>
 
-#include "edf.h"
+#include "Edf.h"
 
 static void ThreadExe(void *p)
 {
