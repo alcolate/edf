@@ -115,6 +115,6 @@ public:
 	CTimeEvent m_Time;
 
 public:
-	DEF_STATE(CHello);
+	DEF_STATEMACHINE(CHello);
 };
 

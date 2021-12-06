@@ -32,6 +32,7 @@ CActive::CActive(char *Name)
 	m_Queue = 0;
 	m_Thread = 0;
 	m_Priority = defPrioity;
+	m_StackSize = MINIMAL_STACK_SIZE;
 
 }
 
@@ -45,7 +46,7 @@ void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 
 	this->m_Thread = TaskCreate(
 			m_Name,
-			MINIMAL_STACK_SIZE + 128,               
+			m_StackSize,               
 			this,                       
 			prio, &(this->m_Queue), EQ_SIZE);  
 

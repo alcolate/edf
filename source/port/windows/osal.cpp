@@ -46,7 +46,7 @@ T_HANDLE TaskCreate(	const char * const pcName,
 
     CreatedTask = CreateThread(
         NULL,
-        1024U,
+        usStackDepth,
         &ThreadExe,
         pvParameters,
         0,

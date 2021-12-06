@@ -26,7 +26,7 @@
 
 using namespace Edf;
 
-#define DEF_STATE(Class) \
+#define DEF_STATEMACHINE(Class) \
 		void (Class::*m_State)(Event const *const e){}; \
 		void (Class::*m_NextState)(Event const *const e){}; \
 		const char *m_StateName{};\

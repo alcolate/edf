@@ -37,7 +37,12 @@
 
 #define ASSERT   				configASSERT
 
-#define OS_PRINT				
+#define OS_LOG
+
+#define LOG_ERROR
+#define LOG_DEBUG
+#define LOG_WARNING
+#define LOG_INFO			
 
 typedef void *Q_HANDLE;
 typedef void *T_HANDLE;

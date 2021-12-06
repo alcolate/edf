@@ -29,14 +29,19 @@
 #pragma once
 
 #define MAX_PRIORITIES 			10
-#define MINIMAL_STACK_SIZE 		1000
+#define MINIMAL_STACK_SIZE 		1024
 #define MAX_DELAY 				((long)-1)
 #define TICK_RATE_MS			10
 #define MilliSecond(t)  		((t) / TICK_RATE_MS)
 
 #define ASSERT   				assert
 
-#define OS_PRINT				
+#define OS_LOG
+
+#define LOG_ERROR
+#define LOG_DEBUG
+#define LOG_WARNING
+#define LOG_INFO				
 
 typedef void *Q_HANDLE;
 typedef void *T_HANDLE;
