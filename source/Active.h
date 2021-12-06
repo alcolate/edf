@@ -58,6 +58,11 @@ public:
 		m_Priority = Priority;
 	}
 
+	void SetStackSize(uint32_t StackSize)
+	{
+		m_StackSize = StackSize;
+	}
+
 public:
 	Q_HANDLE Q() const
 	{
@@ -70,13 +75,14 @@ private:
 	T_HANDLE m_Thread;   
     Q_HANDLE m_Queue;    
     uint32_t m_Priority;
+	uint32_t m_StackSize;
 
 	enum {EQ_SIZE = 10};
 
 	char *m_Name;
 
 public:
-	DEF_STATE(CActive)
+	DEF_STATEMACHINE(CActive)
 
 
 	;
