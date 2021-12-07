@@ -24,23 +24,41 @@
 *****************************************************************************/
 #pragma once
 
-#include <iostream>
+#include <string.h>
 
 #include "edf.h"
 
+#pragma warning(disable : 4996)
+
+class CRfEvent : public Event
+{
+public:
+	CRfEvent(Signal Sig, const char *Str) : Event(Sig, true)
+	{
+		m_Name = new char[strlen(Str) + 1];
+		strcpy(m_Name, Str);
+	}
+	virtual ~CRfEvent()
+	{
+		LOG_DEBUG("%s, %s \r\n", __FUNCTION__,  m_Name);
+		delete [] m_Name;
+	}
+
+	char* m_Name;
+};
 
 class CHello : public CActive
 {
 public:
-	CHello() : CActive((char*)"AT"), m_Time(TIMEOUT_SIG, this)
+	CHello() : CActive((char*)"Hello"), m_Time(TIMEOUT_SIG, this)
 	{
 
 	}
 
 	static CHello* Instance()
 	{
-		static CHello at;
-		return &at;
+		static CHello hello;
+		return &hello;
 	}
 
 	virtual void Initial()
@@ -56,14 +74,14 @@ public:
 		{
 		case ENTRY_SIG:
 			m_Time.Trigger(100, 0U);
-			std::cout << "enter " << __FUNCTION__ << std::endl;
+			LOG_DEBUG("enter %s\r\n", __FUNCTION__);
 			{
-				Event* de = new Event(RF_WTR_SIG, true);
+				Event* de = new CRfEvent(RF_WTR_SIG, __FUNCTION__);
 				Publish(de);
 			}
 			break;
 		case EXIT_SIG:
-			std::cout <<  "exit " << __FUNCTION__ << std::endl;
+			LOG_DEBUG("exit %s\r\n", __FUNCTION__);
 			break;
 
 		case TIMEOUT_SIG:
@@ -72,7 +90,7 @@ public:
 			TRANS(&CHello::S_Noise);
 			break;
 		case RF_WTR_SIG:
-			std::cout << "RF" << std::endl;
+			LOG_DEBUG("RF %s\r\n", __FUNCTION__);
 			break;
 
 		default:
@@ -86,23 +104,23 @@ public:
 		{
 		case ENTRY_SIG:
 			m_Time.Trigger(100, 0U);
-			std::cout << "enter " << __FUNCTION__ << std::endl;
+			LOG_DEBUG("enter %s\r\n", __FUNCTION__);
 			{
-				Event* de = new Event(RF_WTR_SIG, true);
+				Event* de = new CRfEvent(RF_WTR_SIG, __FUNCTION__);
 				Publish(de);
 			}
 			break;
 		case EXIT_SIG:
-			std::cout << "exit " << __FUNCTION__ << std::endl;
+			LOG_DEBUG("exit %s\r\n", __FUNCTION__);
 			break;
 
 		case TIMEOUT_SIG:
 			m_Time.Trigger(MilliSecond(500 + (((uint32_t)this) % 500)), 0U);
 			TRANS(&CHello::S_Silence);
 			break;
-		case RF_WTR_SIG:
 
-			std::cout << "RF" << std::endl;
+		case RF_WTR_SIG:
+			LOG_DEBUG("RF %s\r\n", __FUNCTION__);
 			break;
 
 		default:
@@ -116,5 +134,53 @@ public:
 
 public:
 	DEF_STATEMACHINE(CHello);
+};
+
+
+class CWorld : public CActive
+{
+public:
+	CWorld() : CActive((char*)"World")
+	{
+
+	}
+
+	static CWorld* Instance()
+	{
+		static CWorld world;
+		return &world;
+	}
+
+	virtual void Initial()
+	{
+
+		Edf::Subscribe(RF_WTR_SIG, this);
+		INIT_TRANS(&CWorld::S_Silence);
+	}
+
+	void S_Silence(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
+
+			LOG_DEBUG("enter %s\r\n", __FUNCTION__);
+
+			break;
+		case EXIT_SIG:
+			LOG_DEBUG("exit %s\r\n", __FUNCTION__);
+			break;
+
+		case RF_WTR_SIG:
+			LOG_DEBUG("RF %s\r\n", __FUNCTION__);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+public:
+	DEF_STATEMACHINE(CWorld);
 };
 
