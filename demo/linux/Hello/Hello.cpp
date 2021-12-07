@@ -1,4 +1,4 @@
-/*****************************************************************************
+﻿/*****************************************************************************
 * MIT License:
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,70 +22,26 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include <stdint.h>
-#include "osal.h"
-#include "Event.h"
-#include "State.h"
+// Hello.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+//
 
+#include <iostream>
+#include "hello.h"
+extern void vApplicationTickHook(void);
 
-#pragma once
-
-namespace Edf
+int main()
 {
-constexpr uint8_t defPrioity = (MAX_PRIORITIES - 5);
+    std::cout << "Hello World!\n";
 
-class CActive
-{
-public:
-	CActive(char *Name);
+    CHello::Instance()->Start();
 
-	void Start();
+    //CHello* atg[6];
+    for (int i = 0; i < 6; i++)
+    {
+      //  atg[i] = new CHello();
+      //  atg[i]->Start();
+    }
 
-	void Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize);
+    vApplicationTickHook();
+}
 
-	void Post(Event const *const e);
-
-	void Run(void);
-
-	void EventLoop(void) ;
-
-	virtual void Dispatcher(Event const * const e);
-
-	virtual void Initial() = 0;
-
-	void SetPriority(uint32_t Priority)
-	{
-		m_Priority = Priority;
-	}
-
-	void SetStackSize(uint32_t StackSize)
-	{
-		m_StackSize = StackSize;
-	}
-
-public:
-	Q_HANDLE Q() const
-	{
-		return m_Queue;
-	}
-
-	//State m_State;
-
-private:
-	T_HANDLE m_Thread;   
-    Q_HANDLE m_Queue;    
-    uint32_t m_Priority;
-	uint32_t m_StackSize;
-
-	enum {EQ_SIZE = 10};
-
-	char *m_Name;
-
-public:
-	DEF_STATEMACHINE(CActive);
-};
-    
-} // namespace Edf
-
-#include "Timer.h"
-#include "Publish.h"
