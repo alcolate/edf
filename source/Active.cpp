@@ -50,6 +50,8 @@ void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 			this,                       
 			prio, &(this->m_Queue), EQ_SIZE);  
 
+	ASSERT(this->m_Queue);
+
 	ASSERT(this->m_Thread); 
 }
 
@@ -65,6 +67,7 @@ void CActive::Run(void)
 
 void CActive::EventLoop()
 {
+	
 
 	static Event const initEvt = { INIT_SIG };
 	
@@ -72,9 +75,7 @@ void CActive::EventLoop()
 
 	for (;;) 
 	{
-		Event *e; 
-
-		/* wait for any event and receive it into object 'e' */
+		Event* e;
 		if (QueueReceive(this->m_Queue, &e, MAX_DELAY))
 		{			
 			this->Dispatcher(e);
