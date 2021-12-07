@@ -24,7 +24,7 @@
 *****************************************************************************/
 #include <stdint.h>
 #include <assert.h>
-
+#include <stdio.h>
 
 #pragma once
 
@@ -36,12 +36,12 @@
 
 #define ASSERT   				assert
 
-#define OS_LOG
+#define OS_LOG					printf
 
-#define LOG_ERROR
-#define LOG_DEBUG
-#define LOG_WARNING
-#define LOG_INFO				
+#define LOG_ERROR				OS_LOG
+#define LOG_DEBUG				OS_LOG
+#define LOG_WARNING				OS_LOG
+#define LOG_INFO				OS_LOG	
 
 typedef void *Q_HANDLE;
 typedef void *T_HANDLE;

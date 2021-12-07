@@ -34,12 +34,13 @@ int main()
     std::cout << "Hello World!\n";
 
     CHello::Instance()->Start();
+    CWorld::Instance()->Start();
 
-    //CHello* atg[6];
-    for (int i = 0; i < 6; i++)
+    CHello* hello[6];
+    //for (int i = 0; i < 6; i++)
     {
-      //  atg[i] = new CHello();
-      //  atg[i]->Start();
+   //     hello[i] = new CHello();
+   //     hello[i]->Start();
     }
 
     vApplicationTickHook();

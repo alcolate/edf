@@ -144,7 +144,7 @@
     <ClCompile Include="..\..\..\source\Active.cpp" />
     <ClCompile Include="..\..\..\source\Event.cpp" />
     <ClCompile Include="..\..\..\source\port\windows\osal.cpp" />
-    <ClCompile Include="..\..\..\source\publish.cpp" />
+    <ClCompile Include="..\..\..\source\Publish.cpp" />
     <ClCompile Include="..\..\..\source\Timer.cpp" />
     <ClCompile Include="Hello.cpp" />
   </ItemGroup>
@@ -153,7 +153,7 @@
     <ClInclude Include="..\..\..\source\Active.h" />
     <ClInclude Include="..\..\..\source\Event.h" />
     <ClInclude Include="..\..\..\source\port\windows\osal.h" />
-    <ClInclude Include="..\..\..\source\publish.h" />
+    <ClInclude Include="..\..\..\source\Publish.h" />
     <ClInclude Include="..\..\..\source\State.h" />
     <ClInclude Include="..\..\..\source\Timer.h" />
     <ClInclude Include="hello.h" />
