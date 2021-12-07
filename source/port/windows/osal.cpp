@@ -29,6 +29,8 @@
 
 static DWORD WINAPI ThreadExe(LPVOID p) 
 {
+    QueueCreate(0, 0);
+    
     (static_cast<CActive*>(p))->Run();
 
     return 0;
@@ -53,8 +55,6 @@ T_HANDLE TaskCreate(	const char * const pcName,
         &id);
 
     *Q = (Q_HANDLE)id;
-
-    QueueCreate(Q_Size, 0);
 
     return CreatedTask;
 }
