@@ -141,11 +141,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\Actice.cpp" />
+    <ClCompile Include="..\..\..\source\Active.cpp" />
     <ClCompile Include="..\..\..\source\Event.cpp" />
     <ClCompile Include="..\..\..\source\port\windows\osal.cpp" />
     <ClCompile Include="..\..\..\source\publish.cpp" />
-    <ClCompile Include="..\..\..\source\Time.cpp" />
+    <ClCompile Include="..\..\..\source\Timer.cpp" />
     <ClCompile Include="Hello.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,7 +155,7 @@
     <ClInclude Include="..\..\..\source\port\windows\osal.h" />
     <ClInclude Include="..\..\..\source\publish.h" />
     <ClInclude Include="..\..\..\source\State.h" />
-    <ClInclude Include="..\..\..\source\Time.h" />
+    <ClInclude Include="..\..\..\source\Timer.h" />
     <ClInclude Include="hello.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -23,69 +23,38 @@
 * <9183399@qq.com>
 *****************************************************************************/
 #include <stdint.h>
-#include "osal.h"
-#include "Event.h"
-#include "State.h"
+#include <assert.h>
 
 
 #pragma once
 
-namespace Edf
-{
-constexpr uint8_t defPrioity = (MAX_PRIORITIES - 5);
+#define MAX_PRIORITIES 			10
+#define MINIMAL_STACK_SIZE 		1000
+#define MAX_DELAY 				((long)-1)
+#define TICK_RATE_MS			10
+#define MilliSecond(t)  		((t) / TICK_RATE_MS)
 
-class CActive
-{
-public:
-	CActive(char *Name);
+#define ASSERT   				assert
 
-	void Start();
+#define OS_LOG
 
-	void Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize);
+#define LOG_ERROR
+#define LOG_DEBUG
+#define LOG_WARNING
+#define LOG_INFO				
 
-	void Post(Event const *const e);
+typedef void *Q_HANDLE;
+typedef void *T_HANDLE;
+typedef void (*TaskExec)(void*);
 
-	void Run(void);
+T_HANDLE TaskCreate(const char *const pcName,
+		uint16_t usStackDepth, void *const pvParameters,
+		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
-	void EventLoop(void) ;
+Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
+bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
 
-	virtual void Dispatcher(Event const * const e);
+bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
 
-	virtual void Initial() = 0;
-
-	void SetPriority(uint32_t Priority)
-	{
-		m_Priority = Priority;
-	}
-
-	void SetStackSize(uint32_t StackSize)
-	{
-		m_StackSize = StackSize;
-	}
-
-public:
-	Q_HANDLE Q() const
-	{
-		return m_Queue;
-	}
-
-	//State m_State;
-
-private:
-	T_HANDLE m_Thread;   
-    Q_HANDLE m_Queue;    
-    uint32_t m_Priority;
-	uint32_t m_StackSize;
-
-	enum {EQ_SIZE = 10};
-
-	char *m_Name;
-
-public:
-	DEF_STATEMACHINE(CActive);
-};
-    
-} // namespace Edf
-
-#include "Timer.h"
-#include "Publish.h"
+void OS_EnterCritical(void);
+void OS_ExitCritical(void);
