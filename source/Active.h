@@ -83,6 +83,8 @@ private:
 	char *m_Name;
 
 public:
+	const char* m_StateName;
+	const char* m_NextStateName;
 	DEF_STATEMACHINE(CActive);
 };
     

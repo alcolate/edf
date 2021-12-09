@@ -33,6 +33,8 @@ CActive::CActive(char *Name)
 	m_Thread = 0;
 	m_Priority = defPrioity;
 	m_StackSize = MINIMAL_STACK_SIZE;
+	m_NextStateName = 0;
+	m_StateName = 0;
 
 }
 
@@ -98,10 +100,16 @@ void CActive::Dispatcher(Event const * const e)
 		break;
 
 	case ENTRY_SIG:
+#ifdef TRACE_STATE == 1
+		LOG_DEBUG("Enter:\t%s\r\n", m_StateName);
+#endif
 		RUN_STATE();
 		break;
 
 	case EXIT_SIG:
+#ifdef TRACE_STATE == 1
+		LOG_DEBUG("Exit:\t%s\r\n", m_StateName);
+#endif
 		RUN_STATE();
 		TO_NEXT_STATE();
 		break;
