@@ -55,9 +55,11 @@ void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 	ASSERT(this->m_Thread); 
 }
 
-void CActive::Post(Event const *const e)
+bool CActive::Post(Event const *const e, bool FromISR)
 {
-	QueueSend(Q(), e);
+	bool result = QueueSend(Q(), e, FromISR);
+	ASSERT(result);
+	return result;
 }
 
 void CActive::Run(void)

@@ -33,7 +33,7 @@ void Subscribe(Signal Sig, CActive const * const Act);
 
 void UnSubscribe(Signal Sig, CActive const * const Act);
 
-void Publish(Event * const e, bool FromISR = false);
+void Publish(Event const * const e, bool FromISR = false);
 
 	
 } // namespace Edf

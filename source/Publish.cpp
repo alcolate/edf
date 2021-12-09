@@ -40,7 +40,11 @@ public:
 
 	void Update(const Event * const e, bool FromISR = false)
 	{
-		QueueSend(m_Act->Q(), e, FromISR);
+		const_cast<Event *>(e)->IncRef();
+		if (false == const_cast<CActive *>(m_Act)->Post(e, FromISR))
+		{
+			const_cast<Event *>(e)->DecRef();
+		}
 	}
 
 };
@@ -54,7 +58,7 @@ public:
 
 	void UnSubscribe(Signal Sig, CActive const * const Act);
 
-	void Publish(Event * const e, bool FromISR = false);
+	void Publish(Event const * const e, bool FromISR = false);
 
 
 
@@ -97,15 +101,14 @@ void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 	Delete(&(m_Subs[Sig]), Act);
 }
 
-void CPublisher::Publish(Event * const e, bool FromISR)
+void CPublisher::Publish(Event const * const e, bool FromISR)
 {
 	ASSERT(e->Sig < MAX_SIG);
 
 	CSubscriber *suber = m_Subs[e->Sig];
 
 	while (suber)
-	{
-		e->IncRef();
+	{		
 		suber->Update(e, FromISR);
 		suber = suber->m_Next;
 	}
@@ -190,7 +193,7 @@ void UnSubscribe(Signal Sig, CActive const * const Act)
 	Edf::CPublisher::Instance()->UnSubscribe(Sig, Act);
 }
 
-void Publish(Event * const e, bool FromISR)
+void Publish(Event const * const e, bool FromISR)
 {
 	Edf::CPublisher::Instance()->Publish( e, FromISR);
 }
