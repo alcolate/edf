@@ -43,7 +43,7 @@ public:
 
 	void Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize);
 
-	void Post(Event const *const e);
+	bool Post(Event const *const e, bool FromISR = false);
 
 	void Run(void);
 
@@ -66,6 +66,7 @@ public:
 public:
 	Q_HANDLE Q() const
 	{
+		ASSERT(m_Queue);
 		return m_Queue;
 	}
 
