@@ -36,7 +36,7 @@ enum Signals
 	EXIT_SIG,
 	USER_SIG,  /* first signal available to the users */
 	TIMEOUT_SIG,
-	RF_WTR_SIG,
+	TEST_SIG,
 	MAX_SIG,
 };
 

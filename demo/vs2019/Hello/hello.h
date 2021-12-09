@@ -30,17 +30,17 @@
 
 #pragma warning(disable : 4996)
 
-class CRfEvent : public Event
+class CTestEvent : public Event
 {
 public:
-	CRfEvent(Signal Sig, const char *Str) : Event(Sig, true)
+	CTestEvent(Signal Sig, const char *Str) : Event(Sig, true)
 	{
 		m_Name = new char[strlen(Str) + 1];
 		strcpy(m_Name, Str);
 	}
-	virtual ~CRfEvent()
+	virtual ~CTestEvent()
 	{
-		LOG_DEBUG("%s, %s \r\n", __FUNCTION__,  m_Name);
+		LOG_DEBUG("Recycle: %s, %s \r\n", __FUNCTION__,  m_Name);
 		delete [] m_Name;
 	}
 
@@ -64,64 +64,64 @@ public:
 	virtual void Initial()
 	{
 
-		Edf::Subscribe(RF_WTR_SIG, this);
-		INIT_TRANS(&CHello::S_Silence);
+		Edf::Subscribe(TEST_SIG, this);
+		INIT_TRANS(&CHello::State1);
 	}
 
-	void S_Silence(Event const* const e)
+	void State1(Event const* const e)
 	{
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			m_Time.Trigger(100, 0U);
-			LOG_DEBUG("enter %s\r\n", __FUNCTION__);
+			m_Time.Trigger(MilliSecond(20 + (((uint32_t)this) % 10)), 0U);
 			{
-				Event* de = new CRfEvent(RF_WTR_SIG, __FUNCTION__);
+				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);
 			}
 			break;
 		case EXIT_SIG:
-			LOG_DEBUG("exit %s\r\n", __FUNCTION__);
 			break;
 
 		case TIMEOUT_SIG:
-			m_Time.Trigger(MilliSecond(500 + (((uint32_t)this) % 500)), 0U);
 			
-			TRANS(&CHello::S_Noise);
+			
+			TRANS(&CHello::State2);
 			break;
-		case RF_WTR_SIG:
-			LOG_DEBUG("RF %s\r\n", __FUNCTION__);
+		case TEST_SIG:
+		{
+			CTestEvent const* te = static_cast<CTestEvent const*>(e);
+			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			break;
-
+		}
 		default:
 			break;
 		}
 	}
 
-	void S_Noise(Event const* const e)
+	void State2(Event const* const e)
 	{
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			m_Time.Trigger(100, 0U);
-			LOG_DEBUG("enter %s\r\n", __FUNCTION__);
+			m_Time.Trigger(MilliSecond(20 + (((uint32_t)this) % 10)), 0U);
 			{
-				Event* de = new CRfEvent(RF_WTR_SIG, __FUNCTION__);
+				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);
 			}
 			break;
 		case EXIT_SIG:
-			LOG_DEBUG("exit %s\r\n", __FUNCTION__);
 			break;
 
 		case TIMEOUT_SIG:
-			m_Time.Trigger(MilliSecond(500 + (((uint32_t)this) % 500)), 0U);
-			TRANS(&CHello::S_Silence);
+			TRANS(&CHello::State1);
 			break;
 
-		case RF_WTR_SIG:
-			LOG_DEBUG("RF %s\r\n", __FUNCTION__);
+		case TEST_SIG:
+		{
+			CTestEvent const* te = static_cast<CTestEvent const*>(e);
+			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			break;
+		}
 
 		default:
 			break;
@@ -154,26 +154,50 @@ public:
 	virtual void Initial()
 	{
 
-		Edf::Subscribe(RF_WTR_SIG, this);
-		INIT_TRANS(&CWorld::S_Silence);
+		Edf::Subscribe(TEST_SIG, this);
+		INIT_TRANS(&CWorld::State1);
 	}
 
-	void S_Silence(Event const* const e)
+	void State1(Event const* const e)
 	{
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
 
-			LOG_DEBUG("enter %s\r\n", __FUNCTION__);
+			break;
+		case EXIT_SIG:
+			break;
+
+		case TEST_SIG:
+		{
+			CTestEvent const* te = static_cast<CTestEvent const*>(e);
+			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			TRANS(&CWorld::State2);
+			break;
+		}
+
+		default:
+			break;
+		}
+	}
+
+	void State2(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
 
 			break;
 		case EXIT_SIG:
-			LOG_DEBUG("exit %s\r\n", __FUNCTION__);
 			break;
 
-		case RF_WTR_SIG:
-			LOG_DEBUG("RF %s\r\n", __FUNCTION__);
+		case TEST_SIG:
+		{
+			CTestEvent const* te = static_cast<CTestEvent const*>(e);
+			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			TRANS(&CWorld::State1);
 			break;
+		}
 
 		default:
 			break;
