@@ -39,16 +39,19 @@
 #include "osal.h"
 #include "Edf.h"
 
+#define USE_MQV  1
+
 struct MsgBuf 
 {
     long mtype;       /* message type, must be > 0 */
-    char mtext[4];    /* message data */
+    char mtext[40];    /* message data */
 };
+
+#define MSG_TYPE  1
 
 #define Dbg  printf("%s (%d) \r\n", __FUNCTION__, __LINE__)
 static void * ThreadExe(void *p)
 {
-    Dbg;
     (static_cast<CActive*>(p))->Run();
 
     return NULL;
@@ -66,7 +69,7 @@ T_HANDLE TaskCreate(	const char * const pcName,
     pthread_attr_t attr;
     int result;
 
-    *Q = QueueCreate(0, 0);
+    *Q = QueueCreate((uint32_t)pvParameters, 0);
 
     result = pthread_attr_init(&attr);
     ASSERT(result == 0);
@@ -85,25 +88,15 @@ T_HANDLE TaskCreate(	const char * const pcName,
 
     pthread_attr_setstacksize(&attr, usStackDepth);
 
-    Dbg;
     int err = pthread_create(&CreatedTask, &attr, &ThreadExe, pvParameters);
-        Dbg;
+
     pthread_attr_destroy(&attr);
-    Dbg;
+
     if (err != 0) 
     {
-        Dbg;
-        // Creating p-thread with the SCHED_FIFO policy failed. Most likely
-        // this application has no superuser privileges, so we just fall
-        // back to the default SCHED_OTHER policy and priority 0.
-        //
-        //pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
-        //param.sched_priority = 0;
-        //pthread_attr_setschedparam(&attr, &param);
         err = pthread_create(&CreatedTask, NULL, &ThreadExe, pvParameters);
-        printf("err = %d\r\n", err);
     }
-    Dbg;
+
     //pthread_attr_destroy(&attr);
     //Dbg;
 
@@ -111,23 +104,54 @@ T_HANDLE TaskCreate(	const char * const pcName,
     return (T_HANDLE)CreatedTask;
 }
 
+void QueueClear(Q_HANDLE Q)
+{
+    MsgBuf mbuf;
+    int MsgId = (int)Q;
+    
+    while (-1 != msgrcv((int)Q, &mbuf, sizeof(void *), MSG_TYPE, MSG_NOERROR | IPC_NOWAIT));
+}
 
 Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 {
-
-    key_t MsgKey = ftok(".", 89);
-    int MsgId = msgget(MsgKey, IPC_CREAT | 0x0666);
-    perror("msg id: ");
+#if USE_MQV == 1
+    key_t MsgKey = ftok(".", uxQueueLength);
+    int MsgId = msgget(MsgKey, IPC_CREAT | 0666);
+    perror("msgget");
+    LOG_DEBUG("msg id: %d\r\n", MsgId);
+    
     ASSERT(MsgId != -1);
+
+    QueueClear(MsgId);
+
     return (Q_HANDLE)MsgId;
+
+#else
+    struct mq_attr attr;
+    attr.mq_flags = 0;
+    attr.mq_maxmsg = uxQueueLength;
+    attr.mq_msgsize = 20;
+    attr.mq_curmsgs = 0;
+
+    mq_cmd = mq_open("/mq_test", O_RDWR |O_CREAT, 0666, &attr); //为什么要加 / ，否则打开失败
+	if (mq_cmd < 0){
+		printf("mq_open error: %d \n",mq_cmd);
+	}else{
+		printf("mq_open success: %d \n",mq_cmd);
+	}
+
+    return (Q_HANDLE)MsgId;
+#endif
 }
 
 bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
 {
+#if USE_MQV == 1    
     MsgBuf mbuf;
-//Dbg;
-    int result = msgrcv((int)Q, &mbuf, sizeof(mbuf.mtext), 1, 0);
-    perror("msg id: ");
+
+    int result = msgrcv((int)Q, &mbuf, sizeof(void *), MSG_TYPE, 0);
+    //perror("msgrcv");
+    //LOG_DEBUG("%s: addr = %llx \r\n", __FUNCTION__, *(uint64_t*)mbuf.mtext);
     if (-1 == result)
     {
         return false;
@@ -135,20 +159,38 @@ bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
     else
     {
         memcpy(pvBuffer, mbuf.mtext, sizeof(void *));
-
         return true;
     }
+#else
+
+    mq_re
+
+#endif
+
 }
 
 
-bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
+bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
 {
+#if USE_MQV == 1      
     MsgBuf mbuf;
-    mbuf.mtype = 1;
-Dbg;
-    memcpy(&mbuf.mtext, (void *)&p, sizeof(mbuf.mtext));
+    mbuf.mtype = MSG_TYPE;
+    memcpy(&mbuf.mtext, (void *)&P, sizeof(void *));
+    //LOG_DEBUG("%s: addr = %llx \r\n", __FUNCTION__, *(uint64_t*)mbuf.mtext);
+    int result = msgsnd((int)Q, &mbuf, sizeof(void *), 0);
+    //perror("msgsnd");
+    if (-1 == result)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 
-    return msgsnd((int)q, &mbuf, sizeof(mbuf.mtext), 0) != -1;
+#else
+
+#endif    
 }
 
 static pthread_mutex_t *g_CriticalMutex = NULL;

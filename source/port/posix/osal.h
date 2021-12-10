@@ -24,24 +24,26 @@
 *****************************************************************************/
 #include <stdint.h>
 #include <assert.h>
-
+#include <stdio.h>
 
 #pragma once
 
 #define MAX_PRIORITIES 			10
-#define MINIMAL_STACK_SIZE 		1000
+#define MINIMAL_STACK_SIZE 		1024
 #define MAX_DELAY 				((long)-1)
 #define TICK_RATE_MS			10
 #define MilliSecond(t)  		((t) / TICK_RATE_MS)
 
 #define ASSERT   				assert
 
-#define OS_LOG
+#define OS_LOG					printf
 
-#define LOG_ERROR
-#define LOG_DEBUG
-#define LOG_WARNING
-#define LOG_INFO				
+#define LOG_ERROR				OS_LOG
+#define LOG_DEBUG				OS_LOG
+#define LOG_WARNING				OS_LOG
+#define LOG_INFO				OS_LOG					
+
+#define LOG_POS					OS_LOG("%s(%d)\r\n", __FUNCTION__, __LINE__)
 
 typedef void *Q_HANDLE;
 typedef void *T_HANDLE;
@@ -54,7 +56,7 @@ T_HANDLE TaskCreate(const char *const pcName,
 Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
 bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
 
-bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
+bool QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
 void OS_EnterCritical(void);
 void OS_ExitCritical(void);

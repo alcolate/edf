@@ -88,10 +88,10 @@ bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
 }
 
 
-bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
+bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
 {
 
-    BOOL status = PostThreadMessage ( (DWORD)q , WM_USER, (WPARAM)p, 0 );
+    BOOL status = PostThreadMessage ( (DWORD)Q , WM_USER, (WPARAM)P, 0 );
 
     return status;
 }

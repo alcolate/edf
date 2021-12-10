@@ -54,7 +54,7 @@ T_HANDLE TaskCreate(const char *const pcName,
 Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
 bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
 
-bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
+bool QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
 void OS_EnterCritical(void);
 void OS_ExitCritical(void);
