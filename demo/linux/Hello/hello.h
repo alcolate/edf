@@ -72,7 +72,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(1000 + (((uint32_t)this) % 10)), 0U);
+			m_Time.Trigger(MilliSecond(20 + (((uint32_t)this) % 10)), 0U);
 			{
 				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);
@@ -102,7 +102,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(1000 + (((uint32_t)this) % 10)), 0U);
+			m_Time.Trigger(MilliSecond(20 + (((uint32_t)this) % 10)), 0U);
 			{
 				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);

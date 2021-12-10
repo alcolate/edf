@@ -28,7 +28,7 @@
 namespace Edf
 {
 
-CTimeEvent *gTimeEvts[10]; /* all TimeEvents in the application */
+CTimeEvent *gTimeEvts[100]; /* all TimeEvents in the application */
 uint_fast8_t gTimeEvtsNum; /* current number of TimeEvents */
 
 CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)

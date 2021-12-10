@@ -69,7 +69,7 @@ T_HANDLE TaskCreate(	const char * const pcName,
     pthread_attr_t attr;
     int result;
 
-    *Q = QueueCreate((uint32_t)pvParameters, 0);
+    *Q = QueueCreate(0, 0);
 
     result = pthread_attr_init(&attr);
     ASSERT(result == 0);
@@ -115,8 +115,11 @@ void QueueClear(Q_HANDLE Q)
 Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 {
 #if USE_MQV == 1
-    key_t MsgKey = ftok(".", uxQueueLength);
+    static int proj_id = 0;
+    ASSERT(proj_id < 255);
+    key_t MsgKey = ftok(".", proj_id ++);
     int MsgId = msgget(MsgKey, IPC_CREAT | 0666);
+    LOG_DEBUG("key id = %x, key = %x, msgId = %x \r\n", uxQueueLength, MsgKey, MsgId);
     perror("msgget");
     LOG_DEBUG("msg id: %d\r\n", MsgId);
     
