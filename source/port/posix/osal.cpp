@@ -199,7 +199,7 @@ bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
 static pthread_mutex_t *g_CriticalMutex = NULL;
 void OS_EnterCritical(void)
 {
-    if (g_CriticalMutex == 0)
+    if (g_CriticalMutex == NULL)
     {
         static pthread_mutex_t CriticalMutex;
         if (0 != pthread_mutex_init(&CriticalMutex, NULL))

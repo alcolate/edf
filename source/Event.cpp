@@ -38,16 +38,28 @@ Event::~Event()
 void Event::IncRef(void)
 {
     OS_EnterCritical();
-    RefCount ++;
+    if (DynamicAlloc)
+    {
+        RefCount ++;
+        LOG_DEBUG("bb: %X\r\n", RefCount);
+    }
+    
     OS_ExitCritical();
 }
 void Event::DecRef(void)
 {
+    bool NeedFree = false;
     OS_EnterCritical();
-    RefCount --;
+    if (DynamicAlloc)
+    {
+        LOG_DEBUG("aa: %X\r\n", RefCount);
+        
+        RefCount --;
+        NeedFree = (RefCount == 0);
+    }
     OS_ExitCritical();
 
-    if (RefCount == 0 && DynamicAlloc)
+    if (NeedFree && DynamicAlloc)
     {
         delete this;
     }

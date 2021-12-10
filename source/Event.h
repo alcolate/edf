@@ -49,7 +49,7 @@ public:
 	virtual ~Event();
 	Signal Sig; 
 	uint32_t	RefCount;
-	bool        DynamicAlloc;
+	const bool  DynamicAlloc;
 	void IncRef(void);
 	void DecRef(void);
 

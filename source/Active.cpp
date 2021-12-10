@@ -71,9 +71,8 @@ void CActive::Run(void)
 
 void CActive::EventLoop()
 {
-	
 
-	static Event const initEvt = { INIT_SIG };
+	static Event const initEvt(INIT_SIG);
 	
 	this->Dispatcher(&initEvt);
 
@@ -100,14 +99,14 @@ void CActive::Dispatcher(Event const * const e)
 		break;
 
 	case ENTRY_SIG:
-#ifdef TRACE_STATE == 1
+#if (TRACE_STATE == 1)
 		LOG_DEBUG("Enter:\t%s of %s\r\n", m_StateName, m_Name);
 #endif
 		RUN_STATE();
 		break;
 
 	case EXIT_SIG:
-#ifdef TRACE_STATE == 1
+#if (TRACE_STATE == 1)
 		LOG_DEBUG("Exit:\t%s of %s\r\n", m_StateName, m_Name);
 #endif
 		RUN_STATE();

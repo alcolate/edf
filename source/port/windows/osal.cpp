@@ -96,21 +96,27 @@ bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
     return status;
 }
 
-HANDLE  g_hMutex = NULL;
+CRITICAL_SECTION*  g_hMutex = NULL;
+
 void OS_EnterCritical(void)
 {
     if (g_hMutex == NULL)
     {
-        g_hMutex = CreateMutex(NULL, FALSE, NULL);
+        static CRITICAL_SECTION l_win32CritSect;
+        InitializeCriticalSection(&l_win32CritSect);
+        g_hMutex = &l_win32CritSect;
         ASSERT(g_hMutex != NULL);   
     }
 
-    WaitForSingleObject(g_hMutex, INFINITE);
+    EnterCriticalSection(g_hMutex);
+
+    EnterCriticalSection(g_hMutex);
+
 }
 void OS_ExitCritical(void)
 {
     ASSERT(g_hMutex != NULL);
-    ReleaseMutex(g_hMutex);
+    LeaveCriticalSection(g_hMutex);
 }
 
 /*..........................................................................*/
