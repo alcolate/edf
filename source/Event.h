@@ -50,7 +50,7 @@ public:
 	Signal Sig; 
 	uint32_t	RefCount;
 	const bool  DynamicAlloc;
-	void IncRef(void);
+	void IncRef(uint32_t Ref);
 	void DecRef(void);
 
 };

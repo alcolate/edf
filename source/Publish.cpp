@@ -40,7 +40,7 @@ public:
 
 	void Update(const Event * const e, bool FromISR = false)
 	{
-		const_cast<Event *>(e)->IncRef();
+		//const_cast<Event *>(e)->IncRef();
 		if (false == const_cast<CActive *>(m_Act)->Post(e, FromISR))
 		{
 			const_cast<Event *>(e)->DecRef();
@@ -103,10 +103,21 @@ void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 
 void CPublisher::Publish(Event const * const e, bool FromISR)
 {
+	uint32_t Ref = 0;
+
 	ASSERT(e->Sig < MAX_SIG);
 
 	CSubscriber *suber = m_Subs[e->Sig];
+	
+	while (suber)
+	{		
+		Ref ++;
+		suber = suber->m_Next;
+	}
 
+	const_cast<Event *>(e)->IncRef(Ref);
+
+	suber = m_Subs[e->Sig];
 	while (suber)
 	{		
 		suber->Update(e, FromISR);

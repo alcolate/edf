@@ -35,34 +35,32 @@ Event::~Event()
 {
     
 }
-void Event::IncRef(void)
+void Event::IncRef(uint32_t Ref)
 {
     OS_EnterCritical();
     if (DynamicAlloc)
     {
-        RefCount ++;
-        LOG_DEBUG("bb: %X\r\n", RefCount);
-    }
-    
+        //LOG_ERROR("event add: %llX,  %x\r\n", (long long)this, RefCount);
+        RefCount += Ref;
+    }    
     OS_ExitCritical();
 }
 void Event::DecRef(void)
 {
-    bool NeedFree = false;
     OS_EnterCritical();
     if (DynamicAlloc)
     {
-        LOG_DEBUG("aa: %X\r\n", RefCount);
-        
         RefCount --;
-        NeedFree = (RefCount == 0);
+        //LOG_ERROR("event delete: %llX,  %x\r\n", (long long)this, RefCount);
+    
+        if (RefCount == 0)
+        {            
+            delete this;
+        }
     }
     OS_ExitCritical();
 
-    if (NeedFree && DynamicAlloc)
-    {
-        delete this;
-    }
+
 }
 
 }
