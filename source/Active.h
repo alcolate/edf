@@ -72,6 +72,8 @@ public:
 
 	//State m_State;
 
+public:
+	char* m_Name;
 private:
 	T_HANDLE m_Thread;   
     Q_HANDLE m_Queue;    
@@ -80,7 +82,7 @@ private:
 
 	enum {EQ_SIZE = 10};
 
-	char *m_Name;
+
 
 public:
 	const char* m_StateName;

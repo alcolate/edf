@@ -36,11 +36,18 @@ int main()
     CHello::Instance()->Start();
     CWorld::Instance()->Start();
 
-    CHello* hello[6];
-    //for (int i = 0; i < 6; i++)
+    CHello* hello[5];
+    for (int i = 0; i < sizeof(hello) / sizeof(hello[0]); i++)
     {
-   //     hello[i] = new CHello();
-   //     hello[i]->Start();
+        hello[i] = new CHello();
+        hello[i]->Start();
+    }
+
+    CWorld* world[5];
+    for (int i = 0; i < sizeof(world)/sizeof(world[0]); i++)
+    {
+        world[i] = new CWorld();
+        world[i]->Start();
     }
 
     vApplicationTickHook();

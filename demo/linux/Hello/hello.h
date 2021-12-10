@@ -51,7 +51,10 @@ class CHello : public CActive
 public:
 	CHello() : CActive((char*)"Hello"), m_Time(TIMEOUT_SIG, this)
 	{
-
+		static int ObjCount = 0;
+		char* name = new char[50];
+		sprintf(name, "%s%3d", m_Name, ObjCount ++);
+		m_Name = name;
 	}
 
 	static CHello* Instance()
@@ -141,7 +144,10 @@ class CWorld : public CActive
 public:
 	CWorld() : CActive((char*)"World")
 	{
-
+		static int ObjCount = 0;
+		char* name = new char[50];
+		sprintf(name, "%s%3d", m_Name, ObjCount ++);
+		m_Name = name;
 	}
 
 	static CWorld* Instance()
