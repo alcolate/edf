@@ -77,7 +77,7 @@ void TimeEvent_tickFromISR()
 		{
 			if (--t->m_Timeout == 0U)  
 			{
-				QueueSend(t->m_Act->Q(), t, true );
+				t->m_Act->Post(t, true );
 				t->m_Timeout = t->m_Interval;
 			}
 		}

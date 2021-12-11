@@ -59,6 +59,7 @@ void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 
 bool CActive::Post(Event const *const e, bool FromISR)
 {
+	LOG_DEBUG("%s post e = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
 	bool result = QueueSend(Q(), e, FromISR);
 	ASSERT(result);
 	return result;
@@ -81,6 +82,7 @@ void CActive::EventLoop()
 		Event* e;
 		if (QueueReceive(this->m_Queue, &e, MAX_DELAY))
 		{			
+			LOG_DEBUG("%s get event sig = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
 			this->Dispatcher(e);
 
 			e->DecRef();

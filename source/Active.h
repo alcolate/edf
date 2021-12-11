@@ -80,7 +80,7 @@ private:
     uint32_t m_Priority;
 	uint32_t m_StackSize;
 
-	enum {EQ_SIZE = 10};
+	enum {EQ_SIZE = 100};
 
 
 

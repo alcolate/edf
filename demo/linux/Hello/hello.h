@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-#include "edf.h"
+#include "Edf.h"
 
 
 class CTestEvent : public Event

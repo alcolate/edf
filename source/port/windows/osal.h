@@ -41,7 +41,9 @@
 #define LOG_ERROR				OS_LOG
 #define LOG_DEBUG				OS_LOG
 #define LOG_WARNING				OS_LOG
-#define LOG_INFO				OS_LOG	
+#define LOG_INFO				OS_LOG					
+
+#define LOG_POS					OS_LOG("%s(%d)\r\n", __FUNCTION__, __LINE__)
 
 typedef void *Q_HANDLE;
 typedef void *T_HANDLE;
@@ -52,7 +54,7 @@ T_HANDLE TaskCreate(const char *const pcName,
 		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
 Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
-bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
+bool QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
 
 bool QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 

@@ -110,8 +110,6 @@ void OS_EnterCritical(void)
 
     EnterCriticalSection(g_hMutex);
 
-    EnterCriticalSection(g_hMutex);
-
 }
 void OS_ExitCritical(void)
 {

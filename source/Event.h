@@ -55,4 +55,7 @@ public:
 
 };
 
+extern Event const EntryEvent;
+extern Event const ExitEvent;
+
 } // namaspace Edf

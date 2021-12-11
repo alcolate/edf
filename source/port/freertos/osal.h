@@ -32,17 +32,20 @@
 #define MAX_PRIORITIES 			configMAX_PRIORITIES
 #define MINIMAL_STACK_SIZE 		configMINIMAL_STACK_SIZE
 #define MAX_DELAY 				portMAX_DELAY
+#define TICK_RATE_MS			portTICK_RATE_MS
 
-#define MilliSecond(t)  		((t) / portTICK_RATE_MS)
+#define MilliSecond(t)  		((t) / TICK_RATE_MS)
 
 #define ASSERT   				configASSERT
 
 #define OS_LOG
 
-#define LOG_ERROR
-#define LOG_DEBUG
-#define LOG_WARNING
-#define LOG_INFO			
+#define LOG_ERROR				OS_LOG
+#define LOG_DEBUG				OS_LOG
+#define LOG_WARNING				OS_LOG
+#define LOG_INFO				OS_LOG			
+
+#define LOG_POS					OS_LOG("%s(%d)\r\n", __FUNCTION__, __LINE__)
 
 typedef void *Q_HANDLE;
 typedef void *T_HANDLE;
@@ -53,9 +56,9 @@ T_HANDLE TaskCreate(const char *const pcName,
 		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
 Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
-bool QueueReceive(Q_HANDLE Q, void *const pvBuffer, uint32_t TimeOut);
+bool QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
 
-bool QueueSend(Q_HANDLE q, void const *const p, bool FromISR = false);
+bool QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
 #define OS_EnterCritical()  taskENTER_CRITICAL()
 #define OS_ExitCritical()   taskEXIT_CRITICAL()

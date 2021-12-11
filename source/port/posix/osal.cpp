@@ -35,6 +35,8 @@
 #include <pthread.h>
 #include <sys/msg.h>
 #include <cerrno>
+#include <mqueue.h>
+#include <time.h>
 #include <stdio.h>
 #include "osal.h"
 #include "Edf.h"
@@ -47,9 +49,20 @@ struct MsgBuf
     char mtext[40];    /* message data */
 };
 
+struct MQMessage
+{
+    long Type;
+    time_t TimeStamp;
+    void * P;
+};
+
 #define MSG_TYPE  1
 
-#define Dbg  printf("%s (%d) \r\n", __FUNCTION__, __LINE__)
+#define MSGID_TO_HANDLE(id)  ((Q_HANDLE)((id) + 1))
+#define HANDLE_TO_MSGID(handle)  ((int)(handle) - 1)
+
+static time_t StartTime = (time_t)0;
+
 static void * ThreadExe(void *p)
 {
     (static_cast<CActive*>(p))->Run();
@@ -69,7 +82,12 @@ T_HANDLE TaskCreate(	const char * const pcName,
     pthread_attr_t attr;
     int result;
 
-    *Q = QueueCreate(0, 0);
+    if (StartTime == 0)
+    {
+        time(&StartTime);
+    }
+
+    *Q = QueueCreate(Q_Size, 0);
 
     result = pthread_attr_init(&attr);
     ASSERT(result == 0);
@@ -82,7 +100,7 @@ T_HANDLE TaskCreate(	const char * const pcName,
     param.sched_priority = uxPriority
                            + (sched_get_priority_max(SCHED_FIFO)
                               - MAX_PRIORITIES - 3U);
-    printf("prio = %d\r\n", param.sched_priority);
+    //LOG_DEBUG("prio = %d\r\n", param.sched_priority);
     result = pthread_attr_setschedparam(&attr, &param);
     ASSERT(result == 0);
 
@@ -109,7 +127,7 @@ void QueueClear(Q_HANDLE Q)
     MsgBuf mbuf;
     int MsgId = (int)Q;
     
-    while (-1 != msgrcv((int)Q, &mbuf, sizeof(void *), MSG_TYPE, MSG_NOERROR | IPC_NOWAIT));
+    while (-1 != msgrcv(HANDLE_TO_MSGID(Q), &mbuf, sizeof(void *), MSG_TYPE, MSG_NOERROR | IPC_NOWAIT));
 }
 
 Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
@@ -125,48 +143,72 @@ Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
     
     ASSERT(MsgId != -1);
 
-    QueueClear(MsgId);
+    QueueClear(MSGID_TO_HANDLE(MsgId));
 
-    return (Q_HANDLE)MsgId;
+    return MSGID_TO_HANDLE(MsgId);
 
 #else
     struct mq_attr attr;
     attr.mq_flags = 0;
     attr.mq_maxmsg = uxQueueLength;
-    attr.mq_msgsize = 20;
+    attr.mq_msgsize = sizeof(MQMessage);
     attr.mq_curmsgs = 0;
+    static uint32_t qid = 0;
+    char qname[20] = {0};
+    snprintf(qname, sizeof(qname) - 1, "%s%03d", "/mqedf", ++qid);
 
-    mq_cmd = mq_open("/mq_test", O_RDWR |O_CREAT, 0666, &attr); //为什么要加 / ，否则打开失败
-	if (mq_cmd < 0){
-		printf("mq_open error: %d \n",mq_cmd);
-	}else{
-		printf("mq_open success: %d \n",mq_cmd);
+    mqd_t mq = mq_open(qname, O_RDWR | O_CREAT, 0666, &attr);
+	if (mq < 0)
+    {
+		perror("mq_open");
+	}
+    else
+    {
+		printf("mq_open success: %d \n",mq);
 	}
 
-    return (Q_HANDLE)MsgId;
+    return (Q_HANDLE)mq;
 #endif
 }
 
-bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
+bool QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
 {
 #if USE_MQV == 1    
     MsgBuf mbuf;
 
-    int result = msgrcv((int)Q, &mbuf, sizeof(void *), MSG_TYPE, 0);
+    int result = msgrcv(HANDLE_TO_MSGID(Q), &mbuf, sizeof(void *), MSG_TYPE, 0);
     //perror("msgrcv");
     //LOG_DEBUG("%s: addr = %llx \r\n", __FUNCTION__, *(uint64_t*)mbuf.mtext);
     if (-1 == result)
     {
+        perror("msgrcv");
         return false;
     }
     else
     {
-        memcpy(pvBuffer, mbuf.mtext, sizeof(void *));
+        memcpy(P, mbuf.mtext, sizeof(void *));
         return true;
     }
 #else
-
-    mq_re
+    MQMessage msg;
+    msg.TimeStamp = 0;
+    int result = mq_receive((mqd_t)Q, (char *)&msg, sizeof(MQMessage), NULL);
+    memcpy(P, (char*)&(msg.P), sizeof(void *));
+    LOG_DEBUG("%s: msg = %d, addr = %llx \r\n", __FUNCTION__, (mqd_t)Q, *(uint64_t*)P);
+    if (result == -1)
+    {
+        perror("mq_receive");        
+        return false;
+    }
+    else
+    {       
+        if (msg.TimeStamp < StartTime) 
+        {
+            LOG_DEBUG("msg = %d time out (start = %d, stamp = %d)\r\n", (mqd_t)Q, StartTime, msg.TimeStamp);
+            return false;
+        }
+        return true;
+    }
 
 #endif
 
@@ -180,10 +222,11 @@ bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
     mbuf.mtype = MSG_TYPE;
     memcpy(&mbuf.mtext, (void *)&P, sizeof(void *));
     //LOG_DEBUG("%s: addr = %llx \r\n", __FUNCTION__, *(uint64_t*)mbuf.mtext);
-    int result = msgsnd((int)Q, &mbuf, sizeof(void *), 0);
+    int result = msgsnd(HANDLE_TO_MSGID(Q), &mbuf, sizeof(void *), 0);
     //perror("msgsnd");
     if (-1 == result)
     {
+        perror("msgsnd");
         return false;
     }
     else
@@ -192,7 +235,25 @@ bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
     }
 
 #else
-
+    LOG_DEBUG("%s: msg = %d, addr = %llx \r\n", __FUNCTION__, (mqd_t)Q, (uint64_t)P);
+    MQMessage msg;
+    msg.Type = 0;
+    msg.P = P;
+    time(&msg.TimeStamp);  
+    struct timespec timeout;
+    timeout.tv_sec = msg.TimeStamp + 1;
+    timeout.tv_nsec = 0;  
+    int result = mq_timedsend((mqd_t)Q, (char *)&msg, sizeof(MQMessage), 0, &timeout);
+    if (result == -1)
+    {
+        perror("mq_send");
+        ASSERT(false);
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 #endif    
 }
 

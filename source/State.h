@@ -49,18 +49,15 @@ using namespace Edf;
 		do {\
 			m_State = state; \
 			m_StateName = #state; \
-			static Event e_entry (ENTRY_SIG);\
-			this->Post(&e_entry); \
+			this->Post(&EntryEvent); \
 		}while(0)
 
 #define TRANS(to) \
 		do {\
-			static Event e_exit (EXIT_SIG);\
-			this->Post(&e_exit); \
+			this->Post(&ExitEvent); \
 			m_NextState = to;\
 			m_NextStateName = #to;\
-			static Event e_entry (ENTRY_SIG);\
-			this->Post(&e_entry); \
+			this->Post(&EntryEvent); \
 		}while(0)
 
 

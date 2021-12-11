@@ -60,7 +60,7 @@ CPP_SRCS += \
 	osal.cpp
 
 
-LIBS += -lpthread
+LIBS += -lpthread -lrt
 
 endif
 

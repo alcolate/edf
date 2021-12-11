@@ -39,9 +39,9 @@ void Event::IncRef(uint32_t Ref)
 {
     OS_EnterCritical();
     if (DynamicAlloc)
-    {
-        //LOG_ERROR("event add: %llX,  %x\r\n", (long long)this, RefCount);
+    {        
         RefCount += Ref;
+        LOG_DEBUG("event add: %llX,  %d\r\n", (long long)this, RefCount);
     }    
     OS_ExitCritical();
 }
@@ -51,7 +51,7 @@ void Event::DecRef(void)
     if (DynamicAlloc)
     {
         RefCount --;
-        //LOG_ERROR("event delete: %llX,  %x\r\n", (long long)this, RefCount);
+        LOG_DEBUG("event delete: %llX,  %d\r\n", (long long)this, RefCount);
     
         if (RefCount == 0)
         {            
@@ -62,5 +62,8 @@ void Event::DecRef(void)
 
 
 }
+
+Event const EntryEvent (ENTRY_SIG);
+Event const ExitEvent (EXIT_SIG);
 
 }
