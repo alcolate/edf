@@ -58,5 +58,5 @@ bool QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
 
 bool QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
-void OS_EnterCritical(void);
-void OS_ExitCritical(void);
+uint32_t OS_EnterCritical(bool FromISR = false);
+void OS_ExitCritical(uint32_t Flag = 0, bool FromISR = false);

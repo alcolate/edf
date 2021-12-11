@@ -115,7 +115,7 @@ void CPublisher::Publish(Event const * const e, bool FromISR)
 		suber = suber->m_Next;
 	}
 
-	const_cast<Event *>(e)->IncRef(Ref);
+	const_cast<Event *>(e)->IncRef(Ref, FromISR);
 
 	suber = m_Subs[e->Sig];
 	while (suber)

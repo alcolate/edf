@@ -39,7 +39,8 @@ public:
 	}
 	virtual ~CTestEvent()
 	{
-		LOG_DEBUG("Recycle: %s, %s \r\n", __FUNCTION__,  m_Name);
+		static long long counter = 0;
+		LOG_INFO("Recycle: %s, %s, %lld \r\n", __FUNCTION__,  m_Name, ++counter);
 		delete [] m_Name;
 	}
 

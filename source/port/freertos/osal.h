@@ -30,7 +30,7 @@
 #pragma once
 
 #define MAX_PRIORITIES 			configMAX_PRIORITIES
-#define MINIMAL_STACK_SIZE 		configMINIMAL_STACK_SIZE
+#define MINIMAL_STACK_SIZE 		(configMINIMAL_STACK_SIZE * 4)
 #define MAX_DELAY 				portMAX_DELAY
 #define TICK_RATE_MS			portTICK_RATE_MS
 
@@ -60,6 +60,6 @@ bool QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
 
 bool QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
-#define OS_EnterCritical()  taskENTER_CRITICAL()
-#define OS_ExitCritical()   taskEXIT_CRITICAL()
+uint32_t OS_EnterCritical(bool FromISR = false);
+void OS_ExitCritical(uint32_t Flag = 0, bool FromISR = false);
 

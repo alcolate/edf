@@ -40,6 +40,7 @@ public:
 	/*..........................................................................*/
 	CTimeEvent(Signal Sig, CActive *Act);
 
+	virtual ~CTimeEvent() {};
 	/*..........................................................................*/
 	void Trigger(uint32_t Timeout, uint32_t Interval) ;
 

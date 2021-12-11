@@ -258,7 +258,7 @@ bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
 }
 
 static pthread_mutex_t *g_CriticalMutex = NULL;
-void OS_EnterCritical(void)
+uint32_t OS_EnterCritical(bool FromISR)
 {
     if (g_CriticalMutex == NULL)
     {
@@ -272,8 +272,10 @@ void OS_EnterCritical(void)
     }
 
     pthread_mutex_lock(g_CriticalMutex);
+
+    return 0;
 }
-void OS_ExitCritical(void)
+void OS_ExitCritical(uint32_t Flag, bool FromISR)
 {
     ASSERT(g_CriticalMutex != NULL);
     pthread_mutex_unlock(g_CriticalMutex);

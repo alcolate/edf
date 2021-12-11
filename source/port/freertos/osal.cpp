@@ -79,6 +79,24 @@ bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 }
 
 
+uint32_t OS_EnterCritical(bool FromISR)
+{
+	uint32_t Flag = 0;
+
+	if (FromISR)
+		Flag = taskENTER_CRITICAL_FROM_ISR();
+	else
+		taskENTER_CRITICAL();
+
+	return Flag;
+}
+void OS_ExitCritical(uint32_t Flag, bool FromISR)
+{
+	if (FromISR)
+		taskEXIT_CRITICAL_FROM_ISR(Flag);
+	else
+		taskEXIT_CRITICAL();
+}
 /*..........................................................................*/
 
 

@@ -69,7 +69,7 @@ Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
     return 0;
 }
 
-bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
+bool QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
 {
     MSG    msg;
 
@@ -81,7 +81,7 @@ bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
     }
     else
     {
-        memcpy(pvBuffer, &(msg.wParam), sizeof(msg.wParam));
+        memcpy(P, &(msg.wParam), sizeof(msg.wParam));
 
         return TRUE;
     }
@@ -98,7 +98,7 @@ bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
 
 CRITICAL_SECTION*  g_hMutex = NULL;
 
-void OS_EnterCritical(void)
+uint32_t OS_EnterCritical(bool FromISR)
 {
     if (g_hMutex == NULL)
     {
@@ -109,9 +109,9 @@ void OS_EnterCritical(void)
     }
 
     EnterCriticalSection(g_hMutex);
-
+    return 0;
 }
-void OS_ExitCritical(void)
+void OS_ExitCritical(uint32_t Flag, bool FromISR)
 {
     ASSERT(g_hMutex != NULL);
     LeaveCriticalSection(g_hMutex);

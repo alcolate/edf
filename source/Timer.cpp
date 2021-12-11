@@ -50,6 +50,7 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 {
 	OS_EnterCritical();
+	LOG_DEBUG("trigger timer %d\r\n", Timeout);
 	this->m_Timeout = Timeout;
 	this->m_Interval = Interval;
 	OS_ExitCritical();

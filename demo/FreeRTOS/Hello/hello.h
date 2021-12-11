@@ -26,9 +26,8 @@
 
 #include <string.h>
 
-#include "edf.h"
-
-#pragma warning(disable : 4996)
+#include "Edf.h"
+#include "shell.h"
 
 class CTestEvent : public Event
 {
@@ -40,7 +39,8 @@ public:
 	}
 	virtual ~CTestEvent()
 	{
-		LOG_INFO("Recycle: %s, %s \r\n", __FUNCTION__,  m_Name);
+		static long counter = 0;
+		SH_Printf("Recycle: %s, %s, %d \r\n", __FUNCTION__,  m_Name, ++counter);
 		delete [] m_Name;
 	}
 
