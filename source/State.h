@@ -39,6 +39,7 @@ using namespace Edf;
 		{\
 			m_State = m_NextState;\
 			m_StateName = m_NextStateName; \
+			Dispatcher(&EntryEvent);\
 		}
 
 #define STATE() (m_State)
@@ -59,7 +60,6 @@ using namespace Edf;
 				this->Post(&ExitEvent); \
 				m_NextState = to;\
 				m_NextStateName = #to;\
-				this->Post(&EntryEvent); \
 			}\
 		}while(0)
 
