@@ -54,10 +54,13 @@ using namespace Edf;
 
 #define TRANS(to) \
 		do {\
-			this->Post(&ExitEvent); \
-			m_NextState = to;\
-			m_NextStateName = #to;\
-			this->Post(&EntryEvent); \
+			if(m_State == m_NextState || m_NextState == 0)\
+			{\
+				this->Post(&ExitEvent); \
+				m_NextState = to;\
+				m_NextStateName = #to;\
+				this->Post(&EntryEvent); \
+			}\
 		}while(0)
 
 
