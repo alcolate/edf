@@ -97,7 +97,9 @@ void CActive::Dispatcher(Event const * const e)
 	{
 	case INIT_SIG: 
 		Initial();
-
+#if (TRACE_STATE == 1)
+		LOG_DEBUG("Init:\t%s of %s\r\n", m_StateName, m_Name);
+#endif
 		break;
 
 	case ENTRY_SIG:

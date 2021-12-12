@@ -70,8 +70,6 @@ public:
 		return m_Queue;
 	}
 
-	//State m_State;
-
 public:
 	char* m_Name;
 private:

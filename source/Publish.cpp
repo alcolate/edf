@@ -31,11 +31,20 @@ class CSubscriber
 public:
 	CActive const *  m_Act;
 	CSubscriber *m_Next;
+	uint32_t	m_Number;
 
 	CSubscriber(CActive const *  Act, CSubscriber *Next = 0)
 	{
 		this->m_Act = Act;
 		this->m_Next = Next;
+		if (Next)
+		{		
+			this->m_Number = Next->m_Number + 1;
+		}
+		else
+		{
+			this->m_Number = 1;
+		}
 	}
 
 	void Update(const Event * const e, bool FromISR = false)
@@ -90,34 +99,36 @@ void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
 {
 	ASSERT(Sig < MAX_SIG);
 
-	AddTail(&(m_Subs[Sig]), Act);
+	OS_EnterCritical();
+	
+	AddHead(&(m_Subs[Sig]), Act);
+	
+	OS_ExitCritical();
 
 }
 
 void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 {
 	ASSERT(Sig < MAX_SIG);
+	
+	OS_EnterCritical();
 
 	Delete(&(m_Subs[Sig]), Act);
+	
+	OS_ExitCritical();
 }
 
 void CPublisher::Publish(Event const * const e, bool FromISR)
 {
-	uint32_t Ref = 0;
-
 	ASSERT(e->Sig < MAX_SIG);
 
 	CSubscriber *suber = m_Subs[e->Sig];
 	
-	while (suber)
+	if (suber)
 	{		
-		Ref ++;
-		suber = suber->m_Next;
-	}
-
-	const_cast<Event *>(e)->IncRef(Ref, FromISR);
-
-	suber = m_Subs[e->Sig];
+		const_cast<Event *>(e)->IncRef(suber->m_Number, FromISR);
+	}	
+	
 	while (suber)
 	{		
 		suber->Update(e, FromISR);
