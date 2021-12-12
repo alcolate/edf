@@ -50,7 +50,7 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 {
 	OS_EnterCritical();
-	LOG_DEBUG("trigger timer %d\r\n", Timeout);
+	//LOG_DEBUG("trigger timer %d\r\n", Timeout);
 	this->m_Timeout = Timeout;
 	this->m_Interval = Interval;
 	OS_ExitCritical();
@@ -70,17 +70,25 @@ void CTimeEvent::UnTrigger()
 void TimeEvent_tickFromISR()
 {
 	uint_fast8_t i;
+	CActive *act;
 	for (i = 0U; i < Edf::gTimeEvtsNum; ++i)
 	{
 		Edf::CTimeEvent * t = Edf::gTimeEvts[i];
 		ASSERT(t); 
+		act = NULL;
+		uint32_t flag = OS_EnterCritical(true);
 		if (t->m_Timeout > 0U) 
 		{
 			if (--t->m_Timeout == 0U)  
 			{
-				t->m_Act->Post(t, true );
+				act = t->m_Act;
 				t->m_Timeout = t->m_Interval;
 			}
+		}
+		OS_ExitCritical(flag, true);
+		if (act != NULL)
+		{
+			act->Post(t, true);
 		}
 	}
 }

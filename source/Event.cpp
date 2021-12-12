@@ -43,7 +43,7 @@ void Event::IncRef(uint32_t Ref, bool FromISR)
     {        
     	ASSERT(RefCount == 0);
         RefCount = Ref;
-        LOG_DEBUG("event add: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
+        //LOG_DEBUG("event add: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
     }    
     OS_ExitCritical(flag, FromISR);
 }
@@ -54,7 +54,7 @@ void Event::DecRef(void)
     if (DynamicAlloc)
     {
         if (RefCount > 0) RefCount --;
-        LOG_DEBUG("event delete: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
+        //LOG_DEBUG("event delete: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
     
         ToFree = (RefCount == 0);
     }

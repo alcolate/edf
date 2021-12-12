@@ -127,7 +127,11 @@ void CPublisher::Publish(Event const * const e, bool FromISR)
 	if (suber)
 	{		
 		const_cast<Event *>(e)->IncRef(suber->m_Number, FromISR);
-	}	
+	}
+	else
+	{
+		const_cast<Event*>(e)->DecRef();
+	}
 	
 	while (suber)
 	{		

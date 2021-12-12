@@ -93,7 +93,7 @@ public:
 		case TEST_SIG:
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			break;
 		}
 		default:
@@ -122,7 +122,7 @@ public:
 		case TEST_SIG:
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			break;
 		}
 
@@ -177,7 +177,7 @@ public:
 		case TEST_SIG:
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			TRANS(&CWorld::State2);
 			break;
 		}
@@ -200,7 +200,7 @@ public:
 		case TEST_SIG:
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			TRANS(&CWorld::State1);
 			break;
 		}

@@ -26,7 +26,7 @@
 
 using namespace Edf;
 
-#define TRACE_STATE		1
+#define TRACE_STATE		0
 
 #define DEF_STATEMACHINE(Class) \
 		void (Class::*m_State)(Event const *const e){}; \
@@ -39,7 +39,7 @@ using namespace Edf;
 		{\
 			m_State = m_NextState;\
 			m_StateName = m_NextStateName; \
-			Dispatcher(&EntryEvent);\
+			RunState(&EntryEvent);\
 		}
 
 #define STATE() (m_State)
