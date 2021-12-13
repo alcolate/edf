@@ -100,10 +100,7 @@ void OS_ExitCritical(uint32_t Flag, bool FromISR)
 
 void OS_Start(void)
 {
-	while (1)
-	{
-		vTaskDelay(MilliSecond(1000));
-	}
+	vTaskStartScheduler();
 }
 /*..........................................................................*/
 
