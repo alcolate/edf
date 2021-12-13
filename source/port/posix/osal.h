@@ -49,14 +49,12 @@ typedef void *Q_HANDLE;
 typedef void *T_HANDLE;
 typedef void (*TaskExec)(void*);
 
-T_HANDLE TaskCreate(const char *const pcName,
+T_HANDLE OS_TaskCreate(const char *const pcName,
 		uint16_t usStackDepth, void *const pvParameters,
 		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
-Q_HANDLE QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
-bool QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
-
-bool QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
+bool OS_QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
+bool OS_QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
 uint32_t OS_EnterCritical(bool FromISR = false);
 void OS_ExitCritical(uint32_t Flag = 0, bool FromISR = false);

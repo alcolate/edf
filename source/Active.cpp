@@ -46,7 +46,7 @@ void CActive::Start()
 void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 {
 
-	this->m_Thread = TaskCreate(
+	this->m_Thread = OS_TaskCreate(
 			m_Name,
 			m_StackSize,               
 			this,                       
@@ -60,7 +60,7 @@ void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 bool CActive::Post(Event const *const e, bool FromISR)
 {
 	//LOG_DEBUG("%s post sig = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
-	bool result = QueueSend(Q(), e, FromISR);
+	bool result = OS_QueueSend(Q(), e, FromISR);
 	ASSERT(result);
 	return result;
 }
@@ -72,13 +72,14 @@ void CActive::Run(void)
 
 void CActive::EventLoop()
 {
+	Event* e;
 	
 	this->Dispatcher(&InitEvt);
 
 	for (;;) 
 	{
-		Event* e;
-		if (QueueReceive(this->m_Queue, &e, MAX_DELAY))
+
+		if (OS_QueueReceive(this->m_Queue, &e, MAX_DELAY))
 		{			
 			//LOG_DEBUG("%s get event sig = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
 			this->Dispatcher(e);

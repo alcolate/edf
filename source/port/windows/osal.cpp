@@ -27,16 +27,18 @@
 #include "osal.h"
 #include "Edf.h"
 
+Q_HANDLE OS_QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
+
 static DWORD WINAPI ThreadExe(LPVOID p) 
 {
-    QueueCreate(0, 0);
+    OS_QueueCreate(0, 0);
     
     (static_cast<CActive*>(p))->Run();
 
     return 0;
 }
 
-T_HANDLE TaskCreate(	const char * const pcName,
+T_HANDLE OS_TaskCreate(	const char * const pcName,
                         uint16_t usStackDepth,
                         void * const pvParameters,
                         uint32_t uxPriority, 
@@ -60,7 +62,7 @@ T_HANDLE TaskCreate(	const char * const pcName,
 }
 
 
-Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
+Q_HANDLE OS_QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 {
     MSG    msg;
 
@@ -69,7 +71,7 @@ Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
     return 0;
 }
 
-bool QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
+bool OS_QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
 {
     MSG    msg;
 
@@ -88,7 +90,7 @@ bool QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
 }
 
 
-bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
+bool OS_QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
 {
 
     BOOL status = PostThreadMessage ( (DWORD)Q , WM_USER, (WPARAM)P, 0 );

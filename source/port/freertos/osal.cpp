@@ -22,16 +22,18 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include <osal.h>
-
+#include "osal.h"
+#include "queue.h"
 #include "Edf.h"
+
+static Q_HANDLE OS_QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
 
 static void ThreadExe(void *p)
 {
     (static_cast<CActive*>(p))->Run();
 }
 
-T_HANDLE TaskCreate(    const char * const pcName,
+T_HANDLE OS_TaskCreate(    const char * const pcName,
                         uint16_t usStackDepth,
                         void * const pvParameters,
                         uint32_t uxPriority, 
@@ -40,7 +42,7 @@ T_HANDLE TaskCreate(    const char * const pcName,
 {
     T_HANDLE CreatedTask;
     
-    *Q = QueueCreate(Q_Size, sizeof(void *));
+    *Q = OS_QueueCreate(Q_Size, sizeof(void *));
 
     configASSERT(*Q);
 
@@ -50,17 +52,17 @@ T_HANDLE TaskCreate(    const char * const pcName,
 }
 
 
-Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
+Q_HANDLE OS_QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 {
     return xQueueCreate(uxQueueLength, uxItemSize);
 }
 
-bool QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
+bool OS_QueueReceive(Q_HANDLE Q, void * const pvBuffer, uint32_t TimeOut)
 {
     return xQueueReceive(Q, pvBuffer, TimeOut) == pdTRUE;
 }
 
-bool QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
+bool OS_QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 {
 	BaseType_t status;
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;

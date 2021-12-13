@@ -63,6 +63,8 @@ struct MQMessage
 
 static time_t StartTime = (time_t)0;
 
+Q_HANDLE OS_QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
+
 static void * ThreadExe(void *p)
 {
     (static_cast<CActive*>(p))->Run();
@@ -70,7 +72,7 @@ static void * ThreadExe(void *p)
     return NULL;
 }
 
-T_HANDLE TaskCreate(	const char * const pcName,
+T_HANDLE OS_TaskCreate(	const char * const pcName,
                         uint16_t usStackDepth,
                         void * const pvParameters,
                         uint32_t uxPriority, 
@@ -87,7 +89,7 @@ T_HANDLE TaskCreate(	const char * const pcName,
         time(&StartTime);
     }
 
-    *Q = QueueCreate(Q_Size, 0);
+    *Q = OS_QueueCreate(Q_Size, 0);
 
     result = pthread_attr_init(&attr);
     ASSERT(result == 0);
@@ -130,7 +132,7 @@ void QueueClear(Q_HANDLE Q)
     while (-1 != msgrcv(HANDLE_TO_MSGID(Q), &mbuf, sizeof(void *), MSG_TYPE, MSG_NOERROR | IPC_NOWAIT));
 }
 
-Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
+Q_HANDLE OS_QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 {
 #if USE_MQV == 1
     static int proj_id = 0;
@@ -161,17 +163,18 @@ Q_HANDLE QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 	if (mq < 0)
     {
 		perror("mq_open");
+        exit(0);
 	}
     else
     {
-		printf("mq_open success: %d \n",mq);
+		LOG_DEBUG("mq_open success: %d \n",mq);        
 	}
 
     return (Q_HANDLE)mq;
 #endif
 }
 
-bool QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
+bool OS_QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
 {
 #if USE_MQV == 1    
     MsgBuf mbuf;
@@ -194,7 +197,7 @@ bool QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
     msg.TimeStamp = 0;
     int result = mq_receive((mqd_t)Q, (char *)&msg, sizeof(MQMessage), NULL);
     memcpy(P, (char*)&(msg.P), sizeof(void *));
-    LOG_DEBUG("%s: msg = %d, addr = %llx \r\n", __FUNCTION__, (mqd_t)Q, *(uint64_t*)P);
+    //LOG_DEBUG("%s: msg = %d, addr = %llx \r\n", __FUNCTION__, (mqd_t)Q, *(uint64_t*)P);
     if (result == -1)
     {
         perror("mq_receive");        
@@ -204,7 +207,7 @@ bool QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
     {       
         if (msg.TimeStamp < StartTime) 
         {
-            LOG_DEBUG("msg = %d time out (start = %d, stamp = %d)\r\n", (mqd_t)Q, StartTime, msg.TimeStamp);
+            //LOG_DEBUG("msg = %d time out (start = %d, stamp = %d)\r\n", (mqd_t)Q, StartTime, msg.TimeStamp);
             return false;
         }
         return true;
@@ -215,7 +218,7 @@ bool QueueReceive(Q_HANDLE Q, void * const P, uint32_t TimeOut)
 }
 
 
-bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
+bool OS_QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
 {
 #if USE_MQV == 1      
     MsgBuf mbuf;
@@ -235,15 +238,11 @@ bool QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
     }
 
 #else
-    LOG_DEBUG("%s: msg = %d, addr = %llx \r\n", __FUNCTION__, (mqd_t)Q, (uint64_t)P);
+    //LOG_DEBUG("%s: msg = %d, addr = %llx \r\n", __FUNCTION__, (mqd_t)Q, (uint64_t)P);
     MQMessage msg;
     msg.Type = 0;
     msg.P = P;
-    time(&msg.TimeStamp);  
-    struct timespec timeout;
-    timeout.tv_sec = msg.TimeStamp + 1;
-    timeout.tv_nsec = 0;  
-    int result = mq_timedsend((mqd_t)Q, (char *)&msg, sizeof(MQMessage), 0, &timeout);
+    int result = mq_send((mqd_t)Q, (char *)&msg, sizeof(MQMessage), 0);
     if (result == -1)
     {
         perror("mq_send");
