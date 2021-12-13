@@ -117,18 +117,18 @@ void OS_ExitCritical(uint32_t Flag, bool FromISR)
     LeaveCriticalSection(g_hMutex);
 }
 
-/*..........................................................................*/
 
-extern void TimeEvent_tickFromISR();
-
-void vApplicationTickHook(void)
+void OS_Start(void)
 {
+    extern void TimeEvent_tickFromISR();
+    
     while (1)
     {
         Sleep(TICK_RATE_MS);
         TimeEvent_tickFromISR();
     }
-       
-
 }
+/*..........................................................................*/
+
+
 

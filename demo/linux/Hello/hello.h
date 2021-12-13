@@ -25,9 +25,12 @@
 #pragma once
 
 #include <string.h>
+#include <atomic>
 
 #include "Edf.h"
 
+std::atomic<uint32_t> create_c(0);
+std::atomic<uint32_t> recycle_c(0);
 
 class CTestEvent : public Event
 {
@@ -36,11 +39,13 @@ public:
 	{
 		m_Name = new char[strlen(Str) + 1];
 		strcpy(m_Name, Str);
+		uint32_t c = create_c++;
+		LOG_INFO("Create: %d, %s \r\n", c, m_Name);
 	}
 	virtual ~CTestEvent()
 	{
-		static long long counter = 0;
-		LOG_INFO("Recycle: %s, %s, %lld \r\n", __FUNCTION__,  m_Name, ++counter);
+		uint32_t c = recycle_c++;
+		LOG_INFO("Recycle: %d, %s \r\n", c,  m_Name);
 		delete [] m_Name;
 	}
 
@@ -93,7 +98,7 @@ public:
 		case TEST_SIG:
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			break;
 		}
 		default:
@@ -122,7 +127,7 @@ public:
 		case TEST_SIG:
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			break;
 		}
 
@@ -177,7 +182,7 @@ public:
 		case TEST_SIG:
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			TRANS(&CWorld::State2);
 			break;
 		}
@@ -200,7 +205,7 @@ public:
 		case TEST_SIG:
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			TRANS(&CWorld::State1);
 			break;
 		}

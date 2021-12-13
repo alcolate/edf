@@ -27,7 +27,6 @@
 
 #include <iostream>
 #include "hello.h"
-extern void vApplicationTickHook(void);
 
 int main()
 {
@@ -50,6 +49,6 @@ int main()
         world[i]->Start();
     }
 #endif
-    vApplicationTickHook();
+    Edf::EdfStart();
 }
 

@@ -281,17 +281,15 @@ void OS_ExitCritical(uint32_t Flag, bool FromISR)
     pthread_mutex_unlock(g_CriticalMutex);
 }
 
-/*..........................................................................*/
-
-extern void TimeEvent_tickFromISR();
-
-void vApplicationTickHook(void)
+void OS_Start(void)
 {
+    extern void TimeEvent_tickFromISR();
+    
     while (1)
     {   
         usleep(TICK_RATE_MS * 1000);
         TimeEvent_tickFromISR();
-    }      
-
+    } 
 }
+/*..........................................................................*/
 

@@ -121,4 +121,9 @@ void CActive::Dispatcher(Event const * const e)
 	}
 }
 
+void EdfStart(void)
+{
+	OS_Start();
+}
+
 } // namespace Edf

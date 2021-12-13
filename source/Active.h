@@ -87,6 +87,8 @@ public:
 	const char* m_NextStateName;
 	DEF_STATEMACHINE(CActive);
 };
+
+void EdfStart(void);
     
 } // namespace Edf
 

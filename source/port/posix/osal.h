@@ -60,3 +60,5 @@ bool QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
 uint32_t OS_EnterCritical(bool FromISR = false);
 void OS_ExitCritical(uint32_t Flag = 0, bool FromISR = false);
+
+void OS_Start(void);

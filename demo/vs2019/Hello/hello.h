@@ -27,12 +27,12 @@
 #include <string.h>
 #include <atomic>
 
-#include "edf.h"
+#include "Edf.h"
 
 #pragma warning(disable : 4996)
 
-std::atomic<uint32_t> create_c = 0;
-std::atomic<uint32_t> recycle_c = 0;
+std::atomic<uint32_t> create_c(0);
+std::atomic<uint32_t> recycle_c(0);
 
 
 

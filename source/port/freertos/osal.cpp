@@ -97,25 +97,26 @@ void OS_ExitCritical(uint32_t Flag, bool FromISR)
 	else
 		taskEXIT_CRITICAL();
 }
+
+void OS_Start(void)
+{
+	while (1)
+	{
+		vTaskDelay(MilliSecond(1000));
+	}
+}
 /*..........................................................................*/
 
-
-
-
 extern void TimeEvent_tickFromISR();
-/* Application hooks used in this project ==================================*/
-/* NOTE: only the "FromISR" API variants are allowed in vApplicationTickHook*/
 extern "C"
 {
 
-void vApplicationTickHook(void) {
+void vApplicationTickHook(void)
+{
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-
-    /* perform clock tick processing */
     TimeEvent_tickFromISR();
-
-    /* notify FreeRTOS to perform context switch from ISR, if needed */
+    
     portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
 }
 }

@@ -27,7 +27,7 @@
 
 #include <iostream>
 #include "hello.h"
-extern void vApplicationTickHook(void);
+
 
 int main()
 {
@@ -50,7 +50,7 @@ int main()
         world[i]->Start();
     }
 #endif
-    vApplicationTickHook();
+    Edf::EdfStart();
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
