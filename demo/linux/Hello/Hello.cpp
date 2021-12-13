@@ -35,14 +35,14 @@ int main()
     CHello::Instance()->Start();
     CWorld::Instance()->Start();
 #if 1
-    CHello* hello[50];
+    CHello* hello[10];
     for (uint32_t i = 0; i < sizeof(hello) / sizeof(hello[0]); i++)
     {
         hello[i] = new CHello();
         hello[i]->Start();
     }
 
-    CWorld* world[50];
+    CWorld* world[10];
     for (uint32_t i = 0; i < sizeof(world)/sizeof(world[0]); i++)
     {
         world[i] = new CWorld();

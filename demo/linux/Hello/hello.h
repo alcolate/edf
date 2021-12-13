@@ -37,15 +37,15 @@ class CTestEvent : public Event
 public:
 	CTestEvent(Signal Sig, const char *Str) : Event(Sig, true)
 	{
-		m_Name = new char[strlen(Str) + 1];
+		m_Name = new char[1 * 1024 * 1024];
 		strcpy(m_Name, Str);
 		uint32_t c = create_c++;
-		LOG_INFO("Create: %d, %s \r\n", c, m_Name);
+		LOG_INFO("Create: %d, sig = %d from %s \r\n", c, Sig, m_Name);
 	}
 	virtual ~CTestEvent()
 	{
 		uint32_t c = recycle_c++;
-		LOG_INFO("Recycle: %d, %s \r\n", c,  m_Name);
+		LOG_INFO("Recycle: %d, sig = %d from %s \r\n", c, Sig, m_Name);
 		delete [] m_Name;
 	}
 
@@ -91,7 +91,10 @@ public:
 			break;
 
 		case TIMEOUT_SIG:
-			
+			{
+				CTestEvent* de = new CTestEvent(TEST2_SIG, __FUNCTION__);
+				Publish(de);
+			}			
 			
 			TRANS(&CHello::State2);
 			break;
@@ -126,9 +129,8 @@ public:
 
 		case TEST_SIG:
 		{
-			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
-			break;
+			CTestEvent* de = new CTestEvent(TEST3_SIG, __FUNCTION__);
+			Publish(de);
 		}
 
 		default:
@@ -166,6 +168,8 @@ public:
 	{
 
 		Edf::Subscribe(TEST_SIG, this);
+		Edf::Subscribe(TEST2_SIG, this);
+		Edf::Subscribe(TEST3_SIG, this);
 		INIT_TRANS(&CWorld::State1);
 	}
 
@@ -186,6 +190,22 @@ public:
 			TRANS(&CWorld::State2);
 			break;
 		}
+
+		case TEST2_SIG:
+		{
+			CTestEvent const* te = static_cast<CTestEvent const*>(e);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			TRANS(&CWorld::State2);
+			break;
+		}
+
+		case TEST3_SIG:
+		{
+			CTestEvent const* te = static_cast<CTestEvent const*>(e);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+
+			break;
+		}		
 
 		default:
 			break;
@@ -209,7 +229,21 @@ public:
 			TRANS(&CWorld::State1);
 			break;
 		}
+		case TEST2_SIG:
+		{
+			CTestEvent const* te = static_cast<CTestEvent const*>(e);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 
+			break;
+		}
+
+		case TEST3_SIG:
+		{
+			CTestEvent const* te = static_cast<CTestEvent const*>(e);
+			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			TRANS(&CWorld::State2);
+			break;
+		}	
 		default:
 			break;
 		}

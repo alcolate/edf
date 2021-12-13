@@ -37,6 +37,8 @@ enum Signals
 	USER_SIG,  /* first signal available to the users */
 	TIMEOUT_SIG,
 	TEST_SIG,
+	TEST2_SIG,
+	TEST3_SIG,
 	MAX_SIG,
 };
 
