@@ -68,6 +68,7 @@ void Event::DecRef(void)
 
 }
 
+Event const InitEvt(INIT_SIG);
 Event const EntryEvent (ENTRY_SIG);
 Event const ExitEvent (EXIT_SIG);
 

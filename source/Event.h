@@ -55,6 +55,7 @@ public:
 
 };
 
+extern Event const InitEvt;
 extern Event const EntryEvent;
 extern Event const ExitEvent;
 

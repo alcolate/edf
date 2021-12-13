@@ -25,22 +25,31 @@
 #pragma once
 
 #include <string.h>
+#include <atomic>
 
 #include "edf.h"
 
 #pragma warning(disable : 4996)
 
+std::atomic<uint32_t> create_c = 0;
+std::atomic<uint32_t> recycle_c = 0;
+
+
+
 class CTestEvent : public Event
 {
 public:
-	CTestEvent(Signal Sig, const char *Str) : Event(Sig, true)
+	CTestEvent(Signal Sig, const char* Str) : Event(Sig, true)
 	{
-		m_Name = new char[strlen(Str) + 1];
+		m_Name = new char[1 * 1024 * 1024];
 		strcpy(m_Name, Str);
+		uint32_t c = create_c++;
+		LOG_INFO("Create: %d, %s \r\n", c, m_Name);
 	}
 	virtual ~CTestEvent()
 	{
-		LOG_INFO("Recycle: %s, %s \r\n", __FUNCTION__,  m_Name);
+		uint32_t c = recycle_c++;
+		LOG_INFO("Recycle: %d, %s \r\n", c,  m_Name);
 		delete [] m_Name;
 	}
 
@@ -76,7 +85,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(20 + (((uint32_t)this) % 10)), 0U);
+			m_Time.Trigger(MilliSecond(200 + (((uint32_t)this) % 10)), 0U);
 			{
 				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);
@@ -106,7 +115,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(20 + (((uint32_t)this) % 10)), 0U);
+			m_Time.Trigger(MilliSecond(200 + (((uint32_t)this) % 10)), 0U);
 			{
 				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);

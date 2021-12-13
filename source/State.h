@@ -50,16 +50,16 @@ using namespace Edf;
 		do {\
 			m_State = state; \
 			m_StateName = #state; \
-			this->Post(&EntryEvent); \
+			this->Dispatcher(&EntryEvent); \
 		}while(0)
 
 #define TRANS(to) \
 		do {\
-			if(m_State == m_NextState || m_NextState == 0)\
 			{\
-				this->Post(&ExitEvent); \
-				m_NextState = to;\
-				m_NextStateName = #to;\
+				this->Dispatcher(&ExitEvent); \
+				m_State = to;\
+				m_StateName = #to;\
+				this->Dispatcher(&EntryEvent); \
 			}\
 		}while(0)
 

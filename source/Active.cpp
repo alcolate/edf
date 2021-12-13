@@ -59,7 +59,7 @@ void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
 
 bool CActive::Post(Event const *const e, bool FromISR)
 {
-	//LOG_DEBUG("%s post e = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
+	//LOG_DEBUG("%s post sig = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
 	bool result = QueueSend(Q(), e, FromISR);
 	ASSERT(result);
 	return result;
@@ -72,10 +72,8 @@ void CActive::Run(void)
 
 void CActive::EventLoop()
 {
-
-	static Event const initEvt(INIT_SIG);
 	
-	this->Dispatcher(&initEvt);
+	this->Dispatcher(&InitEvt);
 
 	for (;;) 
 	{
@@ -114,7 +112,6 @@ void CActive::Dispatcher(Event const * const e)
 		LOG_DEBUG("Exit:\t%s of %s\r\n", m_StateName, m_Name);
 #endif
 		RUN_STATE();
-		TO_NEXT_STATE();
 		break;
 
 	default:
