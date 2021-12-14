@@ -47,18 +47,24 @@ void Event::IncRef(uint32_t Ref, bool FromISR)
     }    
     OS_ExitCritical(flag, FromISR);
 }
-void Event::DecRef(void)
+void Event::DecRef(bool FromISR)
 {
 	bool ToFree = false;
-    OS_EnterCritical();
+    uint32_t flag = OS_EnterCritical(FromISR);
     if (DynamicAlloc)
     {
-        if (RefCount > 0) RefCount --;
+        if (RefCount)
+        {
+            RefCount --;
+
+            if (RefCount == 0)
+            {
+                ToFree = true;
+            }
+        } 
         //LOG_DEBUG("event delete: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
-    
-        ToFree = (RefCount == 0);
     }
-    OS_ExitCritical();
+    OS_ExitCritical(flag, FromISR);
 
     if (ToFree)
     {
