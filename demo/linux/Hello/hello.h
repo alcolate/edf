@@ -73,6 +73,7 @@ public:
 	{
 
 		Edf::Subscribe(TEST_SIG, this);
+		Edf::Subscribe(TEST5_SIG, this);
 		INIT_TRANS(&CHello::State1);
 	}
 
@@ -193,6 +194,10 @@ public:
 
 		case TEST2_SIG:
 		{
+			CTestEvent* de = new CTestEvent(TEST4_SIG, __FUNCTION__);
+			Publish(de);
+		}
+		{			
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
 			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			TRANS(&CWorld::State2);
@@ -224,12 +229,20 @@ public:
 
 		case TEST_SIG:
 		{
+			CTestEvent* de = new CTestEvent(TEST5_SIG, __FUNCTION__);
+			Publish(de);
+		}
+		{			
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
 			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			TRANS(&CWorld::State1);
 			break;
 		}
 		case TEST2_SIG:
+		{
+			CTestEvent* de = new CTestEvent(TEST5_SIG, __FUNCTION__);
+			Publish(de);
+		}
 		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
 			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);

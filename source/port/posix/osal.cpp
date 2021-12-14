@@ -242,6 +242,7 @@ bool OS_QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
     MQMessage msg;
     msg.Type = 0;
     msg.P = P;
+    time(&msg.TimeStamp)
     int result = mq_send((mqd_t)Q, (char *)&msg, sizeof(MQMessage), 0);
     if (result == -1)
     {

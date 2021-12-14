@@ -39,6 +39,8 @@ enum Signals
 	TEST_SIG,
 	TEST2_SIG,
 	TEST3_SIG,
+	TEST4_SIG,
+	TEST5_SIG,
 	MAX_SIG,
 };
 
