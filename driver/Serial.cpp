@@ -22,48 +22,81 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#pragma once
+#include "Serial.h"
 
 namespace Edf
 {
-
-typedef uint16_t Signal; /* event signal */
-
-enum Signals 
+CUartKeeper* CUartKeeper::Instance()
 {
-	INIT_SIG, 
-	ENTRY_SIG,
-	EXIT_SIG,
-	USER_SIG,  /* first signal available to the users */
-	TIMEOUT_SIG,
-	TEST_SIG,
-	TEST2_SIG,
-	TEST3_SIG,
-	TEST4_SIG,
-	TEST5_SIG,
-	SERIAL_IN_SIG,   // get from serial
-	SERIAL_OUT_SIG,  // send to serial
-	SEND_COMPLETE_SIG,
-	MAX_SIG,
-};
+	static CUartKeeper uk;
+	return &uk;
+}
 
-
-/* Event base class */
-class Event 
+void CUartKeeper::RegUart(CUart* Uart)
 {
-public:
-	Event(Signal s, bool DynAlloc = false);
-	virtual ~Event();
-	Signal Sig; 
-	uint32_t	RefCount;
-	const bool  DynamicAlloc;
-	void IncRef(uint32_t Ref, bool FromISR = false);
-	void DecRef(bool FromISR = false);
+	bool result = Uart_Init(Uart->m_Uart_H, Uart->m_Config);
+	ASSERT(result);
+	Uart->m_Sibling = m_Uart;
+	m_Uart = Uart;
 
-};
+}
 
-extern Event const InitEvt;
-extern Event const EntryEvent;
-extern Event const ExitEvent;
+CUart* CUartKeeper::GetUart(UARTDEV_H UartH)
+{
+	CUart* p = m_Uart;
 
-} // namaspace Edf
+	for (; p; p = p->m_Sibling)
+	{
+		if (p->m_Uart_H == UartH)
+		{
+			return p;
+		}
+	}
+
+	ASSERT(false);
+	return NULL;
+
+}
+
+void CUartKeeper::Initial()
+{
+
+	Edf::Subscribe(SERIAL_OUT_SIG, this);
+	INIT_TRANS(&CUartKeeper::S_Run);
+}
+
+void CUartKeeper::Receive(UARTDEV_H UartH, uint8_t AByte)
+{
+	CUart* Uart = GetUart(UartH);
+
+	if (Uart->MacCall(AByte))
+	{
+		LOG_DEBUG("keeper get: %s \r\n", Uart->Buff4MacCall);
+		CUartEvent* ue = new CUartEvent(SERIAL_IN_SIG, UartH, Uart->Buff4MacCall, Uart->BuffCount);
+		Uart->BuffCount = 0;
+		Publish(ue);
+	}
+}
+
+void CUartKeeper::S_Run(Event const* const e)
+{
+	switch (e->Sig)
+	{
+	case ENTRY_SIG:
+		break;
+	case SERIAL_OUT_SIG:
+	{
+		CUartEvent const* ev = static_cast<CUartEvent const*>(e);
+		LOG_DEBUG("keeper send: %s \r\n", ev->Data);
+		Uart_Send(ev->Uart_H, ev->Data, ev->DataLen);
+		break;
+	}
+	case TEST_SIG:
+
+		break;
+
+	default:
+		break;
+	}
+}
+} // namespace Edf

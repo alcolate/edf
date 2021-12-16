@@ -23,47 +23,20 @@
 * <9183399@qq.com>
 *****************************************************************************/
 #pragma once
+#include <stdint.h>
 
-namespace Edf
+typedef void* UARTDEV_H;
+
+typedef struct __uartconfig
 {
+	uint32_t Baudrate;
+}UartConfig;
 
-typedef uint16_t Signal; /* event signal */
+extern UARTDEV_H  UART_0;
+extern UARTDEV_H  UART_1;
+extern UARTDEV_H  UART_2;
 
-enum Signals 
-{
-	INIT_SIG, 
-	ENTRY_SIG,
-	EXIT_SIG,
-	USER_SIG,  /* first signal available to the users */
-	TIMEOUT_SIG,
-	TEST_SIG,
-	TEST2_SIG,
-	TEST3_SIG,
-	TEST4_SIG,
-	TEST5_SIG,
-	SERIAL_IN_SIG,   // get from serial
-	SERIAL_OUT_SIG,  // send to serial
-	SEND_COMPLETE_SIG,
-	MAX_SIG,
-};
+bool Uart_Init(UARTDEV_H Uart, UartConfig* Config);
+bool Uart_Send(UARTDEV_H Uart, uint8_t* Data, uint16_t DataLen);
+void Uart_Isr(void);
 
-
-/* Event base class */
-class Event 
-{
-public:
-	Event(Signal s, bool DynAlloc = false);
-	virtual ~Event();
-	Signal Sig; 
-	uint32_t	RefCount;
-	const bool  DynamicAlloc;
-	void IncRef(uint32_t Ref, bool FromISR = false);
-	void DecRef(bool FromISR = false);
-
-};
-
-extern Event const InitEvt;
-extern Event const EntryEvent;
-extern Event const ExitEvent;
-
-} // namaspace Edf
