@@ -28,14 +28,12 @@
 namespace Edf
 {
 
-CTimeEvent *gTimeEvts[100]; /* all TimeEvents in the application */
-uint_fast8_t gTimeEvtsNum; /* current number of TimeEvents */
+CTimeEvent *gTimeEvts[100]; 
+uint_fast8_t gTimeEvtsNum; 
 
 CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 {
-	/* no critical section because it is presumed that all TimeEvents
-	 * are created *before* multitasking has started.
-	 */
+
 	this->m_Act = Act;
 	this->m_Timeout = 0U;
 	this->m_Interval = 0U;
@@ -50,7 +48,6 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 {
 	OS_EnterCritical();
-	//LOG_DEBUG("trigger timer %d\r\n", Timeout);
 	this->m_Timeout = Timeout;
 	this->m_Interval = Interval;
 	OS_ExitCritical();
@@ -64,31 +61,35 @@ void CTimeEvent::UnTrigger()
 	OS_ExitCritical();
 }
 
+void CTimeEvent::Touch(void)
+{
+	m_Act->Post(this, true);
+}
 
 } // namespace Edf
 
 void TimeEvent_tickFromISR()
 {
 	uint_fast8_t i;
-	CActive *act;
+	CTimeEvent *timer;
 	for (i = 0U; i < Edf::gTimeEvtsNum; ++i)
 	{
 		Edf::CTimeEvent * t = Edf::gTimeEvts[i];
 		ASSERT(t); 
-		act = NULL;
+		timer = NULL;
 		uint32_t flag = OS_EnterCritical(true);
 		if (t->m_Timeout > 0U) 
 		{
 			if (--t->m_Timeout == 0U)  
 			{
-				act = t->m_Act;
+				timer = t;
 				t->m_Timeout = t->m_Interval;
 			}
 		}
 		OS_ExitCritical(flag, true);
-		if (act != NULL)
+		if (timer != NULL)
 		{
-			act->Post(t, true);
+			timer->Touch();
 		}
 	}
 }

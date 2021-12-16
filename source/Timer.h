@@ -32,20 +32,22 @@ namespace Edf
 class CTimeEvent : public Event
 {
 public:
-	CActive  *m_Act;       
-	uint32_t m_Timeout; 
-	uint32_t m_Interval; 
-
-public:
 	/*..........................................................................*/
 	CTimeEvent(Signal Sig, CActive *Act);
 
 	virtual ~CTimeEvent() {};
 	/*..........................................................................*/
-	void Trigger(uint32_t Timeout, uint32_t Interval) ;
+	void Trigger(uint32_t Timeout, uint32_t Interval);
 
 	/*..........................................................................*/
-	void UnTrigger() ;
+	void UnTrigger();
+
+	void Touch(void);
+
+public:
+	CActive* m_Act;
+	uint32_t m_Timeout;
+	uint32_t m_Interval;
 };
 
 } // namespace Edf

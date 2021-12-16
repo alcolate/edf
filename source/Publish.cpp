@@ -49,7 +49,6 @@ public:
 
 	void Update(const Event * const e, bool FromISR = false)
 	{
-		//const_cast<Event *>(e)->IncRef();
 		if (false == const_cast<CActive *>(m_Act)->Post(e, FromISR))
 		{
 			const_cast<Event *>(e)->DecRef();
