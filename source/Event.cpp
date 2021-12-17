@@ -35,14 +35,25 @@ Event::~Event()
 {
 	
 }
+void Event::InitRef(uint32_t Ref, bool FromISR)
+{
+
+	uint32_t flag = OS_EnterCritical(FromISR);
+	if (DynamicAlloc)
+	{
+		ASSERT(RefCount == 0);
+		RefCount = Ref;
+		//LOG_DEBUG("event init: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
+	}
+	OS_ExitCritical(flag, FromISR);
+}
 void Event::IncRef(uint32_t Ref, bool FromISR)
 {
 
 	uint32_t flag = OS_EnterCritical(FromISR);
 	if (DynamicAlloc)
 	{        
-		ASSERT(RefCount == 0);
-		RefCount = Ref;
+		RefCount += Ref;
 		//LOG_DEBUG("event add: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
 	}    
 	OS_ExitCritical(flag, FromISR);
