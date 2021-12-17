@@ -57,24 +57,28 @@ public:
 class CUart
 {
 public:
+	CUart() 
+	{
+		m_Sibling = 0;
+	}
 	CUart(UARTDEV_H UartH, UartConfig* Config, uint8_t* Buff4MacCall, uint16_t BuffSize)
 	{
 		m_Uart_H = UartH;
-		m_Config = Config;
-		this->Buff4MacCall = Buff4MacCall;
-		this->BuffSize = BuffSize;
-		this->BuffCount = 0;
+		m_Config = *Config;
+		this->m_Buff4MacCall = Buff4MacCall;
+		this->m_BuffSize = BuffSize;
+		this->m_BuffCount = 0;
 		m_Sibling = 0;
 	}
 	UARTDEV_H  m_Uart_H;			// the no. of uart
 
-	UartConfig* m_Config;
+	UartConfig m_Config;
 
-	uint8_t* Buff4MacCall;
+	uint8_t* m_Buff4MacCall;
 
-	uint16_t BuffSize;
+	uint16_t m_BuffSize;
 
-	uint16_t BuffCount;
+	uint16_t m_BuffCount;
 
 	CUart* m_Sibling;
 
@@ -90,15 +94,17 @@ public:
 
 	void RegUart(CUart* Uart);
 
-	CUart* GetUart(UARTDEV_H UartH);
-
 	virtual void Initial();
 
 	void Receive(UARTDEV_H UartH, uint8_t AByte);
 
+private:
 	void S_Run(Event const* const e);
 
-private:
+	CUart* GetUart(UARTDEV_H UartH);
+
+	void AddUart(CUart* Uart);
+
 	CUartKeeper() : CActive((char*)"UartKeeper")
 	{
 		m_Uart = 0;

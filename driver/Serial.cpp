@@ -34,11 +34,16 @@ CUartKeeper* CUartKeeper::Instance()
 
 void CUartKeeper::RegUart(CUart* Uart)
 {
-	bool result = Uart_Init(Uart->m_Uart_H, Uart->m_Config);
+	bool result = Uart_Init(Uart->m_Uart_H, &Uart->m_Config);
 	ASSERT(result);
+
+	AddUart(Uart);
+
+}
+void CUartKeeper::AddUart(CUart* Uart)
+{
 	Uart->m_Sibling = m_Uart;
 	m_Uart = Uart;
-
 }
 
 CUart* CUartKeeper::GetUart(UARTDEV_H UartH)
@@ -71,9 +76,9 @@ void CUartKeeper::Receive(UARTDEV_H UartH, uint8_t AByte)
 
 	if (Uart->MacCall(AByte))
 	{
-		LOG_DEBUG("keeper get: %s \r\n", Uart->Buff4MacCall);
-		CUartEvent* ue = new CUartEvent(SERIAL_IN_SIG, UartH, Uart->Buff4MacCall, Uart->BuffCount);
-		Uart->BuffCount = 0;
+		LOG_DEBUG("keeper get: %s \r\n", Uart->m_Buff4MacCall);
+		CUartEvent* ue = new CUartEvent(SERIAL_IN_SIG, UartH, Uart->m_Buff4MacCall, Uart->m_BuffCount);
+		Uart->m_BuffCount = 0;
 		Publish(ue);
 	}
 }

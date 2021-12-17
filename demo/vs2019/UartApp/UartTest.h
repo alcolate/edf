@@ -34,20 +34,30 @@
 class CAppUart : public CUart
 {
 public:
-	CAppUart(UARTDEV_H UartH, UartConfig *Config, uint8_t* Buff4MacCall, uint16_t BuffSize)
-		: CUart(UartH, Config, Buff4MacCall, BuffSize)
+	CAppUart()
 	{
-
+		m_Uart_H = UART_0;
+		m_Config.Baudrate = 9600;
+		m_Config.Parity = Parity_None;
+		m_Config.StopBits = StopBit_1Bit;
+		m_BuffSize = 17;
+		m_Buff4MacCall = new uint8_t [16];
+		m_BuffCount = 0;
+		ASSERT(m_Buff4MacCall);
 	}
-
+	~CAppUart()
+	{
+		if (m_Buff4MacCall)
+			delete [] m_Buff4MacCall;
+	}
 	virtual bool MacCall(uint8_t AByte)
 	{
-		if (BuffCount < BuffSize)
+		if (m_BuffCount < m_BuffSize)
 		{
-			Buff4MacCall[BuffCount++] = AByte;
+			m_Buff4MacCall[m_BuffCount++] = AByte;
 			if (AByte == '\n')
 			{
-				Buff4MacCall[BuffCount++] = 0;
+				m_Buff4MacCall[m_BuffCount++] = 0;
 				return true;
 			}
 			else
@@ -58,12 +68,13 @@ public:
 		else
 		{
 			// frame error occurs, reset it
-			BuffCount = 0;
+			m_BuffCount = 0;
 			return false;
 		}
 
 	}
-
+private:
+	UartConfig m_Config;
 };
 
 class CAPP : public CActive
@@ -71,14 +82,14 @@ class CAPP : public CActive
 public:
 	virtual void Initial()
 	{
-		m_Config.Baudrate = 9600;
-		m_Uart = new CAppUart(UART_0, &m_Config, m_Buff4MacCall, sizeof(m_Buff4MacCall) - 1);
+		
+		m_Uart = new CAppUart();
 		CUartKeeper::Instance()->RegUart(m_Uart);
 		Edf::Subscribe(SERIAL_IN_SIG, this);
-		INIT_TRANS(&CAPP::S_Request);
+		INIT_TRANS(&CAPP::S_Idle);
 	}
 
-	void S_Request(Event const* const e)
+	void S_Idle(Event const* const e)
 	{
 		switch (e->Sig)
 		{
@@ -88,13 +99,7 @@ public:
 
 		case TIMEOUT_SIG:
 		{
-			char tosend[100];
-			static uint32_t cc = 0;
-			sprintf(tosend,"hello uart %d \r\n", cc ++);
-			uint16_t len = strlen(tosend) + 1;
-			LOG_DEBUG("app send: %s\r\n", tosend);
-			CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Uart_H, (uint8_t*)tosend, len);
-			Publish(ue);
+			Request();
 
 			TRANS(&CAPP::S_WaitReponse);
 
@@ -112,24 +117,70 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
+			m_Time.Trigger(MilliSecond(1000), 0);
 			break;
 		case SERIAL_IN_SIG:
 		{
 			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
 			if (ue->Uart_H == m_Uart->m_Uart_H)
 			{
-				uint8_t* response = ue->Data;
-				LOG_DEBUG("app get: %s\r\n", response);
-				// do your work
+				Response(ue->Data, ue->DataLen);
 
-				TRANS(&CAPP::S_Request);
+
+				TRANS(&CAPP::S_Idle);
 			}
 			break;
 		}
+		case TIMEOUT_SIG:
+		{
+			LOG_DEBUG("Wait Response Timeout \r\n");
+			TRANS(&CAPP::S_RetryRequest);
+		}
+		break;
 
 		default:
 			break;
 		}
+	}
+
+	void S_RetryRequest(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
+			m_Time.Trigger(MilliSecond(20), 0);
+			break;
+
+		case TIMEOUT_SIG:
+		{
+			Request();
+
+			TRANS(&CAPP::S_WaitReponse);
+		}
+		break;
+
+
+		default:
+			break;
+		}
+	}
+
+	void Request(void)
+	{
+		char tosend[100];
+		static uint32_t cc = 0;
+		sprintf(tosend, "hello uart %d \r\n", cc++);
+		uint16_t len = strlen(tosend) + 1;
+		LOG_DEBUG("app send: %s\r\n", tosend);
+		CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Uart_H, (uint8_t*)tosend, len);
+		Publish(ue);
+	}
+
+	void Response(uint8_t* Data, uint16_t Len)
+	{
+		uint8_t* response = Data;
+		LOG_DEBUG("app get: %s\r\n", response);
+		// do your work
 	}
 
 public:
@@ -137,12 +188,9 @@ public:
 	{
 		m_Uart = 0;
 	}
-	CUart* m_Uart;
-	UartConfig m_Config;
-	uint8_t m_Buff4MacCall[17];
 
 public:
-
+	CUart* m_Uart;
 	CTimeEvent m_Time;
 
 public:

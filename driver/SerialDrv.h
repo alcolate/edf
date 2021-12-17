@@ -27,9 +27,24 @@
 
 typedef void* UARTDEV_H;
 
+typedef enum __uart_parity
+{
+	Parity_None,
+	Parity_Odd,
+	Parity_Even
+}UART_Parity;
+
+typedef enum __uart_stoptbits
+{
+	StopBit_1Bit,
+	StopBit_2Bit
+}UART_StopBit;
+
 typedef struct __uartconfig
 {
-	uint32_t Baudrate;
+	uint32_t		Baudrate;
+	UART_Parity		Parity;
+	UART_StopBit	StopBits;
 }UartConfig;
 
 extern UARTDEV_H  UART_0;

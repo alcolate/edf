@@ -41,7 +41,7 @@ bool Uart_Send(UARTDEV_H Uart, uint8_t* Data, uint16_t DataLen)
 {
     char msg[] = "yes, I am Uart\r\n";
 
-    for (int i = 0; i < strlen(msg); i ++)
+    for (size_t i = 0; i < strlen(msg); i ++)
     {
         CUartKeeper::Instance()->Receive(Uart, msg[i]);
     }
@@ -60,27 +60,13 @@ int main()
 {
     std::cout << "Hello Uart!\n";
 
-    CAPP app;
-
     CUartKeeper::Instance()->Start();
+
+    CAPP app;
 
     app.Start();
 
-#if 0
-    CHello* hello[10];
-    for (int i = 0; i < sizeof(hello) / sizeof(hello[0]); i++)
-    {
-        hello[i] = new CHello();
-        hello[i]->Start();
-    }
 
-    CWorld* world[10];
-    for (int i = 0; i < sizeof(world)/sizeof(world[0]); i++)
-    {
-        world[i] = new CWorld();
-        world[i]->Start();
-    }
-#endif
     Edf::EdfStart();
 }
 
