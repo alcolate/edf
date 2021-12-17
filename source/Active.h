@@ -34,10 +34,14 @@ namespace Edf
 {
 constexpr uint8_t defPrioity = (MAX_PRIORITIES - 5);
 
+
+
+
 class CActive
 {
 public:
-	CActive(char *Name);
+	CActive(char* Name, uint32_t DQSize = 10);
+	virtual ~CActive();
 
 	void Start();
 
@@ -46,10 +50,6 @@ public:
 	bool Post(Event const *const e, bool FromISR = false);
 
 	void Run(void);
-
-	void EventLoop(void) ;
-
-	virtual void Dispatcher(Event const * const e);
 
 	virtual void Initial() = 0;
 
@@ -63,15 +63,72 @@ public:
 		m_StackSize = StackSize;
 	}
 
+	bool DeferEvent(Event const * const e)
+	{
+		ASSERT(e);
+
+		bool result = m_DQ->Defer(e);
+
+		if (!result) LOG_INFO("%s: DQ is full\r\n", m_Name);
+
+		return result;
+	}
+
+	void FetchEvent()
+	{
+		const Event* e = m_DQ->Fetch();
+
+		if (e)
+		{
+			Post(e);
+		}
+	}
+
+protected:
+	void EventLoop(void);
+
+	void Dispatcher(Event const* const e);
+
 public:
 	Q_HANDLE Q() const
 	{
 		ASSERT(m_Queue);
 		return m_Queue;
 	}
+private:
+	class CEventQ
+	{
+	public:
+		CEventQ(uint32_t ItemCount = DEF_ITEMS);
+		~CEventQ();
+	public:
 
+		class CItem
+		{
+		public:
+			CItem() : Evt(0), Next(0) {}
+			Event const* Evt;
+			CItem* Next;
+		};
+
+		CItem* GetFreeItem();
+
+		void LinkItem(CItem* Item);
+
+		bool Defer(Event const* const Evt);
+
+		const Event* Fetch(void);
+
+	public:
+		CItem* m_Head;
+		enum { DEF_ITEMS = 10 };
+		uint32_t m_ItemCount;
+		CItem *m_Items;
+
+	};
 public:
 	char* m_Name;
+	CEventQ *m_DQ;
 private:
 	T_HANDLE m_Thread;   
     Q_HANDLE m_Queue;    
