@@ -28,20 +28,19 @@
 namespace Edf
 {
 
-CTimeEvent *gTimeEvts[100]; 
-uint_fast8_t gTimeEvtsNum; 
+static CTimeEvent *gTimer = NULL;
+static uint32_t gTimerNum = 0; 
 
 CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 {
-
+	ASSERT(Act);
 	this->m_Act = Act;
 	this->m_Timeout = 0U;
 	this->m_Interval = 0U;
 
-	/* register one more TimeEvent with the application */
-	ASSERT(gTimeEvtsNum < sizeof(gTimeEvts)/sizeof(gTimeEvts[0]));
-	gTimeEvts[gTimeEvtsNum] = this;
-	++gTimeEvtsNum;
+	m_Next = gTimer;
+	gTimer = this;
+	++gTimerNum;
 }
 
 /*..........................................................................*/
@@ -61,29 +60,24 @@ void CTimeEvent::UnTrigger()
 	OS_ExitCritical();
 }
 
-void CTimeEvent::Touch(void)
+void CTimeEvent::Touch()
 {
 	m_Act->Post(this, true);
 }
 
-} // namespace Edf
-
-void TimeEvent_tickFromISR()
+void CTimeEvent::Tick()
 {
-	uint_fast8_t i;
-	CTimeEvent *timer;
-	for (i = 0U; i < Edf::gTimeEvtsNum; ++i)
+	CTimeEvent* timer, * p;
+	for (p = gTimer; p; p = p->m_Next)
 	{
-		Edf::CTimeEvent * t = Edf::gTimeEvts[i];
-		ASSERT(t); 
 		timer = NULL;
 		uint32_t flag = OS_EnterCritical(true);
-		if (t->m_Timeout > 0U) 
+		if (p->m_Timeout > 0U)
 		{
-			if (--t->m_Timeout == 0U)  
+			if (--p->m_Timeout == 0U)
 			{
-				timer = t;
-				t->m_Timeout = t->m_Interval;
+				timer = p;
+				p->m_Timeout = p->m_Interval;
 			}
 		}
 		OS_ExitCritical(flag, true);
@@ -92,4 +86,10 @@ void TimeEvent_tickFromISR()
 			timer->Touch();
 		}
 	}
+}
+} // namespace Edf
+
+void TimeEvent_tickFromISR()
+{
+	CTimeEvent::Tick();
 }

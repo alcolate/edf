@@ -42,12 +42,15 @@ public:
 	/*..........................................................................*/
 	void UnTrigger();
 
-	void Touch(void);
+	void Touch();
 
-public:
+	static void Tick();
+
+private:
 	CActive* m_Act;
 	uint32_t m_Timeout;
 	uint32_t m_Interval;
+	CTimeEvent *m_Next;
 };
 
 } // namespace Edf

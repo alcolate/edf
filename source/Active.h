@@ -32,10 +32,7 @@
 
 namespace Edf
 {
-constexpr uint8_t defPrioity = (MAX_PRIORITIES - 5);
-
-
-
+constexpr uint32_t DefPrioity = (MAX_PRIORITIES - 5);
 
 class CActive
 {
@@ -45,7 +42,7 @@ public:
 
 	void Start();
 
-	void Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize);
+	void Start(uint32_t prio, uint32_t queueLen, uint32_t itemSize);
 
 	bool Post(Event const *const e, bool FromISR = false);
 

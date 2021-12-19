@@ -31,7 +31,7 @@ CActive::CActive(char *Name, uint32_t DQSize)
 	m_Name = Name;
 	m_Queue = 0;
 	m_Thread = 0;
-	m_Priority = defPrioity;
+	m_Priority = DefPrioity;
 	m_StackSize = MINIMAL_STACK_SIZE;
 	m_NextStateName = 0;
 	m_StateName = 0;
@@ -44,12 +44,13 @@ CActive::~CActive()
 	if (m_DQ)
 		delete m_DQ;
 }
+
 void CActive::Start()
 {
 	Start(m_Priority, EQ_SIZE, sizeof(Event *));
 }
 
-void CActive::Start(uint8_t prio, uint32_t queueLen, uint32_t itemSize)
+void CActive::Start(uint32_t prio, uint32_t queueLen, uint32_t itemSize)
 {
 
 	this->m_Thread = OS_TaskCreate(
@@ -199,7 +200,6 @@ const Event* CActive::CEventQ::Fetch(void)
 
 	return Evt;
 }
-
 
 void EdfStart(void)
 {

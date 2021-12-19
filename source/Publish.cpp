@@ -35,6 +35,7 @@ public:
 
 	CSubscriber(CActive const *  Act, CSubscriber *Next = 0)
 	{
+		ASSERT(Act);
 		this->m_Act = Act;
 		this->m_Next = Next;
 		if (Next)
@@ -79,6 +80,7 @@ private:
 
 private:
 	CPublisher();
+	~CPublisher();
 private:
 	CSubscriber *m_Subs[MAX_SIG];
 
@@ -96,8 +98,6 @@ CPublisher * CPublisher::Instance()
 
 void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
 {
-	ASSERT(Sig < MAX_SIG);
-
 	OS_EnterCritical();
 	
 	AddHead(&(m_Subs[Sig]), Act);
@@ -108,8 +108,6 @@ void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
 
 void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 {
-	ASSERT(Sig < MAX_SIG);
-	
 	OS_EnterCritical();
 
 	Delete(&(m_Subs[Sig]), Act);
@@ -119,8 +117,6 @@ void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 
 void CPublisher::Publish(Event const * const e, bool FromISR)
 {
-	ASSERT(e->Sig < MAX_SIG);
-
 	CSubscriber *suber = m_Subs[e->Sig];
 	
 	if (suber)
@@ -145,6 +141,16 @@ CPublisher::CPublisher()
 	for (uint32_t i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
 	{
 		m_Subs[i] = 0;
+	}
+}
+
+CPublisher::~CPublisher()
+{
+	CSubscriber *p, *q;
+
+	for (uint32_t i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
+	{
+		for (p = m_Subs[i]; p; q = p, p = p->m_Next, delete q);
 	}
 }
 
@@ -210,16 +216,22 @@ namespace Edf
 {
 void Subscribe(Signal Sig, CActive const * const Act)
 {
+	ASSERT(Sig < MAX_SIG);
+	ASSERT(Act);
 	Edf::CPublisher::Instance()->Subscribe(Sig, Act);
 }
 
 void UnSubscribe(Signal Sig, CActive const * const Act)
 {
+	ASSERT(Sig < MAX_SIG);
+	ASSERT(Act);
 	Edf::CPublisher::Instance()->UnSubscribe(Sig, Act);
 }
 
 void Publish(Event const * const e, bool FromISR)
 {
+	ASSERT(e->Sig < MAX_SIG);
+	ASSERT(e);
 	Edf::CPublisher::Instance()->Publish( e, FromISR);
 }
 }
