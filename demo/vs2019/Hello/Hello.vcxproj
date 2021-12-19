@@ -145,6 +145,7 @@
     <ClCompile Include="..\..\..\source\Event.cpp" />
     <ClCompile Include="..\..\..\source\port\windows\osal.cpp" />
     <ClCompile Include="..\..\..\source\Publish.cpp" />
+    <ClCompile Include="..\..\..\source\State.cpp" />
     <ClCompile Include="..\..\..\source\Timer.cpp" />
     <ClCompile Include="Hello.cpp" />
   </ItemGroup>

@@ -86,6 +86,8 @@ protected:
 
 	void Dispatcher(Event const* const e);
 
+	virtual void RunState(Event const* const e);
+
 public:
 	Q_HANDLE Q() const
 	{
@@ -134,12 +136,6 @@ private:
 
 	enum {EQ_SIZE = 100};
 
-
-
-public:
-	const char* m_StateName;
-	const char* m_NextStateName;
-	DEF_STATEMACHINE(CActive);
 };
 
 void EdfStart(void);

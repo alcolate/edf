@@ -91,5 +91,5 @@ void CTimeEvent::Tick()
 
 void TimeEvent_tickFromISR()
 {
-	CTimeEvent::Tick();
+	Edf::CTimeEvent::Tick();
 }

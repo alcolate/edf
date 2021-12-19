@@ -159,6 +159,7 @@
     <ClInclude Include="..\..\..\source\Publish.h" />
     <ClInclude Include="..\..\..\source\State.h" />
     <ClInclude Include="..\..\..\source\Timer.h" />
+    <ClInclude Include="Led.h" />
     <ClInclude Include="UartTest.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

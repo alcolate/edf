@@ -28,6 +28,7 @@
 
 #include "Edf.h"
 #include "Serial.h"
+#include "Led.h"
 #pragma warning(disable : 4996)
 
 
@@ -82,7 +83,8 @@ class CAPP : public CActive
 public:
 	virtual void Initial()
 	{
-		
+		m_Led = new CLed();
+		m_Led->Initial();
 		m_Uart = new CAppUart();
 		CUartKeeper::Instance()->RegUart(m_Uart);
 		Edf::Subscribe(SERIAL_IN_SIG, this);
@@ -94,8 +96,12 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
+		{
 			m_Time.Trigger(MilliSecond(50), 0);
+			Event e(CLed::OFF);
+			m_Led->Dispatcher(&e);
 			break;
+		}
 
 		case TIMEOUT_SIG:
 		{
@@ -117,8 +123,12 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
+		{
+			Event e(CLed::ON);
+			m_Led->Dispatcher(&e);
 			m_Time.Trigger(MilliSecond(1000), 0);
 			break;
+		}
 		case SERIAL_IN_SIG:
 		{
 			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
@@ -192,6 +202,7 @@ public:
 public:
 	CUart* m_Uart;
 	CTimeEvent m_Time;
+	CLed* m_Led;
 
 public:
 	DEF_STATEMACHINE(CAPP);

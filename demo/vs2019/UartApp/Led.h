@@ -22,101 +22,67 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#pragma once
+#include "Edf.h"
 
-#define TRACE_STATE		0
-
-namespace Edf
-{
-template <class T>
-class CStateMachine
+class CLed
 {
 public:
-	CStateMachine() 
+	CLed()
 	{
-		m_Obj = 0;
+
 	}
 
-	T* m_Obj;
-
-	using STATE = void (T::*)(Event const* const e);
-
-	STATE  m_State;
-	const char* m_StateName;
-
-	void RunState(Event const* const e)
+	enum
 	{
-		(m_Obj->*m_State)(e);
-	}
-
-	void Init(T *Obj, STATE State, const char* Name)
-	{
-		ASSERT(Obj);
-		m_Obj = Obj;
-		m_State = State;
-		m_StateName = Name;
-		this->Dispatcher(&EntryEvent);
-	}
-
-	void Trans(STATE State, const char* Name)
-	{
-		this->Dispatcher(&ExitEvent);
-		m_State = State;
-		m_StateName = Name;
-		this->Dispatcher(&EntryEvent);
-	}
+		ON = USER_SIG,
+		OFF,
+	};
 
 	void Dispatcher(Event const* const e)
 	{
+		m_StateMachine.Dispatcher(e);
+	}
+
+	void Initial()
+	{
+		INIT_TRANS(&CLed::S_On);
+	}
+
+	void S_On(Event const* const e)
+	{
 		switch (e->Sig)
 		{
-		case INIT_SIG:
-			//Initial();
-#if (TRACE_STATE == 1)
-			LOG_DEBUG("Init:\t%s of %s\r\n", m_StateName, m_Name);
-#endif
-			break;
-
 		case ENTRY_SIG:
-#if (TRACE_STATE == 1)
-			LOG_DEBUG("Enter:\t%s of %s\r\n", m_StateName, m_Name);
-#endif
-			RunState(e);
+			LOG_DEBUG("led on\r\n");
 			break;
 
-		case EXIT_SIG:
-#if (TRACE_STATE == 1)
-			LOG_DEBUG("Exit:\t%s of %s\r\n", m_StateName, m_Name);
-#endif
-			RunState(e);
+		case OFF:
+			
+			TRANS(&CLed::S_Off);
+		break;
+
+		default:
+			break;
+		}
+	}
+	void S_Off(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
+			LOG_DEBUG("led off\r\n");
+			break;
+
+		case ON:
+			
+			TRANS(&CLed::S_On);
 			break;
 
 		default:
-			RunState(e);
 			break;
-
 		}
 	}
-
+public:
+	DEF_STATEMACHINE(CLed);
 };
-} // namespace Edf
-
-#define DEF_STATEMACHINE(T) \
-		Edf::CStateMachine<T> m_StateMachine; \
-		virtual void RunState(Event const * const e)\
-		{\
-			this->m_StateMachine.Dispatcher(e);\
-		}
-
-
-
-#define INIT_TRANS(state) \
-		do {\
-			this->m_StateMachine.Init(this, state, #state);\
-		}while(0)
-
-#define TRANS(to) \
-		do {\
-			this->m_StateMachine.Trans(to, #to); \
-		}while(0)
 

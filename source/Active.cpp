@@ -33,8 +33,6 @@ CActive::CActive(char *Name, uint32_t DQSize)
 	m_Thread = 0;
 	m_Priority = DefPrioity;
 	m_StackSize = MINIMAL_STACK_SIZE;
-	m_NextStateName = 0;
-	m_StateName = 0;
 	m_DQ = new CActive::CEventQ(DQSize);
 	
 }
@@ -81,7 +79,7 @@ void CActive::EventLoop()
 {
 	Event* e;
 	
-	this->Dispatcher(&InitEvt);
+	this->Initial();
 
 	for (;;) 
 	{
@@ -89,44 +87,16 @@ void CActive::EventLoop()
 		if (OS_QueueReceive(this->m_Queue, &e, MAX_DELAY))
 		{			
 			//LOG_DEBUG("%s get event sig = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
-			this->Dispatcher(e);
+			this->RunState(e);
 
 			e->DecRef();
 		}
 	}
 }
 
-
-void CActive::Dispatcher(Event const * const e)
+void CActive::RunState(Event const* const e)
 {
-	switch (e->Sig)
-	{
-	case INIT_SIG: 
-		Initial();
-#if (TRACE_STATE == 1)
-		LOG_DEBUG("Init:\t%s of %s\r\n", m_StateName, m_Name);
-#endif
-		break;
 
-	case ENTRY_SIG:
-#if (TRACE_STATE == 1)
-		LOG_DEBUG("Enter:\t%s of %s\r\n", m_StateName, m_Name);
-#endif
-		RUN_STATE();
-		break;
-
-	case EXIT_SIG:
-#if (TRACE_STATE == 1)
-		LOG_DEBUG("Exit:\t%s of %s\r\n", m_StateName, m_Name);
-#endif
-		RUN_STATE();
-		break;
-
-	default:
-		RUN_STATE();
-		break;
-
-	}
 }
 
 CActive::CEventQ::CEventQ(uint32_t ItemCount)
@@ -142,7 +112,7 @@ CActive::CEventQ::~CEventQ()
 }
 CActive::CEventQ::CItem* CActive::CEventQ::GetFreeItem()
 {
-	for (int i = 0; i < m_ItemCount; i++)
+	for (uint32_t i = 0; i < m_ItemCount; i++)
 	{
 		if (m_Items[i].Evt == 0) return m_Items;
 	}
