@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\source\port\windows;..\..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\edf\include;..\..\..\edf\os_ports\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\source\port\windows;..\..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\edf\include;..\..\..\edf\os_ports\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,22 +141,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\Active.cpp" />
-    <ClCompile Include="..\..\..\source\Event.cpp" />
-    <ClCompile Include="..\..\..\source\port\windows\osal.cpp" />
-    <ClCompile Include="..\..\..\source\Publish.cpp" />
-    <ClCompile Include="..\..\..\source\State.cpp" />
-    <ClCompile Include="..\..\..\source\Timer.cpp" />
+    <ClCompile Include="..\..\..\edf\core\Active.cpp" />
+    <ClCompile Include="..\..\..\edf\core\Event.cpp" />
+    <ClCompile Include="..\..\..\edf\core\Publish.cpp" />
+    <ClCompile Include="..\..\..\edf\core\State.cpp" />
+    <ClCompile Include="..\..\..\edf\core\Timer.cpp" />
+    <ClCompile Include="..\..\..\edf\os_ports\windows\osal.cpp" />
     <ClCompile Include="Hello.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\edf.h" />
-    <ClInclude Include="..\..\..\source\Active.h" />
-    <ClInclude Include="..\..\..\source\Event.h" />
-    <ClInclude Include="..\..\..\source\port\windows\osal.h" />
-    <ClInclude Include="..\..\..\source\Publish.h" />
-    <ClInclude Include="..\..\..\source\State.h" />
-    <ClInclude Include="..\..\..\source\Timer.h" />
+    <ClInclude Include="..\..\..\edf\core\Active.h" />
+    <ClInclude Include="..\..\..\edf\core\Event.h" />
+    <ClInclude Include="..\..\..\edf\core\Publish.h" />
+    <ClInclude Include="..\..\..\edf\core\State.h" />
+    <ClInclude Include="..\..\..\edf\core\Timer.h" />
+    <ClInclude Include="..\..\..\edf\include\Edf.h" />
+    <ClInclude Include="..\..\..\edf\os_ports\windows\osal.h" />
     <ClInclude Include="hello.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

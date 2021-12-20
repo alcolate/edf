@@ -22,24 +22,22 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include <limits.h>        
-#include <sys/mman.h>     
-#include <sys/select.h>
-#include <sys/ioctl.h>
 #include <string.h>        
 #include <stdlib.h>
 #include <stdio.h>
-#include <termios.h>
 #include <unistd.h>
-#include <signal.h>
 #include <pthread.h>
 #include <sys/msg.h>
 #include <cerrno>
 #include <mqueue.h>
 #include <time.h>
-#include <stdio.h>
 #include "osal.h"
 #include "Edf.h"
+
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-parameter" 
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
 
 #define USE_MQV  1
 
@@ -127,8 +125,7 @@ T_HANDLE OS_TaskCreate(	const char * const pcName,
 void QueueClear(Q_HANDLE Q)
 {
     MsgBuf mbuf;
-    int MsgId = (int)Q;
-    
+
     while (-1 != msgrcv(HANDLE_TO_MSGID(Q), &mbuf, sizeof(void *), MSG_TYPE, MSG_NOERROR | IPC_NOWAIT));
 }
 
@@ -242,7 +239,7 @@ bool OS_QueueSend(Q_HANDLE Q, void const * const P, bool FromISR)
     MQMessage msg;
     msg.Type = 0;
     msg.P = P;
-    time(&msg.TimeStamp)
+    time(&msg.TimeStamp);
     int result = mq_send((mqd_t)Q, (char *)&msg, sizeof(MQMessage), 0);
     if (result == -1)
     {

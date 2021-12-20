@@ -45,7 +45,7 @@
 
 #define LOG_POS					OS_LOG("%s(%d)\r\n", __FUNCTION__, __LINE__)
 
-typedef void *Q_HANDLE;
+typedef int	 Q_HANDLE;
 typedef void *T_HANDLE;
 typedef void (*TaskExec)(void*);
 

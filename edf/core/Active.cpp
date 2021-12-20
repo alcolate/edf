@@ -48,14 +48,16 @@ void CActive::Start()
 	Start(m_Priority, EQ_SIZE, sizeof(Event *));
 }
 
-void CActive::Start(uint32_t prio, uint32_t queueLen, uint32_t itemSize)
+void CActive::Start(uint32_t Priority, uint32_t QueueLen, uint32_t ItemSize)
 {
-
+	QueueLen = QueueLen;
+	ItemSize = ItemSize;
+	
 	this->m_Thread = OS_TaskCreate(
 			m_Name,
 			m_StackSize,               
 			this,                       
-			prio, &(this->m_Queue), EQ_SIZE);  
+			Priority, &(this->m_Queue), EQ_SIZE);  
 
 	ASSERT(this->m_Queue);
 
@@ -94,10 +96,6 @@ void CActive::EventLoop()
 	}
 }
 
-void CActive::RunState(Event const* const e)
-{
-
-}
 
 CActive::CEventQ::CEventQ(uint32_t ItemCount)
 {

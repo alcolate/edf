@@ -22,7 +22,7 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include "../source/Active.h"
+#include "../core/Active.h"
 
 using namespace Edf;
 

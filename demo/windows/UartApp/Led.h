@@ -22,41 +22,67 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include <stdint.h>
-#include <assert.h>
-#include <stdio.h>
+#include "Edf.h"
 
-#pragma once
+class CLed
+{
+public:
+	CLed()
+	{
 
-#define MAX_PRIORITIES 			10
-#define MINIMAL_STACK_SIZE 		1024
-#define MAX_DELAY 				((long)-1)
-#define TICK_RATE_MS			10
-#define MilliSecond(t)  		((t) / TICK_RATE_MS)
+	}
 
-#define ASSERT   				assert
+	enum
+	{
+		ON = USER_SIG,
+		OFF,
+	};
 
-#define OS_LOG					printf
+	void Dispatcher(Event const* const e)
+	{
+		RunState(e);
+	}
 
-#define LOG_ERROR				OS_LOG
-#define LOG_DEBUG				OS_LOG
-#define LOG_WARNING				OS_LOG
-#define LOG_INFO				OS_LOG					
+	void Initial()
+	{
+		INIT_TRANS(&CLed::S_On);
+	}
 
-#define LOG_POS					OS_LOG("%s(%d)\r\n", __FUNCTION__, __LINE__)
+	void S_On(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
+			LOG_DEBUG("led on\r\n");
+			break;
 
-typedef void *Q_HANDLE;
-typedef void *T_HANDLE;
-typedef void (*TaskExec)(void*);
+		case OFF:
+			
+			TRANS(&CLed::S_Off);
+		break;
 
-T_HANDLE OS_TaskCreate(const char *const pcName,
-		uint16_t usStackDepth, void *const pvParameters,
-		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
+		default:
+			break;
+		}
+	}
+	void S_Off(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
+			LOG_DEBUG("led off\r\n");
+			break;
 
-bool OS_QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
-bool OS_QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
+		case ON:
+			
+			TRANS(&CLed::S_On);
+			break;
 
-uint32_t OS_EnterCritical(bool FromISR = false);
-void OS_ExitCritical(uint32_t Flag = 0, bool FromISR = false);
+		default:
+			break;
+		}
+	}
+public:
+	DEF_STATEMACHINE(CLed);
+};
 
-void OS_Start(void);

@@ -22,67 +22,41 @@
 * Contact information:
 * <9183399@qq.com>
 *****************************************************************************/
-#include "Edf.h"
+#include <stdint.h>
+#include <assert.h>
+#include <stdio.h>
 
-class CLed
-{
-public:
-	CLed()
-	{
+#pragma once
 
-	}
+#define MAX_PRIORITIES 			10
+#define MINIMAL_STACK_SIZE 		1024
+#define MAX_DELAY 				((long)-1)
+#define TICK_RATE_MS			10
+#define MilliSecond(t)  		((t) / TICK_RATE_MS)
 
-	enum
-	{
-		ON = USER_SIG,
-		OFF,
-	};
+#define ASSERT   				assert
 
-	void Dispatcher(Event const* const e)
-	{
-		m_StateMachine.Dispatcher(e);
-	}
+#define OS_LOG					printf
 
-	void Initial()
-	{
-		INIT_TRANS(&CLed::S_On);
-	}
+#define LOG_ERROR				OS_LOG
+#define LOG_DEBUG				OS_LOG
+#define LOG_WARNING				OS_LOG
+#define LOG_INFO				OS_LOG					
 
-	void S_On(Event const* const e)
-	{
-		switch (e->Sig)
-		{
-		case ENTRY_SIG:
-			LOG_DEBUG("led on\r\n");
-			break;
+#define LOG_POS					OS_LOG("%s(%d)\r\n", __FUNCTION__, __LINE__)
 
-		case OFF:
-			
-			TRANS(&CLed::S_Off);
-		break;
+typedef uint32_t Q_HANDLE;
+typedef void *T_HANDLE;
+typedef void (*TaskExec)(void*);
 
-		default:
-			break;
-		}
-	}
-	void S_Off(Event const* const e)
-	{
-		switch (e->Sig)
-		{
-		case ENTRY_SIG:
-			LOG_DEBUG("led off\r\n");
-			break;
+T_HANDLE OS_TaskCreate(const char *const pcName,
+		uint16_t usStackDepth, void *const pvParameters,
+		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
-		case ON:
-			
-			TRANS(&CLed::S_On);
-			break;
+bool OS_QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
+bool OS_QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
-		default:
-			break;
-		}
-	}
-public:
-	DEF_STATEMACHINE(CLed);
-};
+uint32_t OS_EnterCritical(bool FromISR = false);
+void OS_ExitCritical(uint32_t Flag = 0, bool FromISR = false);
 
+void OS_Start(void);

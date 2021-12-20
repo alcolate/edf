@@ -42,7 +42,7 @@ public:
 
 	void Start();
 
-	void Start(uint32_t prio, uint32_t queueLen, uint32_t itemSize);
+	void Start(uint32_t Priority, uint32_t QueueLen, uint32_t ItemSize);
 
 	bool Post(Event const *const e, bool FromISR = false);
 
@@ -84,9 +84,7 @@ public:
 protected:
 	void EventLoop(void);
 
-	void Dispatcher(Event const* const e);
-
-	virtual void RunState(Event const* const e);
+	virtual void RunState(Event const* const e) = 0;
 
 public:
 	Q_HANDLE Q() const

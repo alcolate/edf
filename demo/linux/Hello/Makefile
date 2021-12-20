@@ -42,7 +42,7 @@ endif
 #
 ifeq ($(OS),Windows_NT)
 
-EDF_PORT_DIR := $(Edf)/source/port/windows
+EDF_PORT_DIR := $(Edf)/edf/os_ports/windows
 #EDF_PORT_DIR := $(Edf)/ports/win32
 LIB_DIRS += -L$(EDF_PORT_DIR)/$(CONF)
 LIBS     += -lws2_32
@@ -50,7 +50,7 @@ LIBS     += -lws2_32
 else
 
 
-EDF_PORT_DIR := $(Edf)/source/port/posix
+EDF_PORT_DIR := $(Edf)/edf/os_ports/posix
 
 CPP_SRCS += \
 	Active.cpp \
@@ -66,8 +66,8 @@ endif
 
 #============================================================================
 
-VPATH    += $(Edf)/source $(EDF_PORT_DIR)
-INCLUDES += -I$(Edf)/include -I$(Edf)/source -I$(EDF_PORT_DIR)
+VPATH    += $(Edf)/edf/core $(EDF_PORT_DIR)
+INCLUDES += -I$(Edf)/edf/include -I$(EDF_PORT_DIR)
 
 #-----------------------------------------------------------------------------
 
