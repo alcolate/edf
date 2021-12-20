@@ -1,26 +1,20 @@
 /*****************************************************************************
-* MIT License:
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to
-* deal in the Software without restriction, including without limitation the
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-* sell copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-* IN THE SOFTWARE.
-*
-* Contact information:
-* <9183399@qq.com>
+Copyright 2021 The Edf Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contact information:
+<9183399@qq.com>
 *****************************************************************************/
 #pragma once
 
@@ -29,66 +23,23 @@
 #include "Edf.h"
 #include "Serial.h"
 #include "Led.h"
+#include "Hdlc.h"
 #pragma warning(disable : 4996)
 
+uint32_t MAX_SIG = USER_SIG;
 
-class CAppUart : public CUart
-{
-public:
-	CAppUart()
-	{
-		m_Uart_H = UART_0;
-		m_Config.Baudrate = 9600;
-		m_Config.Parity = Parity_None;
-		m_Config.StopBits = StopBit_1Bit;
-		m_BuffSize = 17;
-		m_Buff4MacCall = new uint8_t [16];
-		m_BuffCount = 0;
-		ASSERT(m_Buff4MacCall);
-	}
-	~CAppUart()
-	{
-		if (m_Buff4MacCall)
-			delete [] m_Buff4MacCall;
-	}
-	virtual bool MacCall(uint8_t AByte)
-	{
-		if (m_BuffCount < m_BuffSize)
-		{
-			m_Buff4MacCall[m_BuffCount++] = AByte;
-			if (AByte == '\n')
-			{
-				m_Buff4MacCall[m_BuffCount++] = 0;
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			// frame error occurs, reset it
-			m_BuffCount = 0;
-			return false;
-		}
-
-	}
-private:
-	UartConfig m_Config;
-};
-
-class CAPP : public CActive
+class CSession : public CActive
 {
 public:
 	virtual void Initial()
 	{
 		m_Led = new CLed();
 		m_Led->Initial();
-		m_Uart = new CAppUart();
-		CUartKeeper::Instance()->RegUart(m_Uart);
-		Edf::Subscribe(SERIAL_IN_SIG, this);
-		INIT_TRANS(&CAPP::S_Idle);
+		m_MacLayer = new CHdlc();
+		m_MacLayer->Start();
+		
+		Edf::Subscribe(MAC_RSP_SIG, this);
+		INIT_TRANS(&CSession::S_Idle);
 	}
 
 	void S_Idle(Event const* const e)
@@ -99,19 +50,28 @@ public:
 		{
 			m_Time.Trigger(MilliSecond(50), 0);
 			Event e(CLed::OFF);
-			m_Led->Dispatcher(&e);
+			//m_Led->Dispatcher(&e);
 			break;
 		}
+		case MAC_RSP_SIG:
+		{
+			CMacEvent const* ue = static_cast<CMacEvent const*>(e);
 
+			LOG_INFO("(%s) get : %s\r\n", __FUNCTION__, ue->m_Data);
+
+			if (ue->m_Type == CMacEvent::GET_DATA)
+			{
+				
+			}
+			break;
+		}
 		case TIMEOUT_SIG:
 		{
 			Request();
 
-			TRANS(&CAPP::S_WaitReponse);
-
+			TRANS(&CSession::S_WaitReponse);
 		}
 		break;
-
 
 		default:
 			break;
@@ -125,26 +85,30 @@ public:
 		case ENTRY_SIG:
 		{
 			Event e(CLed::ON);
-			m_Led->Dispatcher(&e);
+			//m_Led->Dispatcher(&e);
 			m_Time.Trigger(MilliSecond(1000), 0);
 			break;
 		}
-		case SERIAL_IN_SIG:
+		case MAC_RSP_SIG:
 		{
-			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
-			if (ue->Uart_H == m_Uart->m_Uart_H)
+			CMacEvent const* ue = static_cast<CMacEvent const*>(e);			
+
+			LOG_INFO("(%s) get : %s\r\n", __FUNCTION__, ue->m_Data);
+
+			if (ue->m_Type == CMacEvent::GET_DATA)
 			{
-				Response(ue->Data, ue->DataLen);
-
-
-				TRANS(&CAPP::S_Idle);
-			}
+				if (strstr((char*)ue->m_Data, "hello") != NULL)
+				{
+					LOG_DEBUG("get response\r\n");
+					TRANS(&CSession::S_Idle);
+				}				
+			}			
 			break;
 		}
 		case TIMEOUT_SIG:
 		{
 			LOG_DEBUG("Wait Response Timeout \r\n");
-			TRANS(&CAPP::S_RetryRequest);
+			TRANS(&CSession::S_Idle);
 		}
 		break;
 
@@ -153,57 +117,33 @@ public:
 		}
 	}
 
-	void S_RetryRequest(Event const* const e)
+
+	void Request()
 	{
-		switch (e->Sig)
-		{
-		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(20), 0);
-			break;
-
-		case TIMEOUT_SIG:
-		{
-			Request();
-
-			TRANS(&CAPP::S_WaitReponse);
-		}
-		break;
-
-
-		default:
-			break;
-		}
-	}
-
-	void Request(void)
-	{
-		char tosend[100];
-		static uint32_t cc = 0;
-		sprintf(tosend, "hello uart %d \r\n", cc++);
-		uint16_t len = strlen(tosend) + 1;
-		LOG_DEBUG("app send: %s\r\n", tosend);
-		CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Uart_H, (uint8_t*)tosend, len);
-		Publish(ue);
-	}
-
-	void Response(uint8_t* Data, uint16_t Len)
-	{
-		uint8_t* response = Data;
-		LOG_DEBUG("app get: %s\r\n", response);
-		// do your work
+		static uint32_t times = 0;
+		char Data[32];
+		sprintf(Data, "hello world %06d", ++times);
+		LOG_INFO("(%s) send: %s\r\n", __FUNCTION__, Data);
+		CAppEvent*he = new CAppEvent(APP_REQ_SIG, (uint8_t *)Data, strlen(Data) + 1);
+		Publish(he);
 	}
 
 public:
-	CAPP() : CActive((char*)"APP"), m_Time(TIMEOUT_SIG, this)
+	CSession() : CActive((char*)"Session"), m_Time(TIMEOUT_SIG, this)
 	{
-		m_Uart = 0;
+		m_MacLayer = 0;
+	}
+	~CSession()
+	{
+		delete m_MacLayer;
+		delete m_Led;
 	}
 
 public:
-	CUart* m_Uart;
+	CHdlc* m_MacLayer;
 	CTimeEvent m_Time;
 	CLed* m_Led;
 
 public:
-	DEF_STATEMACHINE(CAPP);
+	DEF_STATEMACHINE(CSession);
 };

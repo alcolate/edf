@@ -1,26 +1,20 @@
 /*****************************************************************************
-* MIT License:
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to
-* deal in the Software without restriction, including without limitation the
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-* sell copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-* IN THE SOFTWARE.
-*
-* Contact information:
-* <9183399@qq.com>
+Copyright 2021 The Edf Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contact information:
+<9183399@qq.com>
 *****************************************************************************/
 #include "Active.h"
 
@@ -29,23 +23,11 @@ namespace Edf
 class CSubscriber
 {
 public:
-	CActive const *  m_Act;
-	CSubscriber *m_Next;
-	uint32_t	m_Number;
-
-	CSubscriber(CActive const *  Act, CSubscriber *Next = 0)
+	CSubscriber(CActive const *  Act, uint32_t Number = 0)
 	{
 		ASSERT(Act);
 		this->m_Act = Act;
-		this->m_Next = Next;
-		if (Next)
-		{		
-			this->m_Number = Next->m_Number + 1;
-		}
-		else
-		{
-			this->m_Number = 1;
-		}
+		this->m_Number = Number + 1;
 	}
 
 	void Update(const Event * const e, bool FromISR = false)
@@ -56,33 +38,96 @@ public:
 		}
 	}
 
+public:
+	CActive const *  m_Act;	
+	uint32_t	m_Number;
+
 };
 
 class CPublisher
 {
 public:
-	static CPublisher *Instance();
+	static CPublisher * Instance()
+	{
+		static CPublisher puber;
+		return &puber;
+	}
 
-	void Subscribe(Signal Sig, CActive const * const Act);
+	void Init(uint32_t SigNum)
+	{
+		m_SigNum = SigNum;
+		this->m_Subs = new CList <CSubscriber> [SigNum];
+	}
 
-	void UnSubscribe(Signal Sig, CActive const * const Act);
+	inline uint32_t SigNum()
+	{
+		return m_SigNum;
+	}
 
-	void Publish(Event const * const e, bool FromISR = false);
+	void Subscribe(Signal Sig, CActive const * const Act)
+	{
+		OS_EnterCritical();
 
+		if (!m_Subs[Sig].IsExist([&Act](CSubscriber *Item) -> bool {return Item->m_Act == Act;}))
+		{
+			m_Subs[Sig].AddHead(new CSubscriber(Act, m_Subs[Sig].Head() ? m_Subs[Sig].Head()->m_Number : 0));
+		}	
+		
+		OS_ExitCritical();
 
+	}
+
+	void UnSubscribe(Signal Sig, CActive const * const Act)
+	{
+		OS_EnterCritical();
+
+		m_Subs[Sig].RemoveItem([&Act](CSubscriber* Item) -> bool {
+			if ( Item->m_Act == Act){
+				delete Item;
+				return true;
+			}
+			return false;
+		});
+		
+		OS_ExitCritical();
+	}
+
+	void Publish(Event const * const e, bool FromISR = false)
+	{
+		CSubscriber *head = m_Subs[e->Sig].Head();
+		
+		if (head)
+		{		
+			const_cast<Event *>(e)->InitRef(head->m_Number, FromISR);
+			m_Subs[e->Sig].ForEach(
+				[&e, &FromISR](CSubscriber* suber)-> void {
+					suber->Update(e, FromISR);
+				}
+			);
+		}
+		else
+		{
+			const_cast<Event*>(e)->DecRef(FromISR);
+		}	
+
+	}	
 
 private:
-	void AddTail(CSubscriber **Head, CActive const * const Act);
-
-	void AddHead(CSubscriber **Head, CActive const * const Act);
-
-	void Delete(CSubscriber **Head, CActive const * const Act);
+	CPublisher()
+	{
+		
+	}	
+	~CPublisher()
+	{
+		for (uint32_t i = 0; i < m_SigNum; i ++)
+		{
+			for (CSubscriber* p = m_Subs[i].RemoveHead(); p; delete p, p = m_Subs[i].RemoveHead());
+		}
+	}
 
 private:
-	CPublisher();
-	~CPublisher();
-private:
-	CSubscriber *m_Subs[MAX_SIG];
+	CList <CSubscriber> *m_Subs;
+	uint32_t m_SigNum;
 
 };
 
@@ -90,148 +135,29 @@ private:
 
 namespace Edf
 {
-CPublisher * CPublisher::Instance()
+void InitPublish(uint32_t SigNum)
 {
-	static CPublisher puber;
-	return &puber;
+	Edf::CPublisher::Instance()->Init(SigNum);
 }
 
-void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
-{
-	OS_EnterCritical();
-	
-	AddHead(&(m_Subs[Sig]), Act);
-	
-	OS_ExitCritical();
-
-}
-
-void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
-{
-	OS_EnterCritical();
-
-	Delete(&(m_Subs[Sig]), Act);
-	
-	OS_ExitCritical();
-}
-
-void CPublisher::Publish(Event const * const e, bool FromISR)
-{
-	CSubscriber *suber = m_Subs[e->Sig];
-	
-	if (suber)
-	{		
-		const_cast<Event *>(e)->InitRef(suber->m_Number, FromISR);
-	}
-	else
-	{
-		const_cast<Event*>(e)->DecRef(FromISR);
-	}
-	
-	while (suber)
-	{		
-		suber->Update(e, FromISR);
-		suber = suber->m_Next;
-	}
-}
-
-
-CPublisher::CPublisher()
-{
-	for (uint32_t i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
-	{
-		m_Subs[i] = 0;
-	}
-}
-
-CPublisher::~CPublisher()
-{
-	CSubscriber *p, *q;
-
-	for (uint32_t i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
-	{
-		for (p = m_Subs[i]; p; q = p, p = p->m_Next, delete q);
-	}
-}
-
-void CPublisher::AddTail(CSubscriber **Head, CActive const * const Act)
-{
-	if (*Head == 0)
-	{
-		*Head = new CSubscriber(Act);
-
-		return;
-	}
-
-	if ((*Head)->m_Act == Act)
-	{
-		return;
-	}
-
-	AddTail(&((*Head)->m_Next), Act);
-}
-
-void CPublisher::AddHead(CSubscriber **Head, CActive const * const Act)
-{
-	CSubscriber *p = *Head;
-
-	for (; p; p = p->m_Next)
-	{
-		if (p->m_Act == Act)
-		{
-			return;
-		}
-	}
-
-	*Head = new CSubscriber(Act, *Head);
-}
-
-void CPublisher::Delete(CSubscriber **Head, CActive const * const Act)
-{
-	CSubscriber *p = *Head, *q = *Head;
-
-	for (; p; q = p, p = p->m_Next)
-	{
-		if (p->m_Act == Act)
-		{
-			if (q == p)
-			{
-				q = p->m_Next;
-			}
-			else
-			{
-				q->m_Next = p->m_Next;
-			}
-
-			delete p;
-
-			break;
-		}
-	}
-}
-
-} // namespace Edf
-
-namespace Edf
-{
 void Subscribe(Signal Sig, CActive const * const Act)
 {
-	ASSERT(Sig < MAX_SIG);
+	ASSERT(Sig < Edf::CPublisher::Instance()->SigNum());
 	ASSERT(Act);
 	Edf::CPublisher::Instance()->Subscribe(Sig, Act);
 }
 
 void UnSubscribe(Signal Sig, CActive const * const Act)
 {
-	ASSERT(Sig < MAX_SIG);
+	ASSERT(Sig < Edf::CPublisher::Instance()->SigNum());
 	ASSERT(Act);
 	Edf::CPublisher::Instance()->UnSubscribe(Sig, Act);
 }
 
 void Publish(Event const * const e, bool FromISR)
 {
-	ASSERT(e->Sig < MAX_SIG);
 	ASSERT(e);
+	ASSERT(e->Sig < Edf::CPublisher::Instance()->SigNum());
 	Edf::CPublisher::Instance()->Publish( e, FromISR);
 }
 }

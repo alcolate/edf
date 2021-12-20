@@ -1,26 +1,20 @@
 /*****************************************************************************
-* MIT License:
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to
-* deal in the Software without restriction, including without limitation the
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-* sell copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-* IN THE SOFTWARE.
-*
-* Contact information:
-* <9183399@qq.com>
+Copyright 2021 The Edf Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contact information:
+<9183399@qq.com>
 *****************************************************************************/
 #pragma once
 
@@ -34,17 +28,22 @@ enum Signals
 	INIT_SIG, 
 	ENTRY_SIG,
 	EXIT_SIG,
-	USER_SIG,  /* first signal available to the users */
 	TIMEOUT_SIG,
-	TEST_SIG,
-	TEST2_SIG,
-	TEST3_SIG,
-	TEST4_SIG,
-	TEST5_SIG,
-	SERIAL_IN_SIG,   // get from serial
-	SERIAL_OUT_SIG,  // send to serial
-	SERIAL_SEND_COMPLETE_SIG,
-	MAX_SIG,
+	HW_RSP_SIG,   // get from serial
+	HW_OUT_COMPLETE_SIG, // send completely
+	UART_RSP_SIG,    //  in data
+	CAN_RSP_SIG,	//  in data
+	SPI_RSP_SIG,	//  in data
+	I2C_RSP_SIG,	//  in data
+	PWM_RSP_SIG,		//  in data
+	ADC_RSP_SIG,		//  in data
+	GPIO_RSP_SIG,		//  gpio interrupt
+	MAC_REQ_SIG,  // send to serial
+	MAC_RSP_SIG,
+	PC_REQ_SIG,
+	APP_REQ_SIG,
+	UART_SIM_SIG,
+	USER_SIG,  /* first signal available to the users */
 };
 
 
@@ -52,14 +51,38 @@ enum Signals
 class Event 
 {
 public:
-	Event(Signal s, bool DynAlloc = false);
+	Event(Signal s, bool Releasable = true);
 	virtual ~Event();
 	Signal Sig; 
-	uint32_t	RefCount;
-	const bool  DynamicAlloc;
+	uint32_t	RefCount;	
+	const bool  Releasable;
+	bool		Freeing;
 	void InitRef(uint32_t Ref, bool FromISR = false);
-	void IncRef(uint32_t Ref, bool FromISR = false);
+	void IncRef(bool FromISR = false);
 	void DecRef(bool FromISR = false);
+
+};
+
+#define EventCast(T)  (static_cast<T const *>(e))
+
+class CEventQ
+{
+public:
+	CEventQ(uint32_t MaxItems = DEF_ITEMS);
+	~CEventQ();
+
+public:
+	bool Defer(Event const* const Evt);
+
+	const Event* Fetch(void);
+
+	void Recycle(Event const* const Evt);
+
+private:
+
+	CQueue<Event> m_Queue;
+	enum { DEF_ITEMS = 10 };
+	uint32_t m_MaxItems;
 
 };
 

@@ -1,48 +1,49 @@
 /*****************************************************************************
-* MIT License:
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to
-* deal in the Software without restriction, including without limitation the
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-* sell copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-* IN THE SOFTWARE.
-*
-* Contact information:
-* <9183399@qq.com>
+Copyright 2021 The Edf Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contact information:
+<9183399@qq.com>
 *****************************************************************************/
+#pragma once
+
 #include <stdint.h>
 #include "osal.h"
+#include "Link.h"
 #include "Event.h"
 #include "State.h"
 
-
-#pragma once
-
 namespace Edf
 {
-constexpr uint32_t DefPrioity = (MAX_PRIORITIES - 5);
+
+#if (MAX_PRIORITIES < 30)
+	#error "The maximum priority must be greater than 30"
+#endif
 
 class CActive
 {
 public:
-	CActive(char* Name, uint32_t DQSize = 10);
+	static constexpr uint32_t DEF_PRIOITY = (MAX_PRIORITIES - 30);
+	static constexpr uint32_t DEF_EQ_SIZE = 20;
+	static constexpr uint32_t DEF_STACK_SIZE = MINIMAL_STACK_SIZE;
+public:
+	CActive(char* Name, uint32_t DQSize = 0);
 	virtual ~CActive();
 
-	void Start();
+	virtual void Start();
 
-	void Start(uint32_t Priority, uint32_t QueueLen, uint32_t ItemSize);
+	void SetPriority(uint32_t Priority);
 
 	bool Post(Event const *const e, bool FromISR = false);
 
@@ -50,42 +51,18 @@ public:
 
 	virtual void Initial() = 0;
 
-	void SetPriority(uint32_t Priority)
-	{
-		m_Priority = Priority;
-	}
+	bool DeferEvent(Event const* const e);
 
-	void SetStackSize(uint32_t StackSize)
-	{
-		m_StackSize = StackSize;
-	}
+	Event const * FetchDeferedEvent();
 
-	bool DeferEvent(Event const * const e)
-	{
-		ASSERT(e);
+	void RecycleEvent(Event const* const e);
 
-		bool result = m_DQ->Defer(e);
-
-		if (!result) LOG_INFO("%s: DQ is full\r\n", m_Name);
-
-		return result;
-	}
-
-	void FetchEvent()
-	{
-		const Event* e = m_DQ->Fetch();
-
-		if (e)
-		{
-			Post(e);
-		}
-	}
+	void ClearDeferedEvent();
 
 protected:
-	void EventLoop(void);
-
 	virtual void RunState(Event const* const e) = 0;
 
+	void Start(uint32_t Priority, uint32_t StackSize, uint32_t EQSize);
 public:
 	Q_HANDLE Q() const
 	{
@@ -93,50 +70,19 @@ public:
 		return m_Queue;
 	}
 private:
-	class CEventQ
-	{
-	public:
-		CEventQ(uint32_t ItemCount = DEF_ITEMS);
-		~CEventQ();
-	public:
 
-		class CItem
-		{
-		public:
-			CItem() : Evt(0), Next(0) {}
-			Event const* Evt;
-			CItem* Next;
-		};
-
-		CItem* GetFreeItem();
-
-		void LinkItem(CItem* Item);
-
-		bool Defer(Event const* const Evt);
-
-		const Event* Fetch(void);
-
-	public:
-		CItem* m_Head;
-		enum { DEF_ITEMS = 10 };
-		uint32_t m_ItemCount;
-		CItem *m_Items;
-
-	};
 public:
-	char* m_Name;
-	CEventQ *m_DQ;
+	char m_Name[10];
+	
 private:
+	CEventQ* m_DQ;
 	T_HANDLE m_Thread;   
     Q_HANDLE m_Queue;    
     uint32_t m_Priority;
 	uint32_t m_StackSize;
-
-	enum {EQ_SIZE = 100};
-
 };
 
-void EdfStart(void);
+void EdfStart(uint32_t SigNum);
     
 } // namespace Edf
 

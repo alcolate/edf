@@ -1,120 +1,96 @@
 /*****************************************************************************
-* MIT License:
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to
-* deal in the Software without restriction, including without limitation the
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-* sell copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-* IN THE SOFTWARE.
-*
-* Contact information:
-* <9183399@qq.com>
+Copyright 2021 The Edf Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contact information:
+<9183399@qq.com>
 *****************************************************************************/
 #pragma once
 
 #include <memory.h>
 #include "SerialDrv.h"
-#include "Edf.h"
+#include "Device.h"
 
 namespace Edf
 {
 
-class CUartEvent : public Event
+class CSerial : public CDevice
 {
 public:
-	CUartEvent(Signal Sig, UARTDEV_H Uart_H, uint8_t* Data, uint16_t Len) : Event(Sig, true)
+	using MACCALLBACK = bool (*)(uint8_t* Buff, const uint32_t& BuffSize, uint32_t& BuffCount, uint8_t *Data, uint32_t Len);
+
+	enum class eMode
 	{
-		this->Uart_H = Uart_H;
-		this->Data = new uint8_t[Len];
-		memcpy(this->Data, Data, Len);
-		this->DataLen = Len;
-		this->Status = 0;
-	}
-	~CUartEvent()
-	{
-		if (Data)
-			delete Data;
-	}
-	UARTDEV_H  Uart_H;
-	uint8_t* Data;
-	uint16_t DataLen;
-	uint16_t Status;
+		Asynch,
+		Synch1Wire,
+		Synch2Wire
+	};
 
-};
+	CSerial(const char *Name, DEV_HANDLE Uart, eMode Mode, uint32_t DQSize = 2);
+	~CSerial();
 
-class CUart
-{
-public:
-	CUart() 
-	{
-		m_Sibling = 0;
-	}
-	CUart(UARTDEV_H UartH, UartConfig* Config, uint8_t* Buff4MacCall, uint16_t BuffSize)
-	{
-		m_Uart_H = UartH;
-		m_Config = *Config;
-		this->m_Buff4MacCall = Buff4MacCall;
-		this->m_BuffSize = BuffSize;
-		this->m_BuffCount = 0;
-		m_Sibling = 0;
-	}
-	UARTDEV_H  m_Uart_H;			// the no. of uart
+	bool Reset() override;
 
-	UartConfig m_Config;
+	// only used in asynchronous mode
+	bool ResetBuff();
 
-	uint8_t* m_Buff4MacCall;
+	bool Config(UART_Baudrate Baudrate, UART_Parity Parity, UART_StopBit Stopbit);
 
-	uint16_t m_BuffSize;
+	// only used in asynchronous mode
+	bool SetBuff(uint32_t RspSig, uint32_t Size);
 
-	uint16_t m_BuffCount;
+	void SetMacCall(MACCALLBACK MacCB);
 
-	CUart* m_Sibling;
+	// asynchronously communicate
+	void Send(uint8_t *Tx, uint32_t TxLen);
 
-	// the method is used to get a frame
-	virtual bool  MacCall(uint8_t Abyte) = 0;
-};
-
-class CUartKeeper : public CActive
-{
-public:
-
-	static CUartKeeper* Instance();
-
-	void RegUart(CUart* Uart);
-
-	virtual void Initial();
-
-	void Receive(UARTDEV_H UartH, uint8_t AByte);
+	// the method is only used for master - slave synchronous communication.
+	bool SendRecv(uint8_t *Tx, uint32_t TxLen, uint8_t *Rx, uint32_t RxLen, uint32_t Delay);
+protected:
+	void Initial(CActive *Owner) override;
+	void SendSuccess(Event const* const e) override;
+	void SendFail(Event const* const e) override;
+	static void PostIrqRecvEvent(CDevice *Device);
+	static bool MacCall(CDevice *Device, uint8_t *Data, uint32_t Len);
+	bool Send(Event const* const e) override;
+	uint32_t TimeSend(uint32_t DataLen);
+	void EnterSend();
+	void ExitSend();
+	bool WaitComplete(uint32_t Timeout);
 
 private:
-	void S_Run(Event const* const e);
+	uint8_t* m_RxBuff;
+	uint32_t m_RxSize;
+	uint32_t m_RxCount;
+	uint32_t m_Skip;
 
-	CUart* GetUart(UARTDEV_H UartH);
+	uint8_t* m_Buff4MacCall;
+	uint32_t 	m_BuffSize;
+	uint32_t 	m_BuffCount;
+	MACCALLBACK m_MacCall;
 
-	void AddUart(CUart* Uart);
+	CDeviceEvent* m_IrqRecvEvents;
+	uint32_t	m_IrqRecvEventIndex;
 
-	CUartKeeper() : CActive((char*)"UartKeeper")
-	{
-		m_Uart = 0;
-	}
+	UartConfig 	m_Config;
 
-	CUart* m_Uart;
-
-public:
-	DEF_STATEMACHINE(CUartKeeper);
+	eMode	m_Mode;
+	Q_HANDLE   m_RecvQ;
+	Q_HANDLE   m_SyncQ;
 };
+
+
 
 } // namespace Edf
 

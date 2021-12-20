@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -117,11 +117,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\edf\include;..\..\..\edf\os_ports\windows;..\..\..\edf\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\edf\components\protocol;..\..\..\third_party\yahdlc;..\..\..\edf\include;..\..\..\edf\os_ports\windows;..\..\..\edf\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SetupAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -141,27 +142,56 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\edf\components\protocol\Hdlc.cpp" />
+    <ClCompile Include="..\..\..\edf\components\protocol\protocol.cpp" />
     <ClCompile Include="..\..\..\edf\core\Active.cpp" />
     <ClCompile Include="..\..\..\edf\core\Event.cpp" />
     <ClCompile Include="..\..\..\edf\core\Publish.cpp" />
     <ClCompile Include="..\..\..\edf\core\State.cpp" />
     <ClCompile Include="..\..\..\edf\core\Timer.cpp" />
+    <ClCompile Include="..\..\..\edf\driver\CanDev.cpp" />
+    <ClCompile Include="..\..\..\edf\driver\Device.cpp" />
     <ClCompile Include="..\..\..\edf\driver\Serial.cpp" />
     <ClCompile Include="..\..\..\edf\os_ports\windows\osal.cpp" />
+    <ClCompile Include="..\..\..\third_party\yahdlc\fcs.c" />
+    <ClCompile Include="..\..\..\third_party\yahdlc\yahdlc.c" />
+    <ClCompile Include="CanDrvSim.cpp" />
+    <ClCompile Include="SerialDrv.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="UartDrvSim.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="UartTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\edf\components\protocol\Hdlc.h" />
+    <ClInclude Include="..\..\..\edf\components\protocol\protocol.h" />
     <ClInclude Include="..\..\..\edf\core\Active.h" />
     <ClInclude Include="..\..\..\edf\core\Event.h" />
+    <ClInclude Include="..\..\..\edf\core\Link.h" />
     <ClInclude Include="..\..\..\edf\core\Publish.h" />
     <ClInclude Include="..\..\..\edf\core\State.h" />
     <ClInclude Include="..\..\..\edf\core\Timer.h" />
+    <ClInclude Include="..\..\..\edf\driver\CanDev.h" />
+    <ClInclude Include="..\..\..\edf\driver\CanDrv.h" />
+    <ClInclude Include="..\..\..\edf\driver\Device.h" />
+    <ClInclude Include="..\..\..\edf\driver\Driver.h" />
     <ClInclude Include="..\..\..\edf\driver\Serial.h" />
     <ClInclude Include="..\..\..\edf\driver\SerialDrv.h" />
     <ClInclude Include="..\..\..\edf\include\Edf.h" />
     <ClInclude Include="..\..\..\edf\os_ports\windows\osal.h" />
+    <ClInclude Include="..\..\..\third_party\yahdlc\fcs.h" />
+    <ClInclude Include="..\..\..\third_party\yahdlc\yahdlc.h" />
     <ClInclude Include="Led.h" />
+    <ClInclude Include="Motor.h" />
+    <ClInclude Include="P1200.h" />
     <ClInclude Include="UartTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\..\third_party\serial\visual_studio\x64\Debug\serial.lib">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </Library>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

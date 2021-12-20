@@ -1,33 +1,27 @@
 /*****************************************************************************
-* MIT License:
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to
-* deal in the Software without restriction, including without limitation the
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-* sell copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-* IN THE SOFTWARE.
-*
-* Contact information:
-* <9183399@qq.com>
+Copyright 2021 The Edf Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contact information:
+<9183399@qq.com>
 *****************************************************************************/
 #include "Active.h"
 
 namespace Edf
 {
 
-Event::Event(Signal s, bool DynAlloc) : Sig(s), RefCount(0), DynamicAlloc(DynAlloc) 
+Event::Event(Signal s, bool Releasable) : Sig(s), RefCount(0), Releasable(Releasable), Freeing(false)
 {
 
 }
@@ -36,50 +30,84 @@ Event::~Event()
 	
 }
 void Event::InitRef(uint32_t Ref, bool FromISR)
-{
-
-	uint32_t flag = OS_EnterCritical(FromISR);
-	if (DynamicAlloc)
+{	
+	if (Releasable)
 	{
+		uint32_t flag = OS_EnterCritical(FromISR);
 		ASSERT(RefCount == 0);
 		RefCount = Ref;
-		//LOG_DEBUG("event init: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
-	}
-	OS_ExitCritical(flag, FromISR);
+		OS_ExitCritical(flag, FromISR);
+	}	
 }
-void Event::IncRef(uint32_t Ref, bool FromISR)
+void Event::IncRef(bool FromISR)
 {
-
-	uint32_t flag = OS_EnterCritical(FromISR);
-	if (DynamicAlloc)
+	if (Releasable)
 	{        
-		RefCount += Ref;
-		//LOG_DEBUG("event add: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
-	}    
-	OS_ExitCritical(flag, FromISR);
+		uint32_t flag = OS_EnterCritical(FromISR);
+		++ RefCount;
+		OS_ExitCritical(flag, FromISR);
+	}
 }
 void Event::DecRef(bool FromISR)
 {
 	bool ToFree = false;
-	uint32_t flag = OS_EnterCritical(FromISR);
-	if (DynamicAlloc)
+	
+	if (Releasable)
 	{
+		uint32_t flag = OS_EnterCritical(FromISR);
 		if (RefCount)
 		{
-			RefCount --;
-		} 
+			-- RefCount;
+		}
 		if (RefCount == 0)
 		{
-			ToFree = true;
+			if (!Freeing)
+			{
+				ToFree = true;
+				Freeing = true;
+			}
 		}
-		//LOG_DEBUG("event delete: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
+		OS_ExitCritical(flag, FromISR);
 	}
-	OS_ExitCritical(flag, FromISR);
 
 	if (ToFree)
 	{
 		delete this;
 	}
+}
+
+CEventQ::CEventQ(uint32_t MaxItems)
+{
+	m_MaxItems = MaxItems;
+}
+CEventQ::~CEventQ()
+{
+
+}
+
+bool CEventQ::Defer(Event const* const Evt)
+{
+	if (m_Queue.Count() == m_MaxItems)
+	{
+		return false;
+	}
+	else
+	{
+		(const_cast<Event*>(Evt))->IncRef();
+
+		m_Queue.Push(const_cast<Event*>(Evt));
+		return true;
+	}
+}
+
+const Event* CEventQ::Fetch(void)
+{
+	return m_Queue.Pop();
+}
+
+void CEventQ::Recycle(Event const* const Evt)
+{
+	const_cast<Event *>(Evt)->DecRef();
 }
 
 Event const InitEvt(INIT_SIG);

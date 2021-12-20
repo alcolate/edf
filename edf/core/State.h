@@ -1,30 +1,27 @@
 /*****************************************************************************
-* MIT License:
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to
-* deal in the Software without restriction, including without limitation the
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-* sell copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-* IN THE SOFTWARE.
-*
-* Contact information:
-* <9183399@qq.com>
+Copyright 2021 The Edf Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contact information:
+<9183399@qq.com>
 *****************************************************************************/
 #pragma once
 
+#include "Link.h"
+
 #define TRACE_STATE		0
+#define STATE_HISTORY   0
 
 namespace Edf
 {
@@ -32,18 +29,48 @@ template <class T>
 class CStateMachine
 {
 public:
-	CStateMachine() 
+	CStateMachine()
 	{
 		m_Obj = 0;
 	}
-
-	T* m_Obj;
+	~CStateMachine()
+	{
+#if (STATE_HISTORY == 1)
+		ClearHistory();
+#endif
+	}
 
 	using STATE = void (T::*)(Event const* const e);
 
-	STATE  m_State;
-	const char* m_StateName;
+#if (STATE_HISTORY == 1)
+	void Push(STATE State)
+	{
+		m_Queue.PushTail(new STATE(State));
 
+		if (m_Queue.Count() > MAX_ITEMS)
+		{
+			STATE* s = m_Queue.PopHead();
+			delete s;
+		}
+	}
+
+	STATE History(void)
+	{
+		STATE t = 0;
+		STATE* s = m_Queue.PopTail();
+		if (s)
+		{
+			t = *s;
+			delete s;
+		}
+		return t;
+	}
+
+	void ClearHistory()
+	{
+		while (History() != 0);
+	}
+#endif
 	void RunState(Event const* const e)
 	{
 		(m_Obj->*m_State)(e);
@@ -60,11 +87,35 @@ public:
 
 	void Trans(STATE State, const char* Name)
 	{
+#if (STATE_HISTORY == 1)
+		Push(m_State);
+#endif
 		this->Dispatcher(&ExitEvent);
 		m_State = State;
 		m_StateName = Name;
 		this->Dispatcher(&EntryEvent);
 	}
+
+	bool InState(const STATE State)
+	{
+		return m_State == State;
+	}
+
+	STATE GetState()
+	{
+		return m_State;
+	}
+
+	void StashState()
+	{
+		m_StashedState = m_State;
+	}
+
+	STATE StashStatePop()
+	{
+		return m_StashedState;
+	}
+
 
 	void Dispatcher(Event const* const e)
 	{
@@ -73,20 +124,20 @@ public:
 		case INIT_SIG:
 			//Initial();
 #if (TRACE_STATE == 1)
-			LOG_DEBUG("Init:\t%s of %s\r\n", m_StateName, m_Name);
+			LOG_DEBUG("Init:\t%s\r\n", m_StateName);
 #endif
 			break;
 
 		case ENTRY_SIG:
 #if (TRACE_STATE == 1)
-			LOG_DEBUG("Enter:\t%s of %s\r\n", m_StateName, m_Name);
+			LOG_DEBUG("Enter:\t%s\r\n", m_StateName);
 #endif
 			RunState(e);
 			break;
 
 		case EXIT_SIG:
 #if (TRACE_STATE == 1)
-			LOG_DEBUG("Exit:\t%s of %s\r\n", m_StateName, m_Name);
+			LOG_DEBUG("Exit:\t%s\r\n", m_StateName);
 #endif
 			RunState(e);
 			break;
@@ -98,12 +149,27 @@ public:
 		}
 	}
 
+	const char * GetStateName()
+	{
+		return m_StateName;
+	}
+
+private:
+	STATE  m_State;
+	const char* m_StateName;
+	STATE  m_StashedState;
+	T* m_Obj;
+#if (STATE_HISTORY == 1)
+	CDeQueue<STATE> m_Queue;
+	enum { MAX_ITEMS = 10 };
+#endif
+
 };
 } // namespace Edf
 
 #define DEF_STATEMACHINE(T) \
 		Edf::CStateMachine<T> m_StateMachine; \
-		virtual void RunState(Event const * const e)\
+		virtual void RunState(Edf::Event const * const e)\
 		{\
 			this->m_StateMachine.Dispatcher(e);\
 		}
@@ -111,12 +177,32 @@ public:
 
 
 #define INIT_TRANS(state) \
-		do {\
-			this->m_StateMachine.Init(this, state, #state);\
-		}while(0)
+			do {\
+				this->m_StateMachine.Init(this, state, #state);\
+			}while(0)
 
 #define TRANS(to) \
-		do {\
-			this->m_StateMachine.Trans(to, #to); \
-		}while(0)
+			do {\
+				this->m_StateMachine.Trans(to, #to); \
+			}while(0)
+
+#define TRANS_BACKUP(to) \
+			do {\
+				this->m_StateMachine.StashState();\
+				this->m_StateMachine.Trans(to, #to); \
+			}while(0)
+
+#define TRANS_TO_HIS() \
+			TRANS(this->m_StateMachine.StashStatePop())
+
+
+#define IN_STATE(state) \
+			this->m_StateMachine.InState(state)
+
+#if (STATE_HISTORY == 1)
+#define HISTORY() \
+			this->m_StateMachine.History()
+#endif
+
+
 

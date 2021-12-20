@@ -1,31 +1,31 @@
 /*****************************************************************************
-* MIT License:
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to
-* deal in the Software without restriction, including without limitation the
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-* sell copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-* IN THE SOFTWARE.
-*
-* Contact information:
-* <9183399@qq.com>
+Copyright 2021 The Edf Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contact information:
+<9183399@qq.com>
 *****************************************************************************/
 #pragma once
 #include <stdint.h>
 
-typedef void* UARTDEV_H;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "Driver.h"
+
+typedef uint32_t UART_Baudrate;
 
 typedef enum __uart_parity
 {
@@ -42,16 +42,29 @@ typedef enum __uart_stoptbits
 
 typedef struct __uartconfig
 {
-	uint32_t		Baudrate;
+	UART_Baudrate	Baudrate;
 	UART_Parity		Parity;
 	UART_StopBit	StopBits;
+	uint8_t			RecvBuff[1];
 }UartConfig;
 
-extern UARTDEV_H  UART_0;
-extern UARTDEV_H  UART_1;
-extern UARTDEV_H  UART_2;
+extern DEV_HANDLE  UART_0;
+extern DEV_HANDLE  UART_1;
+extern DEV_HANDLE  UART_2;
+extern DEV_HANDLE  UART_3;
+extern DEV_HANDLE  UART_4;
+extern DEV_HANDLE  UART_5;
+extern DEV_HANDLE  UART_6;
+extern DEV_HANDLE  UART_7;
+extern DEV_HANDLE  UART_8;
 
-bool Uart_Init(UARTDEV_H Uart, UartConfig* Config);
-bool Uart_Send(UARTDEV_H Uart, uint8_t* Data, uint16_t DataLen);
-void Uart_Isr(void);
+bool Uart_Init(DEV_HANDLE Uart, UartConfig* Config);
+bool Uart_Send(DEV_HANDLE Uart, uint8_t* Data, uint16_t DataLen);
+void Uart_SendComplete(DEV_HANDLE Uart);
+void Uart_Recv(DEV_HANDLE Uart, uint8_t Data);
+void Uart_Error(DEV_HANDLE Uart);
+
+#ifdef __cplusplus
+}
+#endif
 
