@@ -31,7 +31,7 @@ constexpr uint32_t DefPrioity = (MAX_PRIORITIES - 5);
 class CActive
 {
 public:
-	CActive(char* Name, uint32_t DQSize = 10);
+	CActive(char* Name, uint32_t DQSize = 0);
 	virtual ~CActive();
 
 	void Start();
@@ -54,26 +54,11 @@ public:
 		m_StackSize = StackSize;
 	}
 
-	bool DeferEvent(Event const * const e)
-	{
-		ASSERT(e);
+	bool DeferEvent(Event const* const e);
 
-		bool result = m_DQ->Defer(e);
+	void FetchDeferedEvent();
 
-		if (!result) LOG_INFO("%s: DQ is full\r\n", m_Name);
-
-		return result;
-	}
-
-	void FetchEvent()
-	{
-		const Event* e = m_DQ->Fetch();
-
-		if (e)
-		{
-			Post(e);
-		}
-	}
+	void ClearDeferedEvent();
 
 protected:
 	void EventLoop(void);

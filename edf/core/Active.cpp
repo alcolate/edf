@@ -27,8 +27,14 @@ CActive::CActive(char *Name, uint32_t DQSize)
 	m_Thread = 0;
 	m_Priority = DefPrioity;
 	m_StackSize = MINIMAL_STACK_SIZE;
-	m_DQ = new CActive::CEventQ(DQSize);
-	
+	if (DQSize)
+	{
+		m_DQ = new CActive::CEventQ(DQSize);
+	}
+	else
+	{
+		m_DQ = NULL;
+	}
 }
 
 CActive::~CActive()
@@ -90,6 +96,36 @@ void CActive::EventLoop()
 	}
 }
 
+bool CActive::DeferEvent(Event const* const e)
+{
+	ASSERT(e);
+
+	bool result = m_DQ->Defer(e);
+
+	if (!result) LOG_INFO("%s: DQ is full\r\n", m_Name);
+
+	return result;
+}
+
+void CActive::FetchDeferedEvent()
+{
+	const Event* e = m_DQ->Fetch();
+
+	if (e)
+	{
+		Post(e);
+	}
+}
+
+void CActive::ClearDeferedEvent()
+{
+	const Event* e;
+
+	while (e = m_DQ->Fetch())
+	{
+		(const_cast<Event*>(e))->DecRef();
+	}
+}
 
 CActive::CEventQ::CEventQ(uint32_t ItemCount)
 {
