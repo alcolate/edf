@@ -129,7 +129,6 @@ void CActive::ClearDeferedEvent()
 
 CActive::CEventQ::CEventQ(uint32_t ItemCount)
 {
-	m_Head = m_Tail = 0;
 	m_ItemCount = ItemCount;
 	m_Items = new CItem[ItemCount];
 }
@@ -142,45 +141,10 @@ CActive::CEventQ::CItem* CActive::CEventQ::GetFreeItem()
 {
 	for (uint32_t i = 0; i < m_ItemCount; i++)
 	{
-		if (m_Items[i].Evt == 0) return m_Items;
+		if (m_Items[i].m_Evt == 0) return m_Items;
 	}
 
 	return NULL;
-}
-
-void CActive::CEventQ::LinkTail(CItem* Item)
-{
-	if (NULL == m_Head)
-	{
-		m_Head = m_Tail = Item;
-	}
-	else
-	{		
-		m_Tail->Next = Item;
-		m_Tail = m_Tail->Next;
-	}
-}
-
-CActive::CEventQ::CItem* CActive::CEventQ::UnLinkHead()
-{
-	CItem* Item;
-
-	if (NULL == m_Head)
-	{
-		return NULL;
-	}
-	else
-	{
-		Item = m_Head;
-		m_Head = m_Head->Next;
-		
-		if (!m_Head)
-		{
-			m_Tail = m_Head; 
-		}
-
-		return Item;
-	}
 }
 
 bool CActive::CEventQ::Defer(Event const* const Evt)
@@ -194,10 +158,10 @@ bool CActive::CEventQ::Defer(Event const* const Evt)
 	else
 	{
 		(const_cast<Event*>(Evt))->IncRef(1);
-		item->Evt = Evt;
-		item->Next = 0;
+		item->m_Evt = Evt;
+		item->m_Next = 0;
 
-		LinkTail(item);
+		m_Queue.Push(item);
 		return true;
 	}
 }
@@ -205,13 +169,13 @@ bool CActive::CEventQ::Defer(Event const* const Evt)
 const Event* CActive::CEventQ::Fetch(void)
 {	
 	const Event* Evt = 0;
-	CItem* Item = UnLinkHead();
+	CItem* Item = m_Queue.Pop();
 
 	if (Item)
 	{
-		Evt = Item->Evt;
-		Item->Evt = 0;
-		Item->Next = 0;
+		Evt = Item->m_Evt;
+		Item->m_Evt = 0;
+		Item->m_Next = 0;
 	}
 
 	return Evt;

@@ -51,7 +51,7 @@ public:
 class CHello : public CActive
 {
 public:
-	CHello() : CActive((char*)"Hello"), m_Time(TIMEOUT_SIG, this)
+	CHello() : CActive((char*)"Hello", 10), m_Time(TIMEOUT_SIG, this)
 	{
 		static int ObjCount = 0;
 		char* name = new char[50];
@@ -147,7 +147,7 @@ public:
 class CWorld : public CActive
 {
 public:
-	CWorld() : CActive((char*)"World")
+	CWorld() : CActive((char*)"World", 10)
 	{
 		static int ObjCount = 0;
 		char* name = new char[50];
@@ -182,8 +182,7 @@ public:
 
 		case TEST_SIG:
 		{
-			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			DeferEvent(e);
 			TRANS(&CWorld::State2);
 			break;
 		}
@@ -218,7 +217,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-
+			FetchDeferedEvent();
 			break;
 		case EXIT_SIG:
 			break;

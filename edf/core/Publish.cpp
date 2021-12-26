@@ -76,7 +76,7 @@ private:
 	CPublisher();
 	~CPublisher();
 private:
-	CSubscriber *m_Subs[MAX_SIG];
+	CList <CSubscriber> m_Subs[MAX_SIG];
 
 };
 
@@ -93,8 +93,17 @@ CPublisher * CPublisher::Instance()
 void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
 {
 	OS_EnterCritical();
-	
-	AddHead(&(m_Subs[Sig]), Act);
+
+	CSubscriber *sub = new CSubscriber(Act, m_Subs[Sig].Head());
+
+	if (m_Subs[Sig].IsExist([](CSubscriber *This, CSubscriber *That) -> bool {return This->m_Act == That->m_Act;}, sub))
+	{
+		delete sub;
+	}
+	else
+	{
+		m_Subs[Sig].AddHead(sub);
+	}	
 	
 	OS_ExitCritical();
 
@@ -104,14 +113,25 @@ void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 {
 	OS_EnterCritical();
 
-	Delete(&(m_Subs[Sig]), Act);
+	CSubscriber Sub(Act, 0);
+
+	CSubscriber* Item = m_Subs[Sig].RemoveItem([](CSubscriber* This, CSubscriber* That) -> bool {return This->m_Act == That->m_Act; },  &Sub);
+
+	if (Item)
+	{
+		delete Item;
+	}
+	else
+	{
+		ASSERT(Item);
+	}
 	
 	OS_ExitCritical();
 }
 
 void CPublisher::Publish(Event const * const e, bool FromISR)
 {
-	CSubscriber *suber = m_Subs[e->Sig];
+	CSubscriber *suber = m_Subs[e->Sig].Head();
 	
 	if (suber)
 	{		
@@ -125,84 +145,29 @@ void CPublisher::Publish(Event const * const e, bool FromISR)
 	while (suber)
 	{		
 		suber->Update(e, FromISR);
-		suber = suber->m_Next;
+		suber = m_Subs[e->Sig].Next(suber);
 	}
 }
 
 
 CPublisher::CPublisher()
 {
-	for (uint32_t i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
-	{
-		m_Subs[i] = 0;
-	}
+
 }
 
 CPublisher::~CPublisher()
 {
-	CSubscriber *p, *q;
-
 	for (uint32_t i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
 	{
-		for (p = m_Subs[i]; p; q = p, p = p->m_Next, delete q);
-	}
-}
-
-void CPublisher::AddTail(CSubscriber **Head, CActive const * const Act)
-{
-	if (*Head == 0)
-	{
-		*Head = new CSubscriber(Act);
-
-		return;
-	}
-
-	if ((*Head)->m_Act == Act)
-	{
-		return;
-	}
-
-	AddTail(&((*Head)->m_Next), Act);
-}
-
-void CPublisher::AddHead(CSubscriber **Head, CActive const * const Act)
-{
-	CSubscriber *p = *Head;
-
-	for (; p; p = p->m_Next)
-	{
-		if (p->m_Act == Act)
+		CSubscriber* p;
+		while (p = m_Subs[i].RemoveHead())
 		{
-			return;
-		}
-	}
-
-	*Head = new CSubscriber(Act, *Head);
-}
-
-void CPublisher::Delete(CSubscriber **Head, CActive const * const Act)
-{
-	CSubscriber *p = *Head, *q = *Head;
-
-	for (; p; q = p, p = p->m_Next)
-	{
-		if (p->m_Act == Act)
-		{
-			if (q == p)
-			{
-				q = p->m_Next;
-			}
-			else
-			{
-				q->m_Next = p->m_Next;
-			}
-
 			delete p;
-
-			break;
 		}
 	}
 }
+
+
 
 } // namespace Edf
 

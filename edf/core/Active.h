@@ -20,7 +20,7 @@ Contact information:
 #include "osal.h"
 #include "Event.h"
 #include "State.h"
-
+#include "Link.h"
 
 #pragma once
 
@@ -82,17 +82,13 @@ private:
 		class CItem
 		{
 		public:
-			CItem() : Evt(0), Next(0) {}
-			Event const* Evt;
-			CItem* Next;
+			CItem() : m_Evt(0), m_Next(0) {}
+			Event const* m_Evt;
+			CItem* m_Next;
 		};
 
 	private:
 		CItem* GetFreeItem();
-
-		void LinkTail(CItem* Item);
-
-		CItem* UnLinkHead();
 		
 	public:
 		bool Defer(Event const* const Evt);
@@ -100,7 +96,7 @@ private:
 		const Event* Fetch(void);
 
 	public:
-		CItem *m_Head, *m_Tail;
+		CQueue<CItem> m_Queue;
 		enum { DEF_ITEMS = 10 };
 		uint32_t m_ItemCount;
 		CItem *m_Items;
@@ -108,8 +104,9 @@ private:
 	};
 public:
 	char* m_Name;
-	CEventQ *m_DQ;
+	
 private:
+	CEventQ* m_DQ;
 	T_HANDLE m_Thread;   
     Q_HANDLE m_Queue;    
     uint32_t m_Priority;

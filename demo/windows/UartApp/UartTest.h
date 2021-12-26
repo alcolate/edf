@@ -36,7 +36,7 @@ public:
 		m_Config.Parity = Parity_None;
 		m_Config.StopBits = StopBit_1Bit;
 		m_BuffSize = 16;
-		m_Buff4MacCall = new uint8_t [16 + 1];
+		m_Buff4MacCall = new uint8_t [1 * 1024 * 1024 + 1];
 		m_BuffCount = 0;
 		ASSERT(m_Buff4MacCall);
 	}
@@ -130,7 +130,7 @@ public:
 			{
 				Response(ue->Data, ue->DataLen);
 
-
+				m_Time.UnTrigger();
 				TRANS(&CAPP::S_Idle);
 			}
 			break;

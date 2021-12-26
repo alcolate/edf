@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\edf\core\Active.h" />
     <ClInclude Include="..\..\..\edf\core\Event.h" />
+    <ClInclude Include="..\..\..\edf\core\Link.h" />
     <ClInclude Include="..\..\..\edf\core\Publish.h" />
     <ClInclude Include="..\..\..\edf\core\State.h" />
     <ClInclude Include="..\..\..\edf\core\Timer.h" />
