@@ -274,12 +274,12 @@ void OS_ExitCritical(uint32_t Flag, bool FromISR)
 
 void OS_Start(void)
 {
-    extern void TimeEvent_tickFromISR();
+    extern void TimeEvent_Tick(bool FromISR);
     
     while (1)
     {   
         usleep(TICK_RATE_MS * 1000);
-        TimeEvent_tickFromISR();
+        TimeEvent_Tick(false);
     } 
 }
 /*..........................................................................*/

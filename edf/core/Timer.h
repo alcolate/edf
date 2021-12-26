@@ -38,7 +38,7 @@ public:
 
 	void Touch();
 
-	static void Tick();
+	static void Tick(bool FromISR);
 
 private:
 	CActive* m_Act;

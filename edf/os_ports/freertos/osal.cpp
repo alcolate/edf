@@ -100,7 +100,7 @@ void OS_Start(void)
 }
 /*..........................................................................*/
 
-extern void TimeEvent_tickFromISR();
+extern void TimeEvent_Tick(bool FromISR);
 extern "C"
 {
 
@@ -108,7 +108,7 @@ void vApplicationTickHook(void)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-    TimeEvent_tickFromISR();
+    TimeEvent_Tick(true);
     
     portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);
 }

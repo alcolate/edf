@@ -59,13 +59,13 @@ void CTimeEvent::Touch()
 	m_Act->Post(this, true);
 }
 
-void CTimeEvent::Tick()
+void CTimeEvent::Tick(bool FromISR)
 {
 	CTimeEvent* timer, * p;
 	for (p = gTimer; p; p = p->m_Next)
 	{
 		timer = NULL;
-		uint32_t flag = OS_EnterCritical(true);
+		uint32_t flag = OS_EnterCritical(FromISR);
 		if (p->m_Timeout > 0U)
 		{
 			if (--p->m_Timeout == 0U)
@@ -74,7 +74,7 @@ void CTimeEvent::Tick()
 				p->m_Timeout = p->m_Interval;
 			}
 		}
-		OS_ExitCritical(flag, true);
+		OS_ExitCritical(flag, FromISR);
 		if (timer != NULL)
 		{
 			timer->Touch();
@@ -83,7 +83,7 @@ void CTimeEvent::Tick()
 }
 } // namespace Edf
 
-void TimeEvent_tickFromISR()
+void TimeEvent_Tick(bool FromISR)
 {
-	Edf::CTimeEvent::Tick();
+	Edf::CTimeEvent::Tick(FromISR);
 }

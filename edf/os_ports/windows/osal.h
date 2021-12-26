@@ -41,7 +41,6 @@ Contact information:
 
 typedef uint32_t Q_HANDLE;
 typedef void *T_HANDLE;
-typedef void (*TaskExec)(void*);
 
 T_HANDLE OS_TaskCreate(const char *const pcName,
 		uint16_t usStackDepth, void *const pvParameters,
