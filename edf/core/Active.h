@@ -87,16 +87,20 @@ private:
 			CItem* Next;
 		};
 
+	private:
 		CItem* GetFreeItem();
 
-		void LinkItem(CItem* Item);
+		void LinkTail(CItem* Item);
 
+		CItem* UnLinkHead();
+		
+	public:
 		bool Defer(Event const* const Evt);
 
 		const Event* Fetch(void);
 
 	public:
-		CItem* m_Head;
+		CItem *m_Head, *m_Tail;
 		enum { DEF_ITEMS = 10 };
 		uint32_t m_ItemCount;
 		CItem *m_Items;
