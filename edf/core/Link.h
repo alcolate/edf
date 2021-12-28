@@ -25,7 +25,7 @@ template <class T>
 class CLink
 {
 public:
-    CLink() : m_Head(0), m_Tail(0)
+	CLink() : m_Head(0), m_Tail(0), m_Count(0)
     {
 
     }
@@ -40,6 +40,14 @@ public:
 	T* Next(T* Item)
 	{
 		return Item->m_Next;
+	}
+	bool IsEmpty()
+	{
+		return (m_Head == NULL);
+	}
+	uint32_t Count()
+	{
+		return m_Count;
 	}
 	bool IsExist(bool (*Call)(T* This, T* That), T* That)
 	{
@@ -56,12 +64,15 @@ protected:
 		if (NULL == m_Head)
 		{
 			m_Head = m_Tail = Item;
+			m_Head->m_Next = NULL;
 		}
 		else
 		{
 			Item->m_Next = m_Head;
 			m_Head = Item;
 		}
+
+		++m_Count;
 	}
     
 	void LinkTail(T* Item)
@@ -69,12 +80,16 @@ protected:
 		if (NULL == m_Head)
 		{
 			m_Head = m_Tail = Item;
+			m_Head->m_Next = NULL;
 		}
 		else
 		{
 			m_Tail->m_Next = Item;
 			m_Tail = m_Tail->m_Next;
+			m_Tail->m_Next = NULL;
 		}
+
+		++m_Count;
 	}
 
 	T* UnLinkHead()
@@ -93,6 +108,8 @@ protected:
 				m_Tail = m_Head;
 			}
 
+			--m_Count;
+
 			return Item;
 		}
 	}
@@ -109,7 +126,7 @@ protected:
 
 			for (p = q = m_Head; p->m_Next; q = p, p = p->m_Next);
 
-			if (q == m_Head)
+			if (q == p)
 			{
 				m_Head = m_Tail = 0;
 			}
@@ -118,6 +135,8 @@ protected:
 				m_Tail = q;
 				q->m_Next = 0;
 			}
+
+			--m_Count;
 
 			return p;
 		}
@@ -144,6 +163,7 @@ protected:
 				q->m_Next = p->m_Next;
 			}
 
+			--m_Count;
 			return p;
 
 		}
@@ -153,6 +173,7 @@ protected:
 private:
     T *m_Head;
     T *m_Tail;
+	uint32_t m_Count;
 
 };
 
