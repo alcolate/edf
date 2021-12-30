@@ -28,21 +28,50 @@ namespace Edf
 class CUartEvent : public Event
 {
 public:
-	CUartEvent(Signal Sig, UARTDEV_H Uart_H, uint8_t* Data, uint16_t Len) : Event(Sig, true)
+	CUartEvent(UARTDEV_H Uart_H) : Event(0, false)
 	{
 		this->Uart_H = Uart_H;
-		this->Data = new uint8_t[Len];
-		memcpy(this->Data, Data, Len);
-		this->DataLen = Len;
+		this->DataLen = 0;
+		this->Status = 0;
+	}
+
+	CUartEvent(Signals Sig, UARTDEV_H Uart_H, uint8_t* Data, uint16_t Len) : Event(Sig, true)
+	{
+		this->Uart_H = Uart_H;
+		if (Len)
+		{
+			memcpy(this->Data, Data, Len);
+			this->DataLen = Len;
+		}
+		else
+		{
+			this->DataLen = 0;
+		}
 		this->Status = 0;
 	}
 	~CUartEvent()
 	{
-		if (Data)
-			delete [] Data;
 	}
+
+	void SetSig(Signals Sig)
+	{
+		this->Sig = Sig;
+	}
+	void CopyData(uint8_t* Data, uint16_t Len)
+	{
+		if (Len)
+		{
+			memcpy(this->Data, Data, Len);
+			this->DataLen = Len;
+		}
+		else
+		{
+			this->DataLen = 0;
+		}
+	}
+	enum {FRAME_MAX_LEN = 32};
 	UARTDEV_H  Uart_H;
-	uint8_t* Data;
+	uint8_t Data[FRAME_MAX_LEN];
 	uint16_t DataLen;
 	uint16_t Status;
 
@@ -51,19 +80,11 @@ public:
 class CUart
 {
 public:
-	CUart() 
+	CUart(char *Name)
 	{
 		m_Sibling = 0;
 	}
-	CUart(UARTDEV_H UartH, UartConfig* Config, uint8_t* Buff4MacCall, uint16_t BuffSize)
-	{
-		m_Uart_H = UartH;
-		m_Config = *Config;
-		this->m_Buff4MacCall = Buff4MacCall;
-		this->m_BuffSize = BuffSize;
-		this->m_BuffCount = 0;
-		m_Sibling = 0;
-	}
+
 	UARTDEV_H  m_Uart_H;			// the no. of uart
 
 	UartConfig m_Config;
@@ -75,6 +96,10 @@ public:
 	uint16_t m_BuffCount;
 
 	CUart* m_Sibling;
+
+	char *m_Name;
+
+	CUartEvent *m_IrqEvent;
 
 	// the method is used to get a frame
 	virtual bool  MacCall(uint8_t Abyte) = 0;
@@ -89,6 +114,8 @@ public:
 	void RegUart(CUart* Uart);
 
 	virtual void Initial();
+
+	void SendComplete(UARTDEV_H UartH);
 
 	void Receive(UARTDEV_H UartH, uint8_t AByte);
 

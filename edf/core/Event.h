@@ -37,6 +37,7 @@ enum Signals
 	TEST5_SIG,
 	SERIAL_IN_SIG,   // get from serial
 	SERIAL_OUT_SIG,  // send to serial
+	SERIAL_OUT_COMPLETE_SIG, // send completely
 	SERIAL_SEND_COMPLETE_SIG,
 	MAX_SIG,
 };

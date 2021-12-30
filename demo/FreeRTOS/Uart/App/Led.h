@@ -16,46 +16,67 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
-#pragma once
-#include <stdint.h>
+#include "Edf.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef void* UARTDEV_H;
-
-typedef enum __uart_parity
+class CLed
 {
-	Parity_None,
-	Parity_Odd,
-	Parity_Even
-}UART_Parity;
+public:
+	CLed()
+	{
 
-typedef enum __uart_stoptbits
-{
-	StopBit_1Bit,
-	StopBit_2Bit
-}UART_StopBit;
+	}
 
-typedef struct __uartconfig
-{
-	uint32_t		Baudrate;
-	UART_Parity		Parity;
-	UART_StopBit	StopBits;
-	uint8_t			RecvBuff[1];
-}UartConfig;
+	enum
+	{
+		ON = USER_SIG,
+		OFF,
+	};
 
-extern UARTDEV_H  UART_0;
-extern UARTDEV_H  UART_1;
-extern UARTDEV_H  UART_2;
+	void Dispatcher(Event const* const e)
+	{
+		RunState(e);
+	}
 
-bool Uart_Init(UARTDEV_H Uart, UartConfig* Config);
-bool Uart_Send(UARTDEV_H Uart, uint8_t* Data, uint16_t DataLen);
-void Uart_SendComplete(UARTDEV_H Uart);
-void Uart_Recv(UARTDEV_H Uart, uint8_t Data);
+	void Initial()
+	{
+		INIT_TRANS(&CLed::S_On);
+	}
 
-#ifdef __cplusplus
-}
-#endif
+	void S_On(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
+			LOG_DEBUG("led on\r\n");
+			break;
+
+		case OFF:
+			
+			TRANS(&CLed::S_Off);
+		break;
+
+		default:
+			break;
+		}
+	}
+	void S_Off(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
+			LOG_DEBUG("led off\r\n");
+			break;
+
+		case ON:
+			
+			TRANS(&CLed::S_On);
+			break;
+
+		default:
+			break;
+		}
+	}
+public:
+	DEF_STATEMACHINE(CLed);
+};
 

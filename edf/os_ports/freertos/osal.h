@@ -22,6 +22,9 @@ Contact information:
 
 #pragma once
 
+#pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wformat="
+
 #define MAX_PRIORITIES 			configMAX_PRIORITIES
 #define MINIMAL_STACK_SIZE 		(configMINIMAL_STACK_SIZE * 4)
 #define MAX_DELAY 				portMAX_DELAY
