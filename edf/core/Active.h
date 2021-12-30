@@ -82,9 +82,9 @@ private:
 		class CItem
 		{
 		public:
-			CItem() : m_Evt(0), m_Next(0) {}
-			Event const* m_Evt;
-			CItem* m_Next;
+			CItem(){}
+			Event const* m_Evt = 0;
+			USE_LINK(CItem);
 		};
 
 	private:

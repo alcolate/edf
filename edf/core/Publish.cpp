@@ -23,23 +23,11 @@ namespace Edf
 class CSubscriber
 {
 public:
-	CActive const *  m_Act;
-	CSubscriber *m_Next;
-	uint32_t	m_Number;
-
-	CSubscriber(CActive const *  Act, CSubscriber *Next = 0)
+	CSubscriber(CActive const *  Act, uint32_t Number = 0)
 	{
 		ASSERT(Act);
 		this->m_Act = Act;
-		this->m_Next = Next;
-		if (Next)
-		{		
-			this->m_Number = Next->m_Number + 1;
-		}
-		else
-		{
-			this->m_Number = 1;
-		}
+		this->m_Number = Number + 1;
 	}
 
 	void Update(const Event * const e, bool FromISR = false)
@@ -50,6 +38,11 @@ public:
 		}
 	}
 
+public:
+	CActive const *  m_Act;	
+	uint32_t	m_Number;
+
+	USE_LINK(CSubscriber);
 };
 
 class CPublisher
@@ -94,7 +87,7 @@ void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
 {
 	OS_EnterCritical();
 
-	CSubscriber *sub = new CSubscriber(Act, m_Subs[Sig].Head());
+	CSubscriber *sub = new CSubscriber(Act, m_Subs[Sig].Head()? m_Subs[Sig].Head()->m_Number: 0);
 
 	if (m_Subs[Sig].IsExist([](CSubscriber *This, CSubscriber *That) -> bool {return This->m_Act == That->m_Act;}, sub))
 	{
@@ -113,7 +106,7 @@ void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 {
 	OS_EnterCritical();
 
-	CSubscriber Sub(Act, 0);
+	CSubscriber Sub(Act);
 
 	CSubscriber* Item = m_Subs[Sig].RemoveItem([](CSubscriber* This, CSubscriber* That) -> bool {return This->m_Act == That->m_Act; },  &Sub);
 
