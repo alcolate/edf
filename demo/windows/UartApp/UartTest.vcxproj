@@ -148,6 +148,7 @@
     <ClCompile Include="..\..\..\edf\core\Timer.cpp" />
     <ClCompile Include="..\..\..\edf\driver\Serial.cpp" />
     <ClCompile Include="..\..\..\edf\os_ports\windows\osal.cpp" />
+    <ClCompile Include="UartDrvSim.cpp" />
     <ClCompile Include="UartTest.cpp" />
   </ItemGroup>
   <ItemGroup>

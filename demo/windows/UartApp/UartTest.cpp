@@ -19,43 +19,10 @@ Contact information:
 // Hello.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
-#include <iostream>
 #include "UartTest.h"
-
-UART_HANDLE  UART_0 = (UART_HANDLE)1;
-UART_HANDLE  UART_1 = (UART_HANDLE)2;
-UART_HANDLE  UART_2 = (UART_HANDLE)3;
-
-// the three functions are mocks for uart
-bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
-{
-    return true;
-}
-bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
-{
-    char msg[128] = "yes, I got \r\n";
-
-    sprintf(msg, "yes, I got %s \r\n", Data);
-
-    for (size_t i = 0; i < strlen(msg); i ++)
-    {
-        Uart_Recv(Uart, msg[i]);
-    }
-    return true;
-}
-
-void Uart_Isr(void)
-{
-    Uart_Recv(UART_0, 1);
-}
-
-
-
 
 int main()
 {
-    std::cout << "Hello Uart!\n";
-
     CUartKeeper::Instance()->Start();
 
     CAPP app;

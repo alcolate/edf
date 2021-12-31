@@ -39,6 +39,7 @@ enum Signals
 	SERIAL_OUT_SIG,  // send to serial
 	SERIAL_OUT_COMPLETE_SIG, // send completely
 	SERIAL_SEND_COMPLETE_SIG,
+	UART_TEST_SIG,
 	MAX_SIG,
 };
 
