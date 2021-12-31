@@ -23,7 +23,7 @@ Contact information:
 extern "C" {
 #endif
 
-typedef void* UARTDEV_H;
+typedef void* UART_HANDLE;
 
 typedef enum __uart_parity
 {
@@ -46,14 +46,14 @@ typedef struct __uartconfig
 	uint8_t			RecvBuff[1];
 }UartConfig;
 
-extern UARTDEV_H  UART_0;
-extern UARTDEV_H  UART_1;
-extern UARTDEV_H  UART_2;
+extern UART_HANDLE  UART_0;
+extern UART_HANDLE  UART_1;
+extern UART_HANDLE  UART_2;
 
-bool Uart_Init(UARTDEV_H Uart, UartConfig* Config);
-bool Uart_Send(UARTDEV_H Uart, uint8_t* Data, uint16_t DataLen);
-void Uart_SendComplete(UARTDEV_H Uart);
-void Uart_Recv(UARTDEV_H Uart, uint8_t Data);
+bool Uart_Init(UART_HANDLE Uart, UartConfig* Config);
+bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen);
+void Uart_SendComplete(UART_HANDLE Uart);
+void Uart_Recv(UART_HANDLE Uart, uint8_t Data);
 
 #ifdef __cplusplus
 }

@@ -28,16 +28,16 @@ namespace Edf
 class CUartEvent : public Event
 {
 public:
-	CUartEvent(UARTDEV_H Uart_H) : Event(0, false)
+	CUartEvent(UART_HANDLE Uart_H) : Event(0, false)
 	{
-		this->Uart_H = Uart_H;
+		this->UartDevice = Uart_H;
 		this->DataLen = 0;
 		this->Status = 0;
 	}
 
-	CUartEvent(Signals Sig, UARTDEV_H Uart_H, uint8_t* Data, uint16_t Len) : Event(Sig, true)
+	CUartEvent(Signals Sig, UART_HANDLE Uart_H, uint8_t* Data, uint16_t Len) : Event(Sig, true)
 	{
-		this->Uart_H = Uart_H;
+		this->UartDevice = Uart_H;
 		if (Len)
 		{
 			memcpy(this->Data, Data, Len);
@@ -70,39 +70,35 @@ public:
 		}
 	}
 	enum {FRAME_MAX_LEN = 32};
-	UARTDEV_H  Uart_H;
-	uint8_t Data[FRAME_MAX_LEN];
-	uint16_t DataLen;
-	uint16_t Status;
+	UART_HANDLE	UartDevice;
+	uint8_t 	Data[FRAME_MAX_LEN];
+	uint16_t 	DataLen;
+	uint16_t 	Status;
 
 };
 
 class CUart
 {
 public:
-	CUart(char *Name)
+	CUart(char *Name) : m_Name(Name)
 	{
-		m_Sibling = 0;
+
 	}
-
-	UARTDEV_H  m_Uart_H;			// the no. of uart
-
-	UartConfig m_Config;
-
-	uint8_t* m_Buff4MacCall;
-
-	uint16_t m_BuffSize;
-
-	uint16_t m_BuffCount;
-
-	CUart* m_Sibling;
-
-	char *m_Name;
-
-	CUartEvent *m_IrqEvent;
 
 	// the method is used to get a frame
 	virtual bool  MacCall(uint8_t Abyte) = 0;
+
+public:
+
+	char *m_Name;
+
+	UART_HANDLE m_Device;			// the handle. of uart hardware
+	UartConfig 	m_Config;
+	uint8_t* 	m_Buff4MacCall;
+	uint16_t 	m_BuffSize;
+	uint16_t 	m_BuffCount;
+	CUartEvent *m_IrqEvent;
+	USE_LINK(CUart);
 };
 
 class CUartKeeper : public CActive
@@ -115,23 +111,23 @@ public:
 
 	virtual void Initial();
 
-	void SendComplete(UARTDEV_H UartH);
+	void SendComplete(UART_HANDLE UartH);
 
-	void Receive(UARTDEV_H UartH, uint8_t AByte);
+	void Receive(UART_HANDLE UartH, uint8_t AByte);
 
 private:
 	void S_Run(Event const* const e);
 
-	CUart* GetUart(UARTDEV_H UartH);
+	CUart* GetUart(UART_HANDLE UartH);
 
 	void AddUart(CUart* Uart);
 
 	CUartKeeper() : CActive((char*)"UartKeeper")
 	{
-		m_Uart = 0;
+
 	}
 
-	CUart* m_Uart;
+	CList<CUart> m_Uart;
 
 public:
 	DEF_STATEMACHINE(CUartKeeper);

@@ -279,9 +279,9 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 
-UARTDEV_H  UART_0 = (UARTDEV_H)&huart1;
-UARTDEV_H  UART_1 = (UARTDEV_H)&huart2;
-UARTDEV_H  UART_2 = (UARTDEV_H)&huart3;
+UART_HANDLE  UART_0 = (UART_HANDLE)&huart1;
+UART_HANDLE  UART_1 = (UART_HANDLE)&huart2;
+UART_HANDLE  UART_2 = (UART_HANDLE)&huart3;
 /**
   * @brief  Tx Transfer completed callbacks.
   * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
@@ -311,15 +311,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   /* NOTE: This function should not be modified, when the callback is needed,
            the HAL_UART_RxCpltCallback could be implemented in the user file
    */
-	if ((UARTDEV_H)huart == UART_0)
+	if ((UART_HANDLE)huart == UART_0)
 	{
 		MX_USART1_UART_Init();
 	}
-	else if ((UARTDEV_H)huart == UART_1)
+	else if ((UART_HANDLE)huart == UART_1)
 	{
 		MX_USART1_UART_Init();
 	}
-	else if ((UARTDEV_H)huart == UART_2)
+	else if ((UART_HANDLE)huart == UART_2)
 	{
 		MX_USART3_UART_Init();
 	}
@@ -328,11 +328,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		return;
 	}
 
-	uint8_t *Data = (huart->pRxBuffPtr - 1);
+	uint8_t *Data = (huart->pRxBuffPtr - huart->RxXferSize);
 
-	Uart_Recv((UARTDEV_H)huart, *Data);
+	Uart_Recv((UART_HANDLE)huart, *Data);
 
-	HAL_UART_Receive_IT(huart, Data, 1);
+	HAL_UART_Receive_IT(huart, Data, huart->RxXferSize);
 
 	return;
 }
@@ -340,7 +340,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 
 // the three functions are mocks for uart
-bool Uart_Init(UARTDEV_H Uart, UartConfig* Config)
+bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
 {
 	if (Uart == UART_0)
 	{
@@ -365,7 +365,7 @@ bool Uart_Init(UARTDEV_H Uart, UartConfig* Config)
     return true;
 }
 
-bool Uart_Send(UARTDEV_H Uart, uint8_t* Data, uint16_t DataLen)
+bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
 {
     return (HAL_OK == HAL_UART_Transmit_IT((UART_HandleTypeDef *)Uart, Data, DataLen));
 }

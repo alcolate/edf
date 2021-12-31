@@ -28,7 +28,7 @@ CUartKeeper* CUartKeeper::Instance()
 
 void CUartKeeper::RegUart(CUart* Uart)
 {
-	bool result = Uart_Init(Uart->m_Uart_H, &Uart->m_Config);
+	bool result = Uart_Init(Uart->m_Device, &Uart->m_Config);
 	ASSERT(result);
 
 	AddUart(Uart);
@@ -36,20 +36,21 @@ void CUartKeeper::RegUart(CUart* Uart)
 }
 void CUartKeeper::AddUart(CUart* Uart)
 {
-	Uart->m_Sibling = m_Uart;
-	m_Uart = Uart;
+	m_Uart.AddHead(Uart);
 }
 
-CUart* CUartKeeper::GetUart(UARTDEV_H UartH)
+CUart* CUartKeeper::GetUart(UART_HANDLE UartH)
 {
-	CUart* p = m_Uart;
+	CUart *p = m_Uart.Head();
 
-	for (; p; p = p->m_Sibling)
+	while (p)
 	{
-		if (p->m_Uart_H == UartH)
+		if (p->m_Device == UartH)
 		{
 			return p;
 		}
+
+		p = m_Uart.Next(p);
 	}
 
 	ASSERT(false);
@@ -64,7 +65,7 @@ void CUartKeeper::Initial()
 	INIT_TRANS(&CUartKeeper::S_Run);
 }
 
-void CUartKeeper::SendComplete(UARTDEV_H UartH)
+void CUartKeeper::SendComplete(UART_HANDLE UartH)
 {
 	CUart* Uart = GetUart(UartH);
 
@@ -77,7 +78,7 @@ void CUartKeeper::SendComplete(UARTDEV_H UartH)
 	}
 }
 
-void CUartKeeper::Receive(UARTDEV_H UartH, uint8_t AByte)
+void CUartKeeper::Receive(UART_HANDLE UartH, uint8_t AByte)
 {
 	CUart* Uart = GetUart(UartH);
 
@@ -101,7 +102,7 @@ void CUartKeeper::S_Run(Event const* const e)
 	{
 		CUartEvent const* ev = static_cast<CUartEvent const*>(e);
 		LOG_DEBUG("keeper send: %s \r\n", ev->Data);
-		Uart_Send(ev->Uart_H, const_cast<uint8_t *>(ev->Data), ev->DataLen);
+		Uart_Send(ev->UartDevice, const_cast<uint8_t *>(ev->Data), ev->DataLen);
 		break;
 	}
 	case TEST_SIG:
@@ -114,11 +115,11 @@ void CUartKeeper::S_Run(Event const* const e)
 }
 } // namespace Edf
 
-void Uart_SendComplete(UARTDEV_H Uart)
+void Uart_SendComplete(UART_HANDLE Uart)
 {
 	CUartKeeper::Instance()->SendComplete(Uart);
 }
-void Uart_Recv(UARTDEV_H Uart, uint8_t Data)
+void Uart_Recv(UART_HANDLE Uart, uint8_t Data)
 {
 	CUartKeeper::Instance()->Receive(Uart, Data);
 }

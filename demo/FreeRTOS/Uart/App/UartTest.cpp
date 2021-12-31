@@ -19,7 +19,7 @@ Contact information:
 // Hello.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
-#include <iostream>
+#include <stdio.h>
 #include "UartTest.h"
 #include "Edf.h"
 #include "Serial.h"
@@ -30,21 +30,26 @@ class CAppUart : public CUart
 public:
 	CAppUart() : CUart((char*)"AppUart")
 	{
-		m_Uart_H = UART_0;
+		m_Device = UART_0;
 		m_Config.Baudrate = 9600;
 		m_Config.Parity = Parity_None;
 		m_Config.StopBits = StopBit_1Bit;
-		m_BuffSize = CUartEvent::FRAME_MAX_LEN + 1;
-		m_Buff4MacCall = new uint8_t [1 * 1024  + 1];
+		m_BuffSize = CUartEvent::FRAME_MAX_LEN;
+		m_Buff4MacCall = new uint8_t [m_BuffSize  + 1];
 		ASSERT(m_Buff4MacCall);
 		m_BuffCount = 0;
-		m_IrqEvent = new CUartEvent(m_Uart_H);
+		m_IrqEvent = new CUartEvent(m_Device);
 	}
 	~CAppUart()
 	{
 		if (m_Buff4MacCall)
 			delete [] m_Buff4MacCall;
+
+		delete m_IrqEvent;
 	}
+	// This function is called by ISR to get a frame. Normally, uart protocol defines a frame in MAC layer. But only one
+	// byte is received in an isr. If ISR sends date to upper layer byte by byte, which will consume a lot of time to switch between
+	// isr and background. So a good method is to process a frame in isr and reduce the interactions.
 	virtual bool MacCall(uint8_t AByte)
 	{
 		if (m_BuffCount < m_BuffSize)
@@ -52,6 +57,7 @@ public:
 			m_Buff4MacCall[m_BuffCount++] = AByte;
 			if (AByte == '\n')
 			{
+				// get a frame, so can send a whole frame to upper layer to process
 				m_Buff4MacCall[m_BuffCount++] = 0;
 				return true;
 			}
@@ -126,7 +132,7 @@ public:
 		case SERIAL_IN_SIG:
 		{
 			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
-			if (ue->Uart_H == m_Uart->m_Uart_H)
+			if (ue->UartDevice == m_Uart->m_Device)
 			{
 				Response(ue->Data, ue->DataLen);
 
@@ -176,7 +182,7 @@ public:
 		sprintf(tosend, "hello uart %d \r\n", cc++);
 		uint16_t len = strlen(tosend) + 1;
 		LOG_DEBUG("app send: %s\r\n", tosend);
-		CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Uart_H, (uint8_t*)tosend, len);
+		CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Device, (uint8_t*)tosend, len);
 		Publish(ue);
 	}
 
@@ -205,7 +211,6 @@ public:
 
 void App_Start(void)
 {
-    std::cout << "Hello Uart!\n";
 
     CUartKeeper::Instance()->Start();
 
