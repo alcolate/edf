@@ -51,11 +51,18 @@ public:
 	}
 	bool IsExist(bool (*Call)(T* This, T* That), T* That)
 	{
-		T* p;
+		T* Item = GetItem(Call, That);
 
-		for (p = m_Head; p && !Call(p, That); p = p->m_Next);
+		return (Item != NULL);
+	}
 
-		return (p != NULL);
+	T* GetItem(bool (*Call)(T* This, T* That), T* That)
+	{
+		T* Item;
+
+		for (Item = m_Head; Item && !Call(Item, That); Item = Item->m_Next);
+
+		return Item;
 	}
 
 protected:
