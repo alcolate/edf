@@ -29,16 +29,17 @@ Contact information:
 class CAppUart : public CUart
 {
 public:
-	CAppUart()
+	CAppUart() : CUart((char*)"AppUart")
 	{
-		m_Uart_H = UART_0;
+		m_Device = UART_0;
 		m_Config.Baudrate = 9600;
 		m_Config.Parity = Parity_None;
 		m_Config.StopBits = StopBit_1Bit;
-		m_BuffSize = 16;
+		m_BuffSize = 128;
 		m_Buff4MacCall = new uint8_t [1 * 1024 * 1024 + 1];
-		m_BuffCount = 0;
 		ASSERT(m_Buff4MacCall);
+		m_BuffCount = 0;
+		m_IrqEvent = new CUartEvent(m_Device);
 	}
 	~CAppUart()
 	{
@@ -126,7 +127,7 @@ public:
 		case SERIAL_IN_SIG:
 		{
 			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
-			if (ue->Uart_H == m_Uart->m_Uart_H)
+			if (ue->UartDevice == m_Uart->m_Device)
 			{
 				Response(ue->Data, ue->DataLen);
 
@@ -176,13 +177,13 @@ public:
 		sprintf(tosend, "hello uart %d \r\n", cc++);
 		uint16_t len = strlen(tosend) + 1;
 		LOG_DEBUG("app send: %s\r\n", tosend);
-		CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Uart_H, (uint8_t*)tosend, len);
+		CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Device, (uint8_t*)tosend, len);
 		Publish(ue);
 	}
 
-	void Response(uint8_t* Data, uint16_t Len)
+	void Response(const uint8_t* Data, uint16_t Len)
 	{
-		uint8_t* response = Data;
+		const uint8_t* response = Data;
 		LOG_DEBUG("app get: %s\r\n", response);
 		// do your work
 	}
