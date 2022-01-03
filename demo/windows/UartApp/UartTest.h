@@ -23,67 +23,22 @@ Contact information:
 #include "Edf.h"
 #include "Serial.h"
 #include "Led.h"
+#include "Hdlc.h"
 #pragma warning(disable : 4996)
 
 
-class CAppUart : public CUart
-{
-public:
-	CAppUart() : CUart((char*)"AppUart")
-	{
-		m_Device = UART_0;
-		m_Config.Baudrate = 9600;
-		m_Config.Parity = Parity_None;
-		m_Config.StopBits = StopBit_1Bit;
-		m_BuffSize = 128;
-		m_Buff4MacCall = new uint8_t [1 * 1024 * 1024 + 1];
-		ASSERT(m_Buff4MacCall);
-		m_BuffCount = 0;
-		m_IrqEvent = new CUartEvent(m_Device);
-	}
-	~CAppUart()
-	{
-		if (m_Buff4MacCall)
-			delete [] m_Buff4MacCall;
-	}
-	virtual bool MacCall(uint8_t AByte)
-	{
-		if (m_BuffCount < m_BuffSize)
-		{
-			m_Buff4MacCall[m_BuffCount++] = AByte;
-			if (AByte == '\n')
-			{
-				m_Buff4MacCall[m_BuffCount++] = 0;
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			// frame error occurs, reset it
-			m_BuffCount = 0;
-			return false;
-		}
-
-	}
-private:
-	UartConfig m_Config;
-};
-
-class CAPP : public CActive
+class CSession : public CActive
 {
 public:
 	virtual void Initial()
 	{
 		m_Led = new CLed();
 		m_Led->Initial();
-		m_Uart = new CAppUart();
-		CUartKeeper::Instance()->RegUart(m_Uart);
-		Edf::Subscribe(SERIAL_IN_SIG, this);
-		INIT_TRANS(&CAPP::S_Idle);
+		m_MacLayer = new CMacLayer();
+		m_MacLayer->Start();
+		
+		Edf::Subscribe(CMD_RESULT_SIG, this);
+		INIT_TRANS(&CSession::S_Idle);
 	}
 
 	void S_Idle(Event const* const e)
@@ -94,7 +49,7 @@ public:
 		{
 			m_Time.Trigger(MilliSecond(50), 0);
 			Event e(CLed::OFF);
-			m_Led->Dispatcher(&e);
+			//m_Led->Dispatcher(&e);
 			break;
 		}
 
@@ -102,11 +57,9 @@ public:
 		{
 			Request();
 
-			TRANS(&CAPP::S_WaitReponse);
-
+			TRANS(&CSession::S_WaitReponse);
 		}
 		break;
-
 
 		default:
 			break;
@@ -120,26 +73,23 @@ public:
 		case ENTRY_SIG:
 		{
 			Event e(CLed::ON);
-			m_Led->Dispatcher(&e);
+			//m_Led->Dispatcher(&e);
 			m_Time.Trigger(MilliSecond(1000), 0);
 			break;
 		}
-		case SERIAL_IN_SIG:
+		case CMD_RESULT_SIG:
 		{
-			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
-			if (ue->UartDevice == m_Uart->m_Device)
-			{
-				Response(ue->Data, ue->DataLen);
+			CHdlcEvent const* ue = static_cast<CHdlcEvent const*>(e);
 
-				m_Time.UnTrigger();
-				TRANS(&CAPP::S_Idle);
-			}
+			LOG_INFO("(%s) get : %s\r\n", __FUNCTION__, ue->m_Data);
+
+			TRANS(&CSession::S_Idle);
 			break;
 		}
 		case TIMEOUT_SIG:
 		{
 			LOG_DEBUG("Wait Response Timeout \r\n");
-			TRANS(&CAPP::S_RetryRequest);
+			TRANS(&CSession::S_RetryRequest);
 		}
 		break;
 
@@ -160,45 +110,41 @@ public:
 		{
 			Request();
 
-			TRANS(&CAPP::S_WaitReponse);
+			TRANS(&CSession::S_WaitReponse);
 		}
 		break;
-
 
 		default:
 			break;
 		}
 	}
 
-	void Request(void)
+	void Request()
 	{
-		char tosend[100];
-		static uint32_t cc = 0;
-		sprintf(tosend, "hello uart %d \r\n", cc++);
-		uint16_t len = strlen(tosend) + 1;
-		LOG_DEBUG("app send: %s\r\n", tosend);
-		CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Device, (uint8_t*)tosend, len);
-		Publish(ue);
-	}
-
-	void Response(const uint8_t* Data, uint16_t Len)
-	{
-		const uint8_t* response = Data;
-		LOG_DEBUG("app get: %s\r\n", response);
-		// do your work
+		static uint32_t times = 0;
+		char Data[32];
+		sprintf(Data, "hello world %06d", ++times);
+		LOG_INFO("(%s) send: %s\r\n", __FUNCTION__, Data);
+		CHdlcEvent *he = new CHdlcEvent(CMD_OUT_SIG, (uint8_t *)Data, strlen(Data) + 1);
+		Publish(he);
 	}
 
 public:
-	CAPP() : CActive((char*)"APP"), m_Time(TIMEOUT_SIG, this)
+	CSession() : CActive((char*)"Session"), m_Time(TIMEOUT_SIG, this)
 	{
-		m_Uart = 0;
+		m_MacLayer = 0;
+	}
+	~CSession()
+	{
+		delete m_MacLayer;
+		delete m_Led;
 	}
 
 public:
-	CUart* m_Uart;
+	CMacLayer* m_MacLayer;
 	CTimeEvent m_Time;
 	CLed* m_Led;
 
 public:
-	DEF_STATEMACHINE(CAPP);
+	DEF_STATEMACHINE(CSession);
 };

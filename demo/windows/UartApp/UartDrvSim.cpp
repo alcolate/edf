@@ -20,6 +20,7 @@ Contact information:
 #include <string.h>
 #include "Serial.h"
 #include "Edf.h"
+#include "yahdlc.h"
 
 UART_HANDLE  UART_0 = (UART_HANDLE)1;
 UART_HANDLE  UART_1 = (UART_HANDLE)2;
@@ -49,13 +50,35 @@ public:
 		{
 			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
 
-			memcpy(m_Buff, ue->Data, ue->DataLen);
-			m_BuffCount = ue->DataLen;
+			memcpy(m_Buff, ue->Data, ue->DataCount);
+			m_BuffCount = ue->DataCount;
 
-			SendGet(ue->UartDevice);
+			SendGet(ue->Device);
 
+			TRANS(&CUartDrvSim::S_SendAck);
+
+		}
+		break;
+
+		default:
+			break;
+		}
+	}
+
+	void S_SendAck(Event const* const e)
+	{
+		switch (e->Sig)
+		{
+		case ENTRY_SIG:
+		{
+			m_Time.Trigger(MilliSecond(20), 0);
+			break;
+		}
+
+		case TIMEOUT_SIG:
+		{
+			SendAck(m_Device);
 			TRANS(&CUartDrvSim::S_SendResponse);
-
 		}
 		break;
 
@@ -70,20 +93,48 @@ public:
 		{
 		case ENTRY_SIG:
 		{
-			m_Time.Trigger(MilliSecond(10), 0);
+			m_Time.Trigger(MilliSecond(20), 0);
 			break;
 		}
 
 		case TIMEOUT_SIG:
 		{
-			uint8_t rsp[] = "i got you\r\n";
-			SendResponse(m_Device, rsp, strlen((char*)rsp));
+			SendResponse(m_Device, m_Buff, m_BuffCount);
 			TRANS(&CUartDrvSim::S_Idle);
 		}
 		break;
 
 		default:
 			break;
+		}
+	}
+	void SendGet(UART_HANDLE Uart)
+	{
+		Uart_SendComplete(Uart);
+	}
+
+
+
+	void SendAck(UART_HANDLE Uart)
+	{
+		static yahdlc_control_t control = { YAHDLC_FRAME_ACK, 1 };
+		control.seq_no += 1;
+		control.frame = YAHDLC_FRAME_ACK;
+		uint8_t AckData[20];
+		uint32_t DataCount;
+
+		yahdlc_frame_data(&control, NULL, 0, (char*)AckData, &DataCount);
+
+		for (uint32_t i = 0; i < DataCount; i++)
+		{
+			Uart_Recv(Uart, AckData[i]);
+		}
+	}
+	void SendResponse(UART_HANDLE Uart, uint8_t* Data, uint16_t Len)
+	{
+		for (uint16_t i = 0; i < Len; i++)
+		{
+			Uart_Recv(Uart, Data[i]);
 		}
 	}
 
@@ -123,15 +174,3 @@ bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
 	return true;
 }
 
-void SendGet(UART_HANDLE Uart)
-{
-	Uart_SendComplete(Uart);
-}
-
-void SendResponse(UART_HANDLE Uart, uint8_t* Data, uint16_t Len)
-{
-	for (uint16_t i = 0; i < Len; i++)
-	{
-		Uart_Recv(Uart, Data[i]);
-	}
-}

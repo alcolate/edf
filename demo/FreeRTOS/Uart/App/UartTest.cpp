@@ -25,10 +25,10 @@ Contact information:
 #include "Serial.h"
 #include "Led.h"
 
-class CAppUart : public CUart
+class CMacLayer : public CUart
 {
 public:
-	CAppUart() : CUart((char*)"AppUart")
+	CMacLayer() : CUart((char*)"AppUart")
 	{
 		m_Device = UART_0;
 		m_Config.Baudrate = 9600;
@@ -40,7 +40,7 @@ public:
 		m_BuffCount = 0;
 		m_IrqEvent = new CUartEvent(m_Device);
 	}
-	~CAppUart()
+	~CMacLayer()
 	{
 		if (m_Buff4MacCall)
 			delete [] m_Buff4MacCall;
@@ -85,7 +85,7 @@ public:
 	{
 		m_Led = new CLed();
 		m_Led->Initial();
-		m_Uart = new CAppUart();
+		m_Uart = new CMacLayer();
 		CUartKeeper::Instance()->RegUart(m_Uart);
 		Edf::Subscribe(SERIAL_IN_SIG, this);
 		INIT_TRANS(&CAPP::S_Idle);
@@ -132,7 +132,7 @@ public:
 		case SERIAL_IN_SIG:
 		{
 			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
-			if (ue->UartDevice == m_Uart->m_Device)
+			if (ue->Device == m_Uart->m_Device)
 			{
 				Response(ue->Data, ue->DataLen);
 

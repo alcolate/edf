@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\edf\include;..\..\..\edf\os_ports\windows;..\..\..\edf\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\third_party\yahdlc;..\..\..\edf\include;..\..\..\edf\os_ports\windows;..\..\..\edf\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,6 +148,9 @@
     <ClCompile Include="..\..\..\edf\core\Timer.cpp" />
     <ClCompile Include="..\..\..\edf\driver\Serial.cpp" />
     <ClCompile Include="..\..\..\edf\os_ports\windows\osal.cpp" />
+    <ClCompile Include="..\..\..\third_party\yahdlc\fcs.c" />
+    <ClCompile Include="..\..\..\third_party\yahdlc\yahdlc.c" />
+    <ClCompile Include="Hdlc.cpp" />
     <ClCompile Include="UartDrvSim.cpp" />
     <ClCompile Include="UartTest.cpp" />
   </ItemGroup>
@@ -162,6 +165,9 @@
     <ClInclude Include="..\..\..\edf\driver\SerialDrv.h" />
     <ClInclude Include="..\..\..\edf\include\Edf.h" />
     <ClInclude Include="..\..\..\edf\os_ports\windows\osal.h" />
+    <ClInclude Include="..\..\..\third_party\yahdlc\fcs.h" />
+    <ClInclude Include="..\..\..\third_party\yahdlc\yahdlc.h" />
+    <ClInclude Include="Hdlc.h" />
     <ClInclude Include="Led.h" />
     <ClInclude Include="UartTest.h" />
   </ItemGroup>

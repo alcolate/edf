@@ -25,7 +25,7 @@ int main()
 {
     CUartKeeper::Instance()->Start();
 
-    CAPP app;
+    CSession app;
 
     app.Start();
 
