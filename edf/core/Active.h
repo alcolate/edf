@@ -18,9 +18,9 @@ Contact information:
 *****************************************************************************/
 #include <stdint.h>
 #include "osal.h"
+#include "Link.h"
 #include "Event.h"
 #include "State.h"
-#include "Link.h"
 
 #pragma once
 
@@ -72,36 +72,7 @@ public:
 		return m_Queue;
 	}
 private:
-	class CEventQ
-	{
-	public:
-		CEventQ(uint32_t ItemCount = DEF_ITEMS);
-		~CEventQ();
-	public:
 
-		class CItem
-		{
-		public:
-			CItem(){}
-			Event const* m_Evt = 0;
-			USE_LINK(CItem);
-		};
-
-	private:
-		CItem* GetFreeItem();
-		
-	public:
-		bool Defer(Event const* const Evt);
-
-		const Event* Fetch(void);
-
-	public:
-		CQueue<CItem> m_Queue;
-		enum { DEF_ITEMS = 10 };
-		uint32_t m_ItemCount;
-		CItem *m_Items;
-
-	};
 public:
 	char* m_Name;
 	

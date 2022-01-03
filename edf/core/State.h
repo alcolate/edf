@@ -67,20 +67,20 @@ public:
 		case INIT_SIG:
 			//Initial();
 #if (TRACE_STATE == 1)
-			LOG_DEBUG("Init:\t%s of %s\r\n", m_StateName, m_Name);
+			LOG_DEBUG("Init:\t%s\r\n", m_StateName);
 #endif
 			break;
 
 		case ENTRY_SIG:
 #if (TRACE_STATE == 1)
-			LOG_DEBUG("Enter:\t%s of %s\r\n", m_StateName, m_Name);
+			LOG_DEBUG("Enter:\t%s\r\n", m_StateName);
 #endif
 			RunState(e);
 			break;
 
 		case EXIT_SIG:
 #if (TRACE_STATE == 1)
-			LOG_DEBUG("Exit:\t%s of %s\r\n", m_StateName, m_Name);
+			LOG_DEBUG("Exit:\t%s\r\n", m_StateName);
 #endif
 			RunState(e);
 			break;

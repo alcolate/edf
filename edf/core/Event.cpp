@@ -76,6 +76,60 @@ void Event::DecRef(bool FromISR)
 	}
 }
 
+CEventQ::CEventQ(uint32_t ItemCount)
+{
+	m_ItemCount = ItemCount;
+	m_Items = new CItem[ItemCount];
+}
+CEventQ::~CEventQ()
+{
+	if (m_ItemCount)
+		delete[] m_Items;
+}
+CEventQ::CItem* CEventQ::GetFreeItem()
+{
+	for (uint32_t i = 0; i < m_ItemCount; i++)
+	{
+		if (m_Items[i].m_Evt == 0) return m_Items;
+	}
+	LOG_INFO("DQ is full\r\n");
+	return NULL;
+}
+
+bool CEventQ::Defer(Event const* const Evt)
+{
+	CItem* item = GetFreeItem();
+
+	if (!item)
+	{
+		return false;
+	}
+	else
+	{
+		(const_cast<Event*>(Evt))->IncRef(1);
+		item->m_Evt = Evt;
+		item->m_Next = 0;
+
+		m_Queue.Push(item);
+		return true;
+	}
+}
+
+const Event* CEventQ::Fetch(void)
+{	
+	const Event* Evt = 0;
+	CItem* Item = m_Queue.Pop();
+
+	if (Item)
+	{
+		Evt = Item->m_Evt;
+		Item->m_Evt = 0;
+		Item->m_Next = 0;
+	}
+
+	return Evt;
+}
+
 Event const InitEvt(INIT_SIG);
 Event const EntryEvent (ENTRY_SIG);
 Event const ExitEvent (EXIT_SIG);

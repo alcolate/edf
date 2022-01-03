@@ -29,7 +29,7 @@ CActive::CActive(char *Name, uint32_t DQSize)
 	m_StackSize = MINIMAL_STACK_SIZE;
 	if (DQSize)
 	{
-		m_DQ = new CActive::CEventQ(DQSize);
+		m_DQ = new CEventQ(DQSize);
 	}
 	else
 	{
@@ -127,59 +127,7 @@ void CActive::ClearDeferedEvent()
 	}
 }
 
-CActive::CEventQ::CEventQ(uint32_t ItemCount)
-{
-	m_ItemCount = ItemCount;
-	m_Items = new CItem[ItemCount];
-}
-CActive::CEventQ::~CEventQ()
-{
-	if (m_ItemCount)
-		delete[] m_Items;
-}
-CActive::CEventQ::CItem* CActive::CEventQ::GetFreeItem()
-{
-	for (uint32_t i = 0; i < m_ItemCount; i++)
-	{
-		if (m_Items[i].m_Evt == 0) return m_Items;
-	}
 
-	return NULL;
-}
-
-bool CActive::CEventQ::Defer(Event const* const Evt)
-{
-	CItem* item = GetFreeItem();
-
-	if (!item)
-	{
-		return false;
-	}
-	else
-	{
-		(const_cast<Event*>(Evt))->IncRef(1);
-		item->m_Evt = Evt;
-		item->m_Next = 0;
-
-		m_Queue.Push(item);
-		return true;
-	}
-}
-
-const Event* CActive::CEventQ::Fetch(void)
-{	
-	const Event* Evt = 0;
-	CItem* Item = m_Queue.Pop();
-
-	if (Item)
-	{
-		Evt = Item->m_Evt;
-		Item->m_Evt = 0;
-		Item->m_Next = 0;
-	}
-
-	return Evt;
-}
 
 void EdfStart(void)
 {

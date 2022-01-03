@@ -38,7 +38,8 @@ enum Signals
 	SERIAL_IN_SIG,   // get from serial
 	SERIAL_OUT_SIG,  // send to serial
 	SERIAL_OUT_COMPLETE_SIG, // send completely
-	SERIAL_SEND_COMPLETE_SIG,
+	CMD_OUT_SIG,    // app send 
+	CMD_RESULT_SIG,
 	UART_TEST_SIG,
 	MAX_SIG,
 };
@@ -56,6 +57,39 @@ public:
 	void InitRef(uint32_t Ref, bool FromISR = false);
 	void IncRef(uint32_t Ref, bool FromISR = false);
 	void DecRef(bool FromISR = false);
+
+};
+
+#define EventCast(T)  (static_cast<T const *>(e))
+
+class CEventQ
+{
+public:
+	CEventQ(uint32_t ItemCount = DEF_ITEMS);
+	~CEventQ();
+public:
+
+	class CItem
+	{
+	public:
+		CItem(){}
+		Event const* m_Evt = 0;
+		USE_LINK(CItem);
+	};
+
+private:
+	CItem* GetFreeItem();
+	
+public:
+	bool Defer(Event const* const Evt);
+
+	const Event* Fetch(void);
+
+public:
+	CQueue<CItem> m_Queue;
+	enum { DEF_ITEMS = 10 };
+	uint32_t m_ItemCount;
+	CItem *m_Items;
 
 };
 
