@@ -25,6 +25,8 @@ extern "C" {
 
 typedef void* UART_HANDLE;
 
+typedef uint32_t UART_Baudrate;
+
 typedef enum __uart_parity
 {
 	Parity_None,
@@ -40,7 +42,7 @@ typedef enum __uart_stoptbits
 
 typedef struct __uartconfig
 {
-	uint32_t		Baudrate;
+	UART_Baudrate	Baudrate;
 	UART_Parity		Parity;
 	UART_StopBit	StopBits;
 	uint8_t			RecvBuff[1];

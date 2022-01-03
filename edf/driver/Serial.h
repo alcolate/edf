@@ -28,77 +28,63 @@ namespace Edf
 class CUartEvent : public Event
 {
 public:
-	CUartEvent(UART_HANDLE Uart_H) : Event(0, false)
-	{
-		this->UartDevice = Uart_H;
-		this->DataLen = 0;
-		this->Status = 0;
-	}
+	CUartEvent(Signals Sig, UART_HANDLE Uart_H, uint32_t BuffSize, bool Dynamic = true);
 
-	CUartEvent(Signals Sig, UART_HANDLE Uart_H, uint8_t* Data, uint16_t Len) : Event(Sig, true)
-	{
-		this->UartDevice = Uart_H;
-		if (Len)
-		{
-			memcpy(this->Data, Data, Len);
-			this->DataLen = Len;
-		}
-		else
-		{
-			this->DataLen = 0;
-		}
-		this->Status = 0;
-	}
-	~CUartEvent()
-	{
-	}
+	CUartEvent(Signals Sig, UART_HANDLE Uart_H, const uint8_t* Data, uint16_t Len);
+	virtual ~CUartEvent();
 
-	void SetSig(Signals Sig)
-	{
-		this->Sig = Sig;
-	}
-	void CopyData(uint8_t* Data, uint16_t Len)
-	{
-		if (Len)
-		{
-			memcpy(this->Data, Data, Len);
-			this->DataLen = Len;
-		}
-		else
-		{
-			this->DataLen = 0;
-		}
-	}
-	enum {FRAME_MAX_LEN = 32};
-	UART_HANDLE	UartDevice;
-	uint8_t 	Data[FRAME_MAX_LEN];
-	uint16_t 	DataLen;
-	uint16_t 	Status;
+	void SetSig(Signals Sig);
+	void CopyData(uint8_t* Data, uint16_t Len);
+
+	UART_HANDLE	Device;
+	uint8_t 	*Data;
+	uint32_t 	DataCount;
+	uint32_t	DataSize;
 
 };
+
+using MACCALLBACK = bool (*)(uint8_t *Buff, uint16_t &BuffSize, uint16_t &BuffCount, uint8_t AByte);
 
 class CUart
 {
 public:
-	CUart(char *Name) : m_Name(Name)
-	{
+	CUart(char *Name, UART_HANDLE Uart, 
+			UART_Baudrate Baudrate, UART_Parity Parity, UART_StopBit Stopbit,
+			uint16_t MaxFrameLen, 
+			MACCALLBACK MacCall, uint32_t DQSize = 2);
+	~CUart();
 
-	}
+	void ResetBuff();
 
-	// the method is used to get a frame
-	virtual bool  MacCall(uint8_t Abyte) = 0;
+	void Dispatcher(Event const* const e);
+
+	void Initial();
+
+	void S_Run(Event const* const e);
+	void S_WaitComplete(Event const* const e);
+
+	bool DeferEvent(Event const* const e);
+
+	void FetchDeferedEvent();
 
 public:
 
-	char *m_Name;
+	char m_Name[10];
 
 	UART_HANDLE m_Device;			// the handle. of uart hardware
 	UartConfig 	m_Config;
 	uint8_t* 	m_Buff4MacCall;
 	uint16_t 	m_BuffSize;
 	uint16_t 	m_BuffCount;
+	MACCALLBACK m_MacCall;
 	CUartEvent *m_IrqEvent;
+
+	CEventQ* m_DQ;
+	CActive* m_Owner;
 	USE_LINK(CUart);
+
+public:
+	DEF_STATEMACHINE(CUart);
 };
 
 class CUartKeeper : public CActive
