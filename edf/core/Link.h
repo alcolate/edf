@@ -29,34 +29,34 @@ public:
     {
 
     }
-	T* Head()
+	inline T* Head()
 	{
 		return m_Head;
 	}
-	T* Tail()
+	inline T* Tail()
 	{
 		return m_Tail;
 	}
-	T* Next(T* Item)
+	inline T* Next(T* Item)
 	{
 		return Item->m_Next;
 	}
-	bool IsEmpty()
+	inline bool IsEmpty()
 	{
 		return (m_Head == NULL);
 	}
-	uint32_t Count()
+	inline uint32_t Count()
 	{
 		return m_Count;
 	}
 	bool IsExist(bool (*Call)(T* This, T* That), T* That)
 	{
-		T* Item = GetItem(Call, That);
+		T* Item = FindItem(Call, That);
 
 		return (Item != NULL);
 	}
 
-	T* GetItem(bool (*Call)(T* This, T* That), T* That)
+	T* FindItem(bool (*Call)(T* This, T* That), T* That)
 	{
 		T* Item;
 
