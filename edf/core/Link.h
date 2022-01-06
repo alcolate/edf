@@ -110,7 +110,7 @@ protected:
 			T* Item = m_Head;
 			m_Head = m_Head->m_Next;
 
-			if (!m_Head)
+			if (NULL == m_Head)
 			{
 				m_Tail = m_Head;
 			}
@@ -131,7 +131,7 @@ protected:
 		{
 			T *p, *q;
 
-			for (p = q = m_Head; p->m_Next; q = p, p = p->m_Next);
+			for (p = q = m_Head; p != m_Tail; q = p, p = p->m_Next);
 
 			if (q == p)
 			{
@@ -159,18 +159,25 @@ protected:
 		{
 			if (p == m_Head)
 			{
-				UnLinkHead();
+				m_Head = m_Head->m_Next;
+
+				if (NULL == m_Head)
+				{
+					m_Tail = m_Head;
+				}
 			}
-			else if (p == m_Tail)
+			else  // at least two items on link
 			{
-				UnLinkTail();
-			}
-			else
-			{
+				if (p == m_Tail)
+				{
+					m_Tail = q;	
+				}
+
 				q->m_Next = p->m_Next;
 			}
 
 			--m_Count;
+
 			return p;
 
 		}
@@ -197,6 +204,30 @@ public:
 		CLink<T>::LinkHead(Item);
 	}
 	T* Pop()
+	{
+		return CLink<T>::UnLinkTail();
+	}
+};
+
+template <class T>
+class CDeQueue : public CLink <T>
+{
+public:
+	CDeQueue(){}
+
+	void PushHead(T* Item)
+	{
+		CLink<T>::LinkHead(Item);
+	}
+	void PushTail(T* Item)
+	{
+		CLink<T>::LinkTail(Item);
+	}
+	T* PopHead()
+	{
+		return CLink<T>::UnLinkHead();
+	}
+	T* PopTail()
 	{
 		return CLink<T>::UnLinkTail();
 	}

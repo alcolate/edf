@@ -17,6 +17,7 @@ Contact information:
 <9183399@qq.com>
 *****************************************************************************/
 #include <string.h>
+#include <stdio.h>
 #include "Serial.h"
 
 namespace Edf
@@ -70,7 +71,7 @@ CUart::CUart(char *Name, UART_HANDLE Uart,
 {
 	if (Name)
 	{
-		strncpy_s(m_Name, Name, sizeof(m_Name) - 1);
+		snprintf(m_Name, sizeof(m_Name), "%s", Name);
 	}
 	else
 	{
