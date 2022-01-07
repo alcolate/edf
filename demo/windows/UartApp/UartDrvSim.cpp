@@ -48,12 +48,12 @@ public:
 		{
 		case UART_TEST_SIG:
 		{
-			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
+			CSerialEvent const* ue = static_cast<CSerialEvent const*>(e);
 
-			memcpy(m_Buff, ue->Data, ue->DataCount);
-			m_BuffCount = ue->DataCount;
+			memcpy(m_Buff, ue->m_Data, ue->m_DataCount);
+			m_BuffCount = ue->m_DataCount;
 
-			SendGet(ue->Device);
+			SendGet(ue->m_Device);
 
 			TRANS(&CUartDrvSim::S_SendAck);
 
@@ -71,7 +71,7 @@ public:
 		{
 		case ENTRY_SIG:
 		{
-			m_Time.Trigger(MilliSecond(20), 0);
+			m_Time.Trigger(MilliSecond(10), 0);
 			break;
 		}
 
@@ -93,7 +93,7 @@ public:
 		{
 		case ENTRY_SIG:
 		{
-			m_Time.Trigger(MilliSecond(20), 0);
+			m_Time.Trigger(MilliSecond(10), 0);
 			break;
 		}
 
@@ -167,7 +167,7 @@ bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
 
 bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
 {
-	CUartEvent* e = new CUartEvent(UART_TEST_SIG, Uart, Data, DataLen);
+	CSerialEvent* e = new CSerialEvent(UART_TEST_SIG, Uart, Data, DataLen);
 
 	Publish(e);
 

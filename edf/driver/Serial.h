@@ -25,23 +25,26 @@ Contact information:
 namespace Edf
 {
 
-class CUartEvent : public Event
+
+class CSerialEvent : public Event
 {
 public:
-	CUartEvent(Signals Sig, UART_HANDLE Uart_H, uint32_t BuffSize, bool Dynamic = true);
+	CSerialEvent(Signals Sig, UART_HANDLE Uart_H, uint32_t BuffSize, bool Dynamic = true);
 
-	CUartEvent(Signals Sig, UART_HANDLE Uart_H, const uint8_t* Data, uint16_t Len);
-	virtual ~CUartEvent();
+	CSerialEvent(Signals Sig, UART_HANDLE Uart_H, const uint8_t* Data, uint16_t Len);
+	virtual ~CSerialEvent();
 
 	void SetSig(Signals Sig);
 	void CopyData(uint8_t* Data, uint16_t Len);
 
-	UART_HANDLE	Device;
-	uint8_t 	*Data;
-	uint32_t 	DataCount;
-	uint32_t	DataSize;
+	UART_HANDLE	m_Device;
+	uint8_t*	m_Data;
+	uint32_t 	m_DataCount;
+	uint32_t	m_DataSize;
 
 };
+
+
 
 using MACCALLBACK = bool (*)(uint8_t *Buff, uint16_t &BuffSize, uint16_t &BuffCount, uint8_t AByte);
 
@@ -60,7 +63,7 @@ public:
 
 	void Initial();
 
-	void S_Run(Event const* const e);
+	void S_Idle(Event const* const e);
 	void S_WaitComplete(Event const* const e);
 
 	bool DeferEvent(Event const* const e);
@@ -77,7 +80,7 @@ public:
 	uint16_t 	m_BuffSize;
 	uint16_t 	m_BuffCount;
 	MACCALLBACK m_MacCall;
-	CUartEvent *m_IrqEvent;
+	CSerialEvent *m_IrqEvent;
 
 	CEventQ* m_DQ;
 	CActive* m_Owner;

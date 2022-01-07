@@ -20,6 +20,7 @@ Contact information:
 
 #include <string.h>
 #include <atomic>
+#include <random>
 
 #include "Edf.h"
 
@@ -78,7 +79,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(200 + (((uint32_t)this) % 10)), 0U);
+			m_Time.Trigger(MilliSecond(200 + (rand() % 10)), 0U);
 			{
 				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);
@@ -111,7 +112,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(200 + (((uint32_t)this) % 10)), 0U);
+			m_Time.Trigger(MilliSecond(200 + (rand() % 10)), 0U);
 			{
 				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);

@@ -25,69 +25,41 @@ Contact information:
 #include "Serial.h"
 #include "Led.h"
 
-class CMacLayer : public CUart
-{
-public:
-	CMacLayer() : CUart((char*)"AppUart")
-	{
-		m_Device = UART_0;
-		m_Config.Baudrate = 9600;
-		m_Config.Parity = Parity_None;
-		m_Config.StopBits = StopBit_1Bit;
-		m_BuffSize = CUartEvent::FRAME_MAX_LEN;
-		m_Buff4MacCall = new uint8_t [m_BuffSize  + 1];
-		ASSERT(m_Buff4MacCall);
-		m_BuffCount = 0;
-		m_IrqEvent = new CUartEvent(m_Device);
-	}
-	~CMacLayer()
-	{
-		if (m_Buff4MacCall)
-			delete [] m_Buff4MacCall;
 
-		delete m_IrqEvent;
-	}
-	// This function is called by ISR to get a frame. Normally, uart protocol defines a frame in MAC layer. But only one
-	// byte is received in an isr. If ISR sends date to upper layer byte by byte, which will consume a lot of time to switch between
-	// isr and background. So a good method is to process a frame in isr and reduce the interactions.
-	virtual bool MacCall(uint8_t AByte)
-	{
-		if (m_BuffCount < m_BuffSize)
-		{
-			m_Buff4MacCall[m_BuffCount++] = AByte;
-			if (AByte == '\n')
-			{
-				// get a frame, so can send a whole frame to upper layer to process
-				m_Buff4MacCall[m_BuffCount++] = 0;
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			// frame error occurs, reset it
-			m_BuffCount = 0;
-			return false;
-		}
-
-	}
-private:
-	UartConfig m_Config;
-};
 
 class CAPP : public CActive
 {
 public:
+
+	static bool MacCall(uint8_t *Buff, uint16_t &BuffSize, uint16_t &BuffCount, uint8_t AByte)
+	{
+		Buff[BuffCount++] = AByte;
+		// get a frame?
+		if (AByte == '\n' && BuffCount > 1)
+		{
+			return true;
+		}
+		else
+		{
+			// discard all data
+			if (BuffCount == BuffSize)
+			{
+				BuffCount = 0;
+			}
+			return false;
+		}
+	}
+
 	virtual void Initial()
 	{
 		m_Led = new CLed();
 		m_Led->Initial();
-		m_Uart = new CMacLayer();
+		m_Uart = new CUart((char*)"AppUart",
+							UART_0, 9600, Parity_None, StopBit_1Bit,
+							128, CAPP::MacCall);
+		ASSERT(m_Uart);
 		CUartKeeper::Instance()->RegUart(m_Uart);
-		Edf::Subscribe(SERIAL_IN_SIG, this);
+		Edf::Subscribe(SERIAL_RSP_SIG, this);
 		INIT_TRANS(&CAPP::S_Idle);
 	}
 
@@ -129,12 +101,12 @@ public:
 			m_Time.Trigger(MilliSecond(1000), 0);
 			break;
 		}
-		case SERIAL_IN_SIG:
+		case SERIAL_RSP_SIG:
 		{
-			CUartEvent const* ue = static_cast<CUartEvent const*>(e);
-			if (ue->Device == m_Uart->m_Device)
+			CSerialEvent const* ue = static_cast<CSerialEvent const*>(e);
+			if (ue->m_Device == m_Uart->m_Device)
 			{
-				Response(ue->Data, ue->DataLen);
+				Response(ue->m_Data, ue->m_DataCount);
 
 				m_Time.UnTrigger();
 				TRANS(&CAPP::S_Idle);
@@ -182,7 +154,7 @@ public:
 		sprintf(tosend, "hello uart %d \r\n", cc++);
 		uint16_t len = strlen(tosend) + 1;
 		LOG_DEBUG("app send: %s\r\n", tosend);
-		CUartEvent* ue = new CUartEvent(SERIAL_OUT_SIG, m_Uart->m_Device, (uint8_t*)tosend, len);
+		CSerialEvent* ue = new CSerialEvent(MAC_REQ_SIG, m_Uart->m_Device, (uint8_t*)tosend, len);
 		Publish(ue);
 	}
 
@@ -227,7 +199,7 @@ void App_Start(void)
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
 // 调试程序: F5 或调试 >“开始调试”菜单
 
-// 入门使用技巧: 
+// 入门使用技巧:
 //   1. 使用解决方案资源管理器窗口添加/管理文件
 //   2. 使用团队资源管理器窗口连接到源代码管理
 //   3. 使用输出窗口查看生成输出和其他消息

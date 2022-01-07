@@ -27,6 +27,7 @@ Contact information:
 #pragma warning(disable : 4996)
 
 
+
 class CSession : public CActive
 {
 public:
@@ -37,7 +38,7 @@ public:
 		m_MacLayer = new CMacLayer();
 		m_MacLayer->Start();
 		
-		Edf::Subscribe(CMD_RESULT_SIG, this);
+		Edf::Subscribe(MAC_RSP_SIG, this);
 		INIT_TRANS(&CSession::S_Idle);
 	}
 
@@ -47,12 +48,23 @@ public:
 		{
 		case ENTRY_SIG:
 		{
-			m_Time.Trigger(MilliSecond(50), 0);
+			m_Time.Trigger(MilliSecond(1000), 0);
 			Event e(CLed::OFF);
 			//m_Led->Dispatcher(&e);
 			break;
 		}
+		case MAC_RSP_SIG:
+		{
+			CMacEvent const* ue = static_cast<CMacEvent const*>(e);
 
+			LOG_INFO("(%s) get : %s\r\n", __FUNCTION__, ue->m_Data);
+
+			if (ue->m_Type == CMacEvent::GET_DATA)
+			{
+				
+			}
+			break;
+		}
 		case TIMEOUT_SIG:
 		{
 			Request();
@@ -77,19 +89,26 @@ public:
 			m_Time.Trigger(MilliSecond(1000), 0);
 			break;
 		}
-		case CMD_RESULT_SIG:
+		case MAC_RSP_SIG:
 		{
-			CHdlcEvent const* ue = static_cast<CHdlcEvent const*>(e);
+			CMacEvent const* ue = static_cast<CMacEvent const*>(e);			
 
 			LOG_INFO("(%s) get : %s\r\n", __FUNCTION__, ue->m_Data);
 
-			TRANS(&CSession::S_Idle);
+			if (ue->m_Type == CMacEvent::GET_DATA)
+			{
+				if (strstr((char*)ue->m_Data, "hello") != NULL)
+				{
+					LOG_DEBUG("get response\r\n");
+					TRANS(&CSession::S_Idle);
+				}				
+			}			
 			break;
 		}
 		case TIMEOUT_SIG:
 		{
 			LOG_DEBUG("Wait Response Timeout \r\n");
-			TRANS(&CSession::S_RetryRequest);
+			TRANS(&CSession::S_Idle);
 		}
 		break;
 
@@ -98,26 +117,6 @@ public:
 		}
 	}
 
-	void S_RetryRequest(Event const* const e)
-	{
-		switch (e->Sig)
-		{
-		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(20), 0);
-			break;
-
-		case TIMEOUT_SIG:
-		{
-			Request();
-
-			TRANS(&CSession::S_WaitReponse);
-		}
-		break;
-
-		default:
-			break;
-		}
-	}
 
 	void Request()
 	{
@@ -125,7 +124,7 @@ public:
 		char Data[32];
 		sprintf(Data, "hello world %06d", ++times);
 		LOG_INFO("(%s) send: %s\r\n", __FUNCTION__, Data);
-		CHdlcEvent *he = new CHdlcEvent(CMD_OUT_SIG, (uint8_t *)Data, strlen(Data) + 1);
+		CAppEvent*he = new CAppEvent(APP_REQ_SIG, (uint8_t *)Data, strlen(Data) + 1);
 		Publish(he);
 	}
 

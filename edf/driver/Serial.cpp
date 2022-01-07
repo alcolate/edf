@@ -23,45 +23,45 @@ Contact information:
 namespace Edf
 {
 
-CUartEvent::CUartEvent(Signals Sig, UART_HANDLE Uart_H, uint32_t BuffSize, bool Dynamic) : Event(Sig, Dynamic)
+CSerialEvent::CSerialEvent(Signals Sig, UART_HANDLE Uart_H, uint32_t BuffSize, bool Dynamic) : Event(Sig, Dynamic)
 {
-	this->Device = Uart_H;
-	this->DataCount = BuffSize;
-	this->Data = new uint8_t[BuffSize];
-	ASSERT(this->Data);
-	this->DataSize = BuffSize;
+	this->m_Device = Uart_H;
+	this->m_DataCount = BuffSize;
+	this->m_Data = new uint8_t[BuffSize];
+	ASSERT(this->m_Data);
+	this->m_DataSize = BuffSize;
 }
 
-CUartEvent::CUartEvent(Signals Sig, UART_HANDLE Uart_H, const uint8_t* Data, uint16_t Len) : Event(Sig, true)
+CSerialEvent::CSerialEvent(Signals Sig, UART_HANDLE Uart_H, const uint8_t* Data, uint16_t Len) : Event(Sig, true)
 {
-	this->Device = Uart_H;
+	this->m_Device = Uart_H;
 
-	this->Data = new uint8_t[Len];
-	ASSERT(this->Data);
-	memcpy(this->Data, Data, Len);
-	this->DataCount = Len;
-	this->DataSize = Len;
+	this->m_Data = new uint8_t[Len];
+	ASSERT(this->m_Data);
+	memcpy(this->m_Data, Data, Len);
+	this->m_DataCount = Len;
+	this->m_DataSize = Len;
 
 }
-CUartEvent::~CUartEvent()
+CSerialEvent::~CSerialEvent()
 {
-	delete Data;
+	delete m_Data;
 }
 
-void CUartEvent::SetSig(Signals Sig)
+void CSerialEvent::SetSig(Signals Sig)
 {
 	this->Sig = Sig;
 }
-void CUartEvent::CopyData(uint8_t* Data, uint16_t Len)
+void CSerialEvent::CopyData(uint8_t* Data, uint16_t Len)
 {
 	if (Len)
 	{
-		memcpy(this->Data, Data, Len);
-		this->DataCount = Len;
+		memcpy(this->m_Data, Data, Len);
+		this->m_DataCount = Len;
 	}
 	else
 	{
-		this->DataCount = 0;
+		this->m_DataCount = 0;
 	}
 }
 
@@ -91,7 +91,7 @@ CUart::CUart(char *Name, UART_HANDLE Uart,
 
 	m_MacCall = MacCall;
 
-	m_IrqEvent = new CUartEvent(SERIAL_IN_SIG, m_Device, MaxFrameLen, false);
+	m_IrqEvent = new CSerialEvent(SERIAL_RSP_SIG, m_Device, MaxFrameLen, false);
 	ASSERT(m_IrqEvent);
 
 	m_DQ = new CEventQ(DQSize);
@@ -118,10 +118,10 @@ void CUart::Dispatcher(Event const* const e)
 
 void CUart::Initial()
 {
-	INIT_TRANS(&CUart::S_Run);
+	INIT_TRANS(&CUart::S_Idle);
 }
 
-void CUart::S_Run(Event const* const e)
+void CUart::S_Idle(Event const* const e)
 {
 	switch (e->Sig)
 	{
@@ -129,8 +129,8 @@ void CUart::S_Run(Event const* const e)
 		FetchDeferedEvent();
 		break;
 
-	case SERIAL_OUT_SIG:
-		Uart_Send(EventCast(CUartEvent)->Device, const_cast<uint8_t *>(EventCast(CUartEvent)->Data), EventCast(CUartEvent)->DataCount);
+	case MAC_REQ_SIG:
+		Uart_Send(EventCast(CSerialEvent)->m_Device, const_cast<uint8_t *>(EventCast(CSerialEvent)->m_Data), EventCast(CSerialEvent)->m_DataCount);
 		TRANS(&CUart::S_WaitComplete);
 		break;
 
@@ -142,11 +142,11 @@ void CUart::S_WaitComplete(Event const* const e)
 {
 	switch (e->Sig)
 	{
-	case SERIAL_OUT_COMPLETE_SIG:
+	case SERIAL_HW_OUT_COMPLETE_SIG:
 		
-		TRANS(&CUart::S_Run);
+		TRANS(&CUart::S_Idle);
 		break;
-	case SERIAL_OUT_SIG:
+	case MAC_REQ_SIG:
 		DeferEvent(e);
 		break;
 	default:
@@ -207,8 +207,8 @@ CUart* CUartKeeper::GetUart(UART_HANDLE UartH)
 void CUartKeeper::Initial()
 {
 
-	Edf::Subscribe(SERIAL_OUT_SIG, this);
-	Edf::Subscribe(SERIAL_OUT_COMPLETE_SIG, this);
+	Edf::Subscribe(MAC_REQ_SIG, this);
+	Edf::Subscribe(SERIAL_HW_OUT_COMPLETE_SIG, this);
 	INIT_TRANS(&CUartKeeper::S_Run);
 }
 
@@ -217,9 +217,9 @@ void CUartKeeper::S_Run(Event const* const e)
 	switch (e->Sig)
 	{
 
-	case SERIAL_OUT_SIG:
-	case SERIAL_OUT_COMPLETE_SIG:
-		GetUart(EventCast(CUartEvent)->Device)->Dispatcher(e);		
+	case MAC_REQ_SIG:
+	case SERIAL_HW_OUT_COMPLETE_SIG:
+		GetUart(EventCast(CSerialEvent)->m_Device)->Dispatcher(e);
 		break;
 
 	default:
@@ -235,7 +235,7 @@ void CUartKeeper::SendComplete(UART_HANDLE UartH)
 	{
 		LOG_DEBUG("keeper send completely: %s \r\n", Uart->m_Name);
 #ifdef FROM_IRQ
-		Uart->m_IrqEvent->SetSig(SERIAL_OUT_COMPLETE_SIG);
+		Uart->m_IrqEvent->SetSig(SERIAL_HW_OUT_COMPLETE_SIG);
 		Uart->m_IrqEvent->CopyData(0, 0);
 		CUartKeeper::Instance()->Post(Uart->m_IrqEvent, true);
 #else
@@ -253,7 +253,7 @@ void CUartKeeper::Receive(UART_HANDLE UartH, uint8_t AByte)
 	{
 		LOG_DEBUG("keeper get: %d \r\n", Uart->m_BuffCount);
 #ifdef FROM_IRQ
-		Uart->m_IrqEvent->SetSig(SERIAL_IN_SIG);
+		Uart->m_IrqEvent->SetSig(SERIAL_RSP_SIG);
 		Uart->m_IrqEvent->CopyData(Uart->m_Buff4MacCall, Uart->m_BuffCount);
 		Uart->m_BuffCount = 0;
 		Publish(Uart->m_IrqEvent, true);

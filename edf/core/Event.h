@@ -35,11 +35,11 @@ enum Signals
 	TEST3_SIG,
 	TEST4_SIG,
 	TEST5_SIG,
-	SERIAL_IN_SIG,   // get from serial
-	SERIAL_OUT_SIG,  // send to serial
-	SERIAL_OUT_COMPLETE_SIG, // send completely
-	CMD_OUT_SIG,    // app send 
-	CMD_RESULT_SIG,
+	SERIAL_RSP_SIG,   // get from serial
+	SERIAL_HW_OUT_COMPLETE_SIG, // send completely
+	MAC_REQ_SIG,  // send to serial
+	MAC_RSP_SIG,
+	APP_REQ_SIG,
 	UART_TEST_SIG,
 	MAX_SIG,
 };
@@ -67,8 +67,13 @@ class CEventQ
 public:
 	CEventQ(uint32_t ItemCount = DEF_ITEMS);
 	~CEventQ();
-public:
 
+public:
+	bool Defer(Event const* const Evt);
+
+	const Event* Fetch(void);
+
+private:
 	class CItem
 	{
 	public:
@@ -77,15 +82,7 @@ public:
 		USE_LINK(CItem);
 	};
 
-private:
 	CItem* GetFreeItem();
-	
-public:
-	bool Defer(Event const* const Evt);
-
-	const Event* Fetch(void);
-
-public:
 	CQueue<CItem> m_Queue;
 	enum { DEF_ITEMS = 10 };
 	uint32_t m_ItemCount;
