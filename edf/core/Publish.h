@@ -16,9 +16,9 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
-#include "Active.h"
-
 #pragma once
+
+#include "Active.h"
 
 namespace Edf
 {

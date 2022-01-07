@@ -16,10 +16,10 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
+#pragma once
+
 #include "osal.h"
 #include "Active.h"
-
-#pragma once
 
 namespace Edf
 {

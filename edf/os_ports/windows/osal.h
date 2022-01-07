@@ -16,11 +16,11 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
+#pragma once
+
 #include <stdint.h>
 #include <assert.h>
 #include <stdio.h>
-
-#pragma once
 
 #define MAX_PRIORITIES 			10
 #define MINIMAL_STACK_SIZE 		1024
