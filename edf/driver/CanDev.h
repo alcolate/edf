@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,7 @@ Contact information:
 #pragma once
 
 #include <memory.h>
-#include "SerialDrv.h"
+#include "CanDrv.h"
 #include "Driver.h"
 #include "Edf.h"
 
@@ -27,39 +27,34 @@ namespace Edf
 {
 
 
-class CSerialEvent : public CDeviceEvent
+class CCanEvent : public CDeviceEvent
 {
 public:
-	CSerialEvent(Signals Sig, UART_HANDLE UartHandle, uint32_t BuffSize, bool Dynamic = true);
-	CSerialEvent(Signals Sig, UART_HANDLE UartHandle, const uint8_t* Data, uint16_t Len);
+	CCanEvent(Signals Sig, CAN_HANDLE CanHandle, uint32_t BuffSize, bool Dynamic = true);
+	CCanEvent(Signals Sig, CAN_HANDLE CanHandle, const uint8_t* Data, uint16_t Len);
 
-	virtual ~CSerialEvent();
-
-
+	virtual ~CCanEvent();
 };
 
 
-class CUart : public CDevice
+class CCan : public CDevice
 {
 public:
-	CUart(char *Name, UART_HANDLE Uart, 
-			UART_Baudrate Baudrate, UART_Parity Parity, UART_StopBit Stopbit,
-			uint16_t MaxFrameLen, 
-			MACCALLBACK MacCall, uint32_t DQSize = 2);
-	~CUart();
+	CCan(char* Name, CAN_HANDLE Can,
+		uint16_t MaxFrameLen, MACCALLBACK MacCall, uint32_t DQSize = 2);
+	~CCan();
 
-	virtual void Initial(CActive *Owner);
+	virtual void Initial(CActive* Owner);
 
 protected:
-	virtual bool Send(uint8_t *Data, uint32_t Len);
+	virtual bool Send(uint8_t* Data, uint32_t Len);
 
 public:
 
-	UartConfig 	m_Config;
+	CanConfig 	m_Config;
 
 };
 
 
 
 } // namespace Edf
-

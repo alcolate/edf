@@ -104,11 +104,11 @@ CMacLayer::~CMacLayer()
     delete m_Hdlc;
 
 }
-bool CMacLayer::MacCall(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint8_t AByte)
+bool CMacLayer::MacCall(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint8_t* Data, uint32_t Len)
 {
-    Buff[BuffCount++] = AByte;
+    Buff[BuffCount++] = *Data;
     // get a frame?
-    if (AByte == CHdlc::DELIMETER && BuffCount > 2)
+    if (*Data == CHdlc::DELIMETER && BuffCount > 2)
     {
         return true;
     }
@@ -220,7 +220,7 @@ void CMacLayer::S_ReSend(Event const* const e)
         break;
     case APP_REQ_SIG:
     {
-        Request(EventCast(CMacEvent)->m_Data, EventCast(CMacEvent)->m_DataLen);
+        Request(EventCast(CAppEvent)->m_Data, EventCast(CAppEvent)->m_DataLen);
         TRANS(&CMacLayer::S_WaitResponse);
         break;
     }

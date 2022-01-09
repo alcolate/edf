@@ -23,7 +23,7 @@ Contact information:
 
 int main()
 {
-    CUartKeeper::Instance()->Start();
+    CDevKeeper::Instance()->Start();
 
     CSession app;
 

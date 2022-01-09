@@ -122,7 +122,7 @@ class CMacLayer : public CActive
 public:
 	CMacLayer();
 	~CMacLayer();
-	static bool MacCall(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint8_t AByte);
+	static bool MacCall(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint8_t* Data, uint32_t Len);
 
 	void Initial();
 

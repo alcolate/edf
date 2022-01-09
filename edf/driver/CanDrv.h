@@ -17,49 +17,29 @@ Contact information:
 <9183399@qq.com>
 *****************************************************************************/
 #pragma once
+#include <stdint.h>
 
-#include <memory.h>
-#include "SerialDrv.h"
-#include "Driver.h"
-#include "Edf.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-namespace Edf
+typedef void* CAN_HANDLE;
+
+typedef struct __canconfig
 {
+	uint8_t			RecvBuff[64];
+}CanConfig;
 
+extern CAN_HANDLE  CAN_0;
+extern CAN_HANDLE  CAN_1;
+extern CAN_HANDLE  CAN_2;
 
-class CSerialEvent : public CDeviceEvent
-{
-public:
-	CSerialEvent(Signals Sig, UART_HANDLE UartHandle, uint32_t BuffSize, bool Dynamic = true);
-	CSerialEvent(Signals Sig, UART_HANDLE UartHandle, const uint8_t* Data, uint16_t Len);
+bool Can_Init(CAN_HANDLE Can, CanConfig* Config);
+bool Can_Send(CAN_HANDLE Can, uint8_t* Data, uint16_t DataLen);
+void Can_SendComplete(CAN_HANDLE Can);
+void Can_Recv(CAN_HANDLE Can, uint8_t* Data, uint32_t Len);
 
-	virtual ~CSerialEvent();
-
-
-};
-
-
-class CUart : public CDevice
-{
-public:
-	CUart(char *Name, UART_HANDLE Uart, 
-			UART_Baudrate Baudrate, UART_Parity Parity, UART_StopBit Stopbit,
-			uint16_t MaxFrameLen, 
-			MACCALLBACK MacCall, uint32_t DQSize = 2);
-	~CUart();
-
-	virtual void Initial(CActive *Owner);
-
-protected:
-	virtual bool Send(uint8_t *Data, uint32_t Len);
-
-public:
-
-	UartConfig 	m_Config;
-
-};
-
-
-
-} // namespace Edf
+#ifdef __cplusplus
+}
+#endif
 
