@@ -24,15 +24,24 @@ CHdlc::CHdlc(CMacLayer* MacLayer) : m_MacLayer(MacLayer)
     m_ControlRecv.seq_no = 0;
 }
 
-bool CHdlc::Packet(const uint8_t* Data, uint16_t Len, uint8_t* Frame, uint32_t* FrameLen)
+void CHdlc::Ack(yahdlc_control_t* Control)
 {
-    int ret;
+    CSerialEvent* ue = new CSerialEvent(MAC_REQ_SIG, m_MacLayer->m_Uart->m_Device, 10);
+
+    yahdlc_frame_data(Control, NULL, 0, (char*)ue->m_Data, &ue->m_DataCount);
+
+    Publish(ue);
+}
+
+void CHdlc::PacketData(const uint8_t* Data, uint16_t Len)
+{
+    CSerialEvent* ue = new CSerialEvent(MAC_REQ_SIG, m_MacLayer->m_Uart->m_Device, Len * 2, true);
 
     m_ControlSend.frame = YAHDLC_FRAME_DATA;
     m_ControlSend.seq_no++;
-    ret = yahdlc_frame_data(&m_ControlSend, (char*)Data, Len, (char*)Frame, FrameLen);
+    yahdlc_frame_data(&m_ControlSend, (char*)Data, Len, (char*)ue->m_Data, &ue->m_DataCount);
 
-    return (ret == 0);
+    Publish(ue);
 }
 
 bool CHdlc::Parser(const uint8_t* Data, uint32_t Len)
@@ -68,7 +77,7 @@ bool CHdlc::Parser(const uint8_t* Data, uint32_t Len)
         yahdlc_control_t control;
         control.seq_no = m_ControlRecv.seq_no + 1;
         control.frame = YAHDLC_FRAME_ACK;
-        //Ack(&control);
+        Ack(&control);
         Publish(he);
     }
     break;
@@ -82,14 +91,7 @@ bool CHdlc::Parser(const uint8_t* Data, uint32_t Len)
     return true;
 }
 
-void CHdlc::Ack(yahdlc_control_t *Control)
-{
-    CSerialEvent *ue = new CSerialEvent(MAC_REQ_SIG, m_MacLayer->m_Uart->m_Device, 10);
 
-    yahdlc_frame_data(Control, NULL, 0, (char *)ue->m_Data, &ue->m_DataCount);
-
-    Publish(ue);
-}
 
 
 CMacLayer::CMacLayer() : CActive((char*)"Maclayer", 1), m_Timer(TIMEOUT_SIG, this)
@@ -106,7 +108,7 @@ bool CMacLayer::MacCall(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, 
 {
     Buff[BuffCount++] = AByte;
     // get a frame?
-    if (AByte == CHdlc::DELIMETER && BuffCount > 1)
+    if (AByte == CHdlc::DELIMETER && BuffCount > 2)
     {
         return true;
     }
@@ -168,6 +170,13 @@ void CMacLayer::S_WaitResponse(Event const* const e)
 {
     switch (e->Sig)
     {
+    case ENTRY_SIG:
+        m_Timer.Trigger(100, 100);
+        break;
+    case EXIT_SIG:
+        m_Timer.UnTrigger();
+        break;
+
     case SERIAL_RSP_SIG:
         if (IsMe(e))
         {
@@ -191,6 +200,10 @@ void CMacLayer::S_WaitResponse(Event const* const e)
             TRANS(&CMacLayer::S_Idle);
         }
 
+        break;
+
+    case APP_REQ_SIG:
+        LOG_ERROR("Mac Layer is busy\r\n");
         break;
 
     default:
@@ -234,9 +247,7 @@ inline bool CMacLayer::IsMe(Event const* const e)
 
 void CMacLayer::Request(const uint8_t* Data, uint32_t Len)
 {
-    CSerialEvent* ue = new CSerialEvent(MAC_REQ_SIG, m_Uart->m_Device, Len * 2, true);
-    m_Hdlc->Packet(Data, Len, ue->m_Data, &ue->m_DataCount);
-    Publish(ue);
+    m_Hdlc->PacketData(Data, Len);
 }
  
 

@@ -40,7 +40,7 @@ enum Signals
 	MAC_REQ_SIG,  // send to serial
 	MAC_RSP_SIG,
 	APP_REQ_SIG,
-	UART_TEST_SIG,
+	UART_SIM_SIG,
 	MAX_SIG,
 };
 

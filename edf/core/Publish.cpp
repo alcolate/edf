@@ -182,8 +182,9 @@ void UnSubscribe(Signal Sig, CActive const * const Act)
 
 void Publish(Event const * const e, bool FromISR)
 {
-	ASSERT(e->Sig < MAX_SIG);
 	ASSERT(e);
+	ASSERT(e->Sig < MAX_SIG);
+
 	Edf::CPublisher::Instance()->Publish( e, FromISR);
 }
 }

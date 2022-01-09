@@ -28,18 +28,20 @@ class CAppEvent : public Event
 public:
 	CAppEvent(Signals Sig, const uint8_t* Data, uint32_t Len) : Event(Sig, true)
 	{
+		m_DataLen = Len;
+		m_Data = NULL;
 		if (Len)
 		{
 			m_Data = new uint8_t[Len];
 			ASSERT(m_Data);
 			memcpy(m_Data, Data, Len);
 		}
-		m_DataLen = Len;
+		
 	}
 
 	~CAppEvent()
 	{
-		if (m_DataLen)
+		if (m_Data)
 			delete[] m_Data;
 	}
 
@@ -56,30 +58,32 @@ public:
 	enum Type
 	{
 		SEND_ERROR,
+		SEND_BUSY,
 		GET_DATA,
 	};
 public:
 	CMacEvent(Signals Sig, CMacEvent::Type Type, const uint8_t* Data, uint32_t Len) : Event(Sig, true)
 	{
 		m_Type = Type;
-
+		m_DataLen = Len;
+		m_Data = NULL;
 		if (Len)
 		{
 			m_Data = new uint8_t[Len];
 			ASSERT(m_Data);
 			memcpy(m_Data, Data, Len);
 		}
-		m_DataLen = Len;
+		
 	}
 
 	~CMacEvent()
 	{
-		if (m_DataLen)
+		if (m_Data)
 			delete[] m_Data;
 	}
 
 public:
-	UART_HANDLE	Device;
+	//UART_HANDLE	Device;
 	Type m_Type;
 	uint8_t* m_Data;
 	uint32_t m_DataLen;
@@ -99,7 +103,7 @@ public:
         DELIMETER = YAHDLC_FLAG_SEQUENCE
     };
 
-	bool Packet(const uint8_t* Data, uint16_t Len, uint8_t* Frame, uint32_t* FrameLen);
+	void PacketData(const uint8_t* Data, uint16_t Len);
 
 	void Ack(yahdlc_control_t* Control);
 

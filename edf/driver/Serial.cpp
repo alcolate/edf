@@ -84,15 +84,18 @@ CUart::CUart(char *Name, UART_HANDLE Uart,
 	m_Config.Parity = Parity;
 	m_Config.StopBits = Stopbit;
 
+	m_IrqEvent = new  CSerialEvent[2]{
+		CSerialEvent(SERIAL_RSP_SIG, m_Device, MaxFrameLen, false),
+		CSerialEvent(SERIAL_RSP_SIG, m_Device, MaxFrameLen, false)
+	};
+	ASSERT(m_IrqEvent);
+	m_IrqEventIndex = 0;
+
 	m_BuffSize = MaxFrameLen;
 	m_BuffCount = 0;
-	m_Buff4MacCall = new uint8_t [MaxFrameLen];
-	ASSERT(m_Buff4MacCall);
+	m_Buff4MacCall = m_IrqEvent[m_IrqEventIndex].m_Data;
 
 	m_MacCall = MacCall;
-
-	m_IrqEvent = new CSerialEvent(SERIAL_RSP_SIG, m_Device, MaxFrameLen, false);
-	ASSERT(m_IrqEvent);
 
 	m_DQ = new CEventQ(DQSize);
 	ASSERT(m_DQ);
@@ -101,8 +104,7 @@ CUart::CUart(char *Name, UART_HANDLE Uart,
 }
 CUart::~CUart()
 {
-	delete m_Buff4MacCall;
-	delete m_IrqEvent;
+	delete [] m_IrqEvent;
 }
 
 void CUart::ResetBuff()
@@ -152,6 +154,16 @@ void CUart::S_WaitComplete(Event const* const e)
 	default:
 		break;
 	}
+}
+
+// call from uart driver
+void CUart::PostIrqEvent(Signals Sig)
+{
+	m_IrqEvent[m_IrqEventIndex].SetSig(Sig);
+	Publish(&m_IrqEvent[m_IrqEventIndex], true);
+	m_IrqEventIndex ^= 0x01;
+	m_BuffCount = 0;
+	m_Buff4MacCall = m_IrqEvent[m_IrqEventIndex].m_Data;
 }
 
 bool CUart::DeferEvent(Event const* const e)
@@ -226,7 +238,8 @@ void CUartKeeper::S_Run(Event const* const e)
 		break;
 	}
 }
-#define FROM_IRQ
+
+
 void CUartKeeper::SendComplete(UART_HANDLE UartH)
 {
 	CUart* Uart = GetUart(UartH);
@@ -234,14 +247,8 @@ void CUartKeeper::SendComplete(UART_HANDLE UartH)
 	if (Uart)
 	{
 		LOG_DEBUG("keeper send completely: %s \r\n", Uart->m_Name);
-#ifdef FROM_IRQ
-		Uart->m_IrqEvent->SetSig(SERIAL_HW_OUT_COMPLETE_SIG);
-		Uart->m_IrqEvent->CopyData(0, 0);
-		CUartKeeper::Instance()->Post(Uart->m_IrqEvent, true);
-#else
-		CUartEvent* ue = new CUartEvent(SERIAL_OUT_COMPLETE_SIG, UartH, 10, true);
-		Publish(ue);
-#endif
+
+		Uart->PostIrqEvent(SERIAL_HW_OUT_COMPLETE_SIG);
 	}
 }
 
@@ -252,16 +259,8 @@ void CUartKeeper::Receive(UART_HANDLE UartH, uint8_t AByte)
 	if (Uart && Uart->m_MacCall(Uart->m_Buff4MacCall, Uart->m_BuffSize, Uart->m_BuffCount, AByte))
 	{
 		LOG_DEBUG("keeper get: %d \r\n", Uart->m_BuffCount);
-#ifdef FROM_IRQ
-		Uart->m_IrqEvent->SetSig(SERIAL_RSP_SIG);
-		Uart->m_IrqEvent->CopyData(Uart->m_Buff4MacCall, Uart->m_BuffCount);
-		Uart->m_BuffCount = 0;
-		Publish(Uart->m_IrqEvent, true);
-#else
-		CUartEvent* ue = new CUartEvent(SERIAL_IN_SIG, UartH, Uart->m_Buff4MacCall, Uart->m_BuffCount);
-		Uart->m_BuffCount = 0;
-		Publish(ue);
-#endif
+
+		Uart->PostIrqEvent(SERIAL_RSP_SIG);
 	}
 }
 

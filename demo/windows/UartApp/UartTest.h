@@ -48,7 +48,7 @@ public:
 		{
 		case ENTRY_SIG:
 		{
-			m_Time.Trigger(MilliSecond(1000), 0);
+			m_Time.Trigger(MilliSecond(50), 0);
 			Event e(CLed::OFF);
 			//m_Led->Dispatcher(&e);
 			break;

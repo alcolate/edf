@@ -66,6 +66,8 @@ public:
 	void S_Idle(Event const* const e);
 	void S_WaitComplete(Event const* const e);
 
+	void PostIrqEvent(Signals Sig);
+
 	bool DeferEvent(Event const* const e);
 
 	void FetchDeferedEvent();
@@ -81,6 +83,7 @@ public:
 	uint16_t 	m_BuffCount;
 	MACCALLBACK m_MacCall;
 	CSerialEvent *m_IrqEvent;
+	uint32_t	m_IrqEventIndex;
 
 	CEventQ* m_DQ;
 	CActive* m_Owner;

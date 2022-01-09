@@ -16,11 +16,11 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
+#pragma once
+
 #include <stdint.h>
 #include "FreeRTOS.h"
 #include "task.h"
-
-#pragma once
 
 #pragma GCC diagnostic ignored "-Wunused-value"
 #pragma GCC diagnostic ignored "-Wformat="

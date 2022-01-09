@@ -18,6 +18,7 @@ Contact information:
 *****************************************************************************/
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
 #include "Serial.h"
 #include "Edf.h"
 #include "yahdlc.h"
@@ -26,11 +27,6 @@ UART_HANDLE  UART_0 = (UART_HANDLE)1;
 UART_HANDLE  UART_1 = (UART_HANDLE)2;
 UART_HANDLE  UART_2 = (UART_HANDLE)3;
 
-// the three functions are mocks for uart
-
-static void SendGet(UART_HANDLE Uart);
-
-static void SendResponse(UART_HANDLE Uart, uint8_t* Data, uint16_t Len);
 
 class CUartDrvSim : public CActive
 {
@@ -38,7 +34,7 @@ public:
 
 	virtual void Initial()
 	{
-		Edf::Subscribe(UART_TEST_SIG, this);
+		Edf::Subscribe(UART_SIM_SIG, this);
 		INIT_TRANS(&CUartDrvSim::S_Idle);
 	}
 
@@ -46,17 +42,26 @@ public:
 	{
 		switch (e->Sig)
 		{
-		case UART_TEST_SIG:
+		case UART_SIM_SIG:
 		{
 			CSerialEvent const* ue = static_cast<CSerialEvent const*>(e);
 
-			memcpy(m_Buff, ue->m_Data, ue->m_DataCount);
-			m_BuffCount = ue->m_DataCount;
-
 			SendGet(ue->m_Device);
 
-			TRANS(&CUartDrvSim::S_SendAck);
+			std::shared_ptr<char> Buff (new char[ue->m_DataCount * 2]);
+			uint32_t len;
 
+			yahdlc_control_t control;
+
+			int ret = yahdlc_get_data(&control, (char*)ue->m_Data, ue->m_DataCount, Buff.get(), &len);
+
+			if (control.frame == YAHDLC_FRAME_DATA)
+			{
+				memcpy(m_Buff, ue->m_Data, ue->m_DataCount);
+				m_BuffCount = ue->m_DataCount;
+
+				TRANS(&CUartDrvSim::S_SendAck);
+			}
 		}
 		break;
 
@@ -167,7 +172,7 @@ bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
 
 bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
 {
-	CSerialEvent* e = new CSerialEvent(UART_TEST_SIG, Uart, Data, DataLen);
+	CSerialEvent* e = new CSerialEvent(UART_SIM_SIG, Uart, Data, DataLen);
 
 	Publish(e);
 
