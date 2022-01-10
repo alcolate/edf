@@ -35,8 +35,8 @@ enum Signals
 	TEST3_SIG,
 	TEST4_SIG,
 	TEST5_SIG,
-	SERIAL_RSP_SIG,   // get from serial
-	SERIAL_HW_OUT_COMPLETE_SIG, // send completely
+	HW_RSP_SIG,   // get from serial
+	HW_OUT_COMPLETE_SIG, // send completely
 	MAC_REQ_SIG,  // send to serial
 	MAC_RSP_SIG,
 	APP_REQ_SIG,
