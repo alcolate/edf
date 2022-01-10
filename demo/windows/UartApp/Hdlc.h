@@ -105,7 +105,7 @@ public:
 
 	void PacketData(const uint8_t* Data, uint16_t Len);
 
-	void Ack(yahdlc_control_t* Control);
+	void Ack(uint8_t SeqNo);
 
 	bool Parser(const uint8_t* Data, uint32_t Len);
 

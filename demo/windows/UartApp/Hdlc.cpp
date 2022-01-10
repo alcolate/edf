@@ -24,11 +24,17 @@ CHdlc::CHdlc(CMacLayer* MacLayer) : m_MacLayer(MacLayer)
     m_ControlRecv.seq_no = 0;
 }
 
-void CHdlc::Ack(yahdlc_control_t* Control)
+void CHdlc::Ack(uint8_t SeqNo)
 {
-    CSerialEvent* ue = new CSerialEvent(MAC_REQ_SIG, m_MacLayer->m_Uart->m_Device, 10);
+    yahdlc_control_t Control;
 
-    yahdlc_frame_data(Control, NULL, 0, (char*)ue->m_Data, &ue->m_DataCount);
+    Control.seq_no = SeqNo;
+    Control.seq_no++;
+    Control.frame = YAHDLC_FRAME_ACK;
+
+    CSerialEvent *ue = new CSerialEvent(MAC_REQ_SIG, m_MacLayer->m_Uart->m_Device, 10);
+
+    yahdlc_frame_data(&Control, NULL, 0, (char *)ue->m_Data, &ue->m_DataCount);
 
     Publish(ue);
 }
@@ -48,9 +54,11 @@ bool CHdlc::Parser(const uint8_t* Data, uint32_t Len)
 {
     int ret;
 
+    yahdlc_control_t RcvControl;
+
     CMacEvent* he = new CMacEvent(MAC_RSP_SIG, CMacEvent::GET_DATA, Data, Len);
 
-    ret = yahdlc_get_data(&m_ControlRecv, (char*)Data, Len, (char*)he->m_Data, &he->m_DataLen);
+    ret = yahdlc_get_data(&RcvControl, (char*)Data, Len, (char*)he->m_Data, &he->m_DataLen);
 
     if (ret < 0)
     {
@@ -58,27 +66,31 @@ bool CHdlc::Parser(const uint8_t* Data, uint32_t Len)
         return false;
     }
 
-    switch (m_ControlRecv.frame)
+    switch (RcvControl.frame)
     {
-    case YAHDLC_FRAME_ACK:
-    case YAHDLC_FRAME_NACK:
+    case YAHDLC_FRAME_ACK:    
     {
         delete he;
 
-        if (((m_ControlSend.seq_no + 1) == m_ControlRecv.seq_no)
-            || (m_ControlSend.seq_no == 7 && m_ControlRecv.seq_no == 0))
+        if (((m_ControlSend.seq_no + 1) == RcvControl.seq_no)
+            || (m_ControlSend.seq_no == 7 && RcvControl.seq_no == 0))
         {
             return true;
         }
     }
     break;
+    case YAHDLC_FRAME_NACK:
+        break;
     case YAHDLC_FRAME_DATA:
     {
-        yahdlc_control_t control;
-        control.seq_no = m_ControlRecv.seq_no + 1;
-        control.frame = YAHDLC_FRAME_ACK;
-        Ack(&control);
-        Publish(he);
+        Ack(RcvControl.seq_no);
+
+        // this is a new frame
+        if (m_ControlRecv.seq_no != RcvControl.seq_no)
+        {
+            m_ControlRecv = RcvControl;
+            Publish(he);
+        }        
     }
     break;
 
@@ -88,7 +100,7 @@ bool CHdlc::Parser(const uint8_t* Data, uint32_t Len)
         break;
     }
 
-    return true;
+    return false;
 }
 
 

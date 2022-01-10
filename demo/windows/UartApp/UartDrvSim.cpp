@@ -57,8 +57,9 @@ public:
 
 			if (control.frame == YAHDLC_FRAME_DATA)
 			{
-				memcpy(m_Buff, ue->m_Data, ue->m_DataCount);
-				m_BuffCount = ue->m_DataCount;
+				control.seq_no++;
+
+				yahdlc_frame_data(&control, Buff.get(), len, (char*)m_Buff, &m_BuffCount);
 
 				TRANS(&CUartDrvSim::S_SendAck);
 			}
@@ -155,7 +156,7 @@ public:
 	UART_HANDLE m_Device;
 
 	uint8_t  m_Buff[128];
-	uint16_t m_BuffCount;
+	uint32_t m_BuffCount;
 
 public:
 	DEF_STATEMACHINE(CUartDrvSim);
