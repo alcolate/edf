@@ -29,12 +29,6 @@ CSerialEvent::CSerialEvent(Signals Sig, UART_HANDLE UartHandle, uint32_t BuffSiz
 
 }
 
-CSerialEvent::CSerialEvent(Signals Sig, UART_HANDLE UartHandle, const uint8_t* Data, uint16_t Len) 
-	: CDeviceEvent(Sig, UartHandle,  Data, Len) 
-{
-
-
-}
 CSerialEvent::~CSerialEvent()
 {
 

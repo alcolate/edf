@@ -31,7 +31,6 @@ class CCanEvent : public CDeviceEvent
 {
 public:
 	CCanEvent(Signals Sig, CAN_HANDLE CanHandle, uint32_t BuffSize, bool Dynamic = true);
-	CCanEvent(Signals Sig, CAN_HANDLE CanHandle, const uint8_t* Data, uint16_t Len);
 
 	virtual ~CCanEvent();
 };

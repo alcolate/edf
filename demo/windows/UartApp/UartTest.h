@@ -35,7 +35,7 @@ public:
 	{
 		m_Led = new CLed();
 		m_Led->Initial();
-		m_MacLayer = new CMacLayer();
+		m_MacLayer = new CHdlc();
 		m_MacLayer->Start();
 		
 		Edf::Subscribe(MAC_RSP_SIG, this);
@@ -140,7 +140,7 @@ public:
 	}
 
 public:
-	CMacLayer* m_MacLayer;
+	CHdlc* m_MacLayer;
 	CTimeEvent m_Time;
 	CLed* m_Led;
 

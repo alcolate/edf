@@ -30,12 +30,9 @@ class CDeviceEvent : public Event
 {
 public:
 	CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, bool Dynamic = true);
-
-	CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, const uint8_t* Data, uint16_t Len);
 	virtual ~CDeviceEvent();
 
 	void SetSig(Signals Sig);
-	void CopyData(uint8_t* Data, uint16_t Len);
 
 	DEV_HANDLE	m_Device;
 	uint8_t* 	m_Data;

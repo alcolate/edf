@@ -31,7 +31,6 @@ class CSerialEvent : public CDeviceEvent
 {
 public:
 	CSerialEvent(Signals Sig, UART_HANDLE UartHandle, uint32_t BuffSize, bool Dynamic = true);
-	CSerialEvent(Signals Sig, UART_HANDLE UartHandle, const uint8_t* Data, uint16_t Len);
 
 	virtual ~CSerialEvent();
 

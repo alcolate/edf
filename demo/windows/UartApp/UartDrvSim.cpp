@@ -173,7 +173,9 @@ bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
 
 bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
 {
-	CSerialEvent* e = new CSerialEvent(UART_SIM_SIG, Uart, Data, DataLen);
+	CSerialEvent* e = new CSerialEvent(UART_SIM_SIG, Uart, DataLen);
+
+	memcpy(e->m_Data, Data, DataLen);
 
 	Publish(e);
 

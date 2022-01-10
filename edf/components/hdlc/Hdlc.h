@@ -91,17 +91,17 @@ public:
 
 
 
-class CMacLayer;
+class CHdlc;
 
-class CHdlc
+class CHdlcImp
 {
 public:
-	CHdlc(CMacLayer* MacLayer);
+	CHdlcImp(CHdlc* MacLayer);
 
-    enum
-    {
-        DELIMETER = YAHDLC_FLAG_SEQUENCE
-    };
+	enum
+	{
+		DELIMETER = YAHDLC_FLAG_SEQUENCE
+	};
 
 	void PacketData(const uint8_t* Data, uint16_t Len);
 
@@ -110,18 +110,18 @@ public:
 	bool Parser(const uint8_t* Data, uint32_t Len);
 
 private:
-    yahdlc_control_t m_ControlSend;
-    yahdlc_control_t m_ControlRecv;
+	yahdlc_control_t m_ControlSend;
+	yahdlc_control_t m_ControlRecv;
 
-    CMacLayer *m_MacLayer;
+	CHdlc *m_MacLayer;
 
 };
 
-class CMacLayer : public CActive
+class CHdlc : public CActive
 {
 public:
-	CMacLayer();
-	~CMacLayer();
+	CHdlc();
+	~CHdlc();
 	static bool MacCall(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint8_t* Data, uint32_t Len);
 
 	void Initial();
@@ -139,11 +139,11 @@ public:
 	uint32_t m_Retries;
 	// lower layer
 	CUart *m_Uart;
-	CHdlc *m_Hdlc;
+	CHdlcImp *m_Hdlc;
 	CTimeEvent m_Timer;
 	// upper layer
 
 
 public:
-	DEF_STATEMACHINE(CMacLayer);
+	DEF_STATEMACHINE(CHdlc);
 };

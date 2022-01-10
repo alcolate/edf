@@ -30,12 +30,7 @@ namespace Edf
 
 	}
 
-	CCanEvent::CCanEvent(Signals Sig, CAN_HANDLE CanHandle, const uint8_t* Data, uint16_t Len)
-		: CDeviceEvent(Sig, CanHandle, Data, Len)
-	{
 
-
-	}
 	CCanEvent::~CCanEvent()
 	{
 
