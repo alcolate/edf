@@ -20,14 +20,6 @@ Contact information:
 #include <stdio.h>
 #include "CanDev.h"
 
-bool Can_Init(CAN_HANDLE Can, CanConfig* Config)
-{
-	return false;
-}
-bool Can_Send(CAN_HANDLE Can, uint8_t* Data, uint16_t DataLen)
-{
-	return false;
-}
 
 namespace Edf
 {

@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\third_party\yahdlc;..\..\..\edf\include;..\..\..\edf\os_ports\windows;..\..\..\edf\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\edf\components\hdlc;..\..\..\third_party\yahdlc;..\..\..\edf\include;..\..\..\edf\os_ports\windows;..\..\..\edf\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,6 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\edf\components\hdlc\Hdlc.cpp" />
     <ClCompile Include="..\..\..\edf\core\Active.cpp" />
     <ClCompile Include="..\..\..\edf\core\Event.cpp" />
     <ClCompile Include="..\..\..\edf\core\Publish.cpp" />
@@ -152,11 +153,12 @@
     <ClCompile Include="..\..\..\edf\os_ports\windows\osal.cpp" />
     <ClCompile Include="..\..\..\third_party\yahdlc\fcs.c" />
     <ClCompile Include="..\..\..\third_party\yahdlc\yahdlc.c" />
-    <ClCompile Include="Hdlc.cpp" />
+    <ClCompile Include="CanDrvSim.cpp" />
     <ClCompile Include="UartDrvSim.cpp" />
     <ClCompile Include="UartTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\edf\components\hdlc\Hdlc.h" />
     <ClInclude Include="..\..\..\edf\core\Active.h" />
     <ClInclude Include="..\..\..\edf\core\Event.h" />
     <ClInclude Include="..\..\..\edf\core\Link.h" />
@@ -172,7 +174,6 @@
     <ClInclude Include="..\..\..\edf\os_ports\windows\osal.h" />
     <ClInclude Include="..\..\..\third_party\yahdlc\fcs.h" />
     <ClInclude Include="..\..\..\third_party\yahdlc\yahdlc.h" />
-    <ClInclude Include="Hdlc.h" />
     <ClInclude Include="Led.h" />
     <ClInclude Include="UartTest.h" />
   </ItemGroup>

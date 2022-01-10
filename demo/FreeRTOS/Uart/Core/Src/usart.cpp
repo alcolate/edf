@@ -339,7 +339,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 
 
-// the three functions are mocks for uart
+
 bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
 {
 	if (Uart == UART_0)

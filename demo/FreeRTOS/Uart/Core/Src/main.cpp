@@ -81,13 +81,15 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+  /* Initialize all configured peripherals */
+  //MX_GPIO_Init();
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
-
+  extern void App_Start(void);
   App_Start();
   /* USER CODE END 2 */
 

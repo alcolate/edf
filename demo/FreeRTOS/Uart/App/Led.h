@@ -25,6 +25,10 @@ public:
 	{
 
 	}
+	virtual ~CLed()
+	{
+
+	}
 
 	enum
 	{
@@ -47,7 +51,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			LOG_DEBUG("led on\r\n");
+			//LOG_DEBUG("led on\r\n");
 			break;
 
 		case OFF:
@@ -64,7 +68,7 @@ public:
 		switch (e->Sig)
 		{
 		case ENTRY_SIG:
-			LOG_DEBUG("led off\r\n");
+			//LOG_DEBUG("led off\r\n");
 			break;
 
 		case ON:

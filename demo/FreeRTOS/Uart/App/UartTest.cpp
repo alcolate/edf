@@ -19,174 +19,13 @@ Contact information:
 // Hello.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
-#include <stdio.h>
 #include "UartTest.h"
-#include "Edf.h"
-#include "Serial.h"
-#include "Led.h"
-
-
-
-class CAPP : public CActive
-{
-public:
-
-	static bool MacCall(uint8_t *Buff, uint16_t &BuffSize, uint16_t &BuffCount, uint8_t AByte)
-	{
-		Buff[BuffCount++] = AByte;
-		// get a frame?
-		if (AByte == '\n' && BuffCount > 1)
-		{
-			return true;
-		}
-		else
-		{
-			// discard all data
-			if (BuffCount == BuffSize)
-			{
-				BuffCount = 0;
-			}
-			return false;
-		}
-	}
-
-	virtual void Initial()
-	{
-		m_Led = new CLed();
-		m_Led->Initial();
-		m_Uart = new CUart((char*)"AppUart",
-							UART_0, 9600, Parity_None, StopBit_1Bit,
-							128, CAPP::MacCall);
-		ASSERT(m_Uart);
-		CUartKeeper::Instance()->RegUart(m_Uart);
-		Edf::Subscribe(SERIAL_RSP_SIG, this);
-		INIT_TRANS(&CAPP::S_Idle);
-	}
-
-	void S_Idle(Event const* const e)
-	{
-		switch (e->Sig)
-		{
-		case ENTRY_SIG:
-		{
-			m_Time.Trigger(MilliSecond(50), 0);
-			Event e(CLed::OFF);
-			m_Led->Dispatcher(&e);
-			break;
-		}
-
-		case TIMEOUT_SIG:
-		{
-			Request();
-
-			TRANS(&CAPP::S_WaitReponse);
-
-		}
-		break;
-
-
-		default:
-			break;
-		}
-	}
-
-	void S_WaitReponse(Event const* const e)
-	{
-		switch (e->Sig)
-		{
-		case ENTRY_SIG:
-		{
-			Event e(CLed::ON);
-			m_Led->Dispatcher(&e);
-			m_Time.Trigger(MilliSecond(1000), 0);
-			break;
-		}
-		case SERIAL_RSP_SIG:
-		{
-			CSerialEvent const* ue = static_cast<CSerialEvent const*>(e);
-			if (ue->m_Device == m_Uart->m_Device)
-			{
-				Response(ue->m_Data, ue->m_DataCount);
-
-				m_Time.UnTrigger();
-				TRANS(&CAPP::S_Idle);
-			}
-			break;
-		}
-		case TIMEOUT_SIG:
-		{
-			LOG_DEBUG("Wait Response Timeout \r\n");
-			TRANS(&CAPP::S_RetryRequest);
-		}
-		break;
-
-		default:
-			break;
-		}
-	}
-
-	void S_RetryRequest(Event const* const e)
-	{
-		switch (e->Sig)
-		{
-		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(20), 0);
-			break;
-
-		case TIMEOUT_SIG:
-		{
-			Request();
-
-			TRANS(&CAPP::S_WaitReponse);
-		}
-		break;
-
-
-		default:
-			break;
-		}
-	}
-
-	void Request(void)
-	{
-		char tosend[100];
-		static uint32_t cc = 0;
-		sprintf(tosend, "hello uart %d \r\n", cc++);
-		uint16_t len = strlen(tosend) + 1;
-		LOG_DEBUG("app send: %s\r\n", tosend);
-		CSerialEvent* ue = new CSerialEvent(MAC_REQ_SIG, m_Uart->m_Device, (uint8_t*)tosend, len);
-		Publish(ue);
-	}
-
-	void Response(const uint8_t* Data, uint16_t Len)
-	{
-		const uint8_t* response = Data;
-		LOG_DEBUG("app get: %s\r\n", response);
-		// do your work
-	}
-
-public:
-	CAPP() : CActive((char*)"APP"), m_Time(TIMEOUT_SIG, this)
-	{
-		m_Uart = 0;
-	}
-
-public:
-	CUart* m_Uart;
-	CTimeEvent m_Time;
-	CLed* m_Led;
-
-public:
-	DEF_STATEMACHINE(CAPP);
-};
-
 
 void App_Start(void)
 {
+    CDevKeeper::Instance()->Start();
 
-    CUartKeeper::Instance()->Start();
-
-    CAPP app;
+    CSession app;
 
     app.Start();
 
@@ -194,12 +33,10 @@ void App_Start(void)
     Edf::EdfStart();
 }
 
-
-
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
 // 调试程序: F5 或调试 >“开始调试”菜单
 
-// 入门使用技巧:
+// 入门使用技巧: 
 //   1. 使用解决方案资源管理器窗口添加/管理文件
 //   2. 使用团队资源管理器窗口连接到源代码管理
 //   3. 使用输出窗口查看生成输出和其他消息

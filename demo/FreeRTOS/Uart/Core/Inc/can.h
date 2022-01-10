@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    gpio.h
+  * @file    can.h
   * @brief   This file contains all the function prototypes for
-  *          the gpio.c file
+  *          the can.c file
   ******************************************************************************
   * @attention
   *
@@ -17,8 +17,8 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __GPIO_H__
-#define __GPIO_H__
+#ifndef __CAN_H__
+#define __CAN_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,11 +31,13 @@ extern "C" {
 
 /* USER CODE END Includes */
 
+extern CAN_HandleTypeDef hcan;
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_GPIO_Init(void);
+void MX_CAN_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
@@ -44,6 +46,7 @@ void MX_GPIO_Init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ GPIO_H__ */
+
+#endif /* __CAN_H__ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
