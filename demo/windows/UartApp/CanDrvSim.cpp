@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,33 +16,24 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
-// Hello.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
-//
+#include <stdlib.h>
+#include <string.h>
+#include <memory>
+#include "CanDrv.h"
 
-#include <iostream>
-#include "hello.h"
+CAN_HANDLE  UART_0 = (CAN_HANDLE)1;
+CAN_HANDLE  UART_1 = (CAN_HANDLE)2;
+CAN_HANDLE  UART_2 = (CAN_HANDLE)3;
 
-int main()
+
+
+bool Can_Init(CAN_HANDLE Can, CanConfig* Config)
 {
-    std::cout << "Hello World!\n";
 
-    CHello::Instance()->Start();
-    CWorld::Instance()->Start();
-#if 1
-    CHello* hello[10];
-    for (uint32_t i = 0; i < sizeof(hello) / sizeof(hello[0]); i++)
-    {
-        hello[i] = new CHello();
-        hello[i]->Start();
-    }
-
-    CWorld* world[10];
-    for (uint32_t i = 0; i < sizeof(world)/sizeof(world[0]); i++)
-    {
-        world[i] = new CWorld();
-        world[i]->Start();
-    }
-#endif
-    Edf::EdfStart();
+	return true;
 }
 
+bool Can_Send(CAN_HANDLE Can, uint8_t* Data, uint16_t DataLen)
+{
+	return true;
+}

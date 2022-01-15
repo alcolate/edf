@@ -39,6 +39,7 @@ enum Signals
 	HW_OUT_COMPLETE_SIG, // send completely
 	MAC_REQ_SIG,  // send to serial
 	MAC_RSP_SIG,
+	PC_REQ_SIG,
 	APP_REQ_SIG,
 	UART_SIM_SIG,
 	MAX_SIG,
