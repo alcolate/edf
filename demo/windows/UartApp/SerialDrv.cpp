@@ -66,6 +66,7 @@ serial::Serial** HandleToSerial(UART_HANDLE Uart)
     else
     {
         ASSERT(false);
+        return NULL;
     }
 }
 

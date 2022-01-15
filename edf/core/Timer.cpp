@@ -50,9 +50,6 @@ void CTimeEvent::UnTrigger()
 {
 	OS_EnterCritical();
 	gTimer.RemoveItem([](CTimeEvent* This, CTimeEvent* That)->bool { return That == This; }, this);
-	this->m_Timeout = NEVER;
-	this->m_Interval = NEVER;
-	gTimer.AddTail(this);
 	OS_ExitCritical();
 }
 
@@ -63,30 +60,32 @@ void CTimeEvent::Touch()
 
 void CTimeEvent::Tick(bool FromISR)
 {
-	CTimeEvent* timer, * p;
-
 	if (++ticks == gTimer.Head()->m_Timeout)
 	{
-		for (p = gTimer.Head(); p; p = p->m_Next)
-		{
-			timer = NULL;
-			uint32_t flag = OS_EnterCritical(FromISR);
-			if (p->m_Timeout != NEVER)
+		gTimer.ForEach(gTimer.Head(), 
+			[](CTimeEvent *Timer)  -> void 
 			{
-				p->m_Timeout -= ticks;
-				if (p->m_Timeout == 0)
+				CTimeEvent* timer = NULL, * p = Timer;
+				
+				uint32_t flag = OS_EnterCritical(true);
+				if (p->m_Timeout != NEVER)
 				{
-					timer = p;
-					p->m_Timeout = p->m_Interval;
+					p->m_Timeout -= ticks;
+					if (p->m_Timeout == 0)
+					{
+						timer = p;
+						p->m_Timeout = p->m_Interval;
+						gTimer.RemoveItem([](CTimeEvent* This, CTimeEvent* That)->bool { return That == This; }, p);
+						gTimer.AddSort([](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; }, p);
+					}
+				}
+				OS_ExitCritical(flag, true);
+				if (timer != NULL)
+				{
+					timer->Touch();				
 				}
 			}
-			OS_ExitCritical(flag, FromISR);
-			if (timer != NULL)
-			{
-				timer->Touch();
-				gTimer.AddSort([](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; }, timer);
-			}
-		}
+		);
 		ticks = 0;
 	}
 

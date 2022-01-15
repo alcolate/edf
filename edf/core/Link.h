@@ -69,7 +69,7 @@ public:
 		return Item;
 	}
 
-	void ForEach(void (*Call)(T* Item), T* From)
+	void ForEach(T* From, void (*Call)(T* Item))
 	{
 		ASSERT(From);
 
