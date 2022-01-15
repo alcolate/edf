@@ -51,6 +51,8 @@ public:
 	}
 	bool IsExist(bool (*Call)(T* This, T* That), T* That)
 	{
+		ASSERT(That);
+
 		T* Item = FindItem(Call, That);
 
 		return (Item != NULL);
@@ -60,14 +62,25 @@ public:
 	{
 		T* Item;
 
+		ASSERT(That);
+
 		for (Item = m_Head; Item && !Call(Item, That); Item = Item->m_Next);
 
 		return Item;
 	}
 
+	void ForEach(void (*Call)(T* Item), T* From)
+	{
+		ASSERT(From);
+
+		for (T* Item = From; Item ; Call(Item), Item = Item->m_Next);
+	}
+
 protected:
 	void LinkHead(T* Item)
 	{
+		ASSERT(Item);
+
 		if (NULL == m_Head)
 		{
 			m_Head = m_Tail = Item;
@@ -84,6 +97,8 @@ protected:
     
 	void LinkTail(T* Item)
 	{
+		ASSERT(Item);
+
 		if (NULL == m_Head)
 		{
 			m_Head = m_Tail = Item;
@@ -97,6 +112,36 @@ protected:
 		}
 
 		++m_Count;
+	}
+
+	void LinkSort(bool (*Call)(T* This, T* That), T* That)
+	{
+		T *p, *q;
+
+		ASSERT(That);
+
+		if (NULL == m_Head)
+		{
+			LinkHead(That);
+			return;
+		}
+
+		for (p = q = m_Head; p && !Call(p, That); q = p, p = p->m_Next);
+
+		if (!p)
+		{
+			LinkTail(That);
+		}
+		else if (q == m_Head && q == p)
+		{
+			LinkHead(That);
+		}
+		else
+		{
+			That->m_Next = p;
+			q->m_Next = That;
+			++m_Count;
+		}
 	}
 
 	T* UnLinkHead()
@@ -152,6 +197,8 @@ protected:
 	T* UnLinkItem(bool (*Call)(T* This, T* That), T* That)
 	{
 		T *p, *q;
+
+		ASSERT(That);
 
 		for (p = q = m_Head; p && !Call(p, That); q = p, p = p->m_Next);
 
@@ -245,6 +292,10 @@ public:
 	void AddTail(T* Item)
 	{
 		CLink<T>::LinkTail(Item);
+	}
+	void AddSort(bool (*Call)(T* This, T* That), T* That)
+	{
+		CLink<T>::LinkSort(Call, That);
 	}
 	T* RemoveHead()
 	{

@@ -44,7 +44,9 @@ private:
 	CActive* m_Act;
 	uint32_t m_Timeout;
 	uint32_t m_Interval;
-	CTimeEvent *m_Next;
+	
+public:
+	USE_LINK(CTimeEvent);
 };
 
 } // namespace Edf

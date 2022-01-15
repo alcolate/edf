@@ -21,28 +21,27 @@ Contact information:
 
 namespace Edf
 {
+static const uint32_t NEVER = (uint32_t)(-1);
+static uint32_t ticks = 0;
 
-static CTimeEvent *gTimer = NULL;
-static uint32_t gTimerNum = 0; 
+static CList<CTimeEvent> gTimer;
 
 CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 {
 	ASSERT(Act);
 	this->m_Act = Act;
-	this->m_Timeout = 0U;
-	this->m_Interval = 0U;
-
-	m_Next = gTimer;
-	gTimer = this;
-	++gTimerNum;
+	this->m_Timeout = NEVER;
+	this->m_Interval = NEVER;
 }
 
 /*..........................................................................*/
 void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 {
 	OS_EnterCritical();
+	gTimer.RemoveItem([](CTimeEvent* This, CTimeEvent* That)->bool { return That == This; }, this);
 	this->m_Timeout = Timeout;
-	this->m_Interval = Interval;
+	this->m_Interval = Interval? Interval: NEVER;
+	gTimer.AddSort([](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; }, this);
 	OS_ExitCritical();
 }
 
@@ -50,7 +49,10 @@ void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 void CTimeEvent::UnTrigger()
 {
 	OS_EnterCritical();
-	this->m_Timeout = 0U;
+	gTimer.RemoveItem([](CTimeEvent* This, CTimeEvent* That)->bool { return That == This; }, this);
+	this->m_Timeout = NEVER;
+	this->m_Interval = NEVER;
+	gTimer.AddTail(this);
 	OS_ExitCritical();
 }
 
@@ -62,24 +64,32 @@ void CTimeEvent::Touch()
 void CTimeEvent::Tick(bool FromISR)
 {
 	CTimeEvent* timer, * p;
-	for (p = gTimer; p; p = p->m_Next)
+
+	if (++ticks == gTimer.Head()->m_Timeout)
 	{
-		timer = NULL;
-		uint32_t flag = OS_EnterCritical(FromISR);
-		if (p->m_Timeout > 0U)
+		for (p = gTimer.Head(); p; p = p->m_Next)
 		{
-			if (--p->m_Timeout == 0U)
+			timer = NULL;
+			uint32_t flag = OS_EnterCritical(FromISR);
+			if (p->m_Timeout != NEVER)
 			{
-				timer = p;
-				p->m_Timeout = p->m_Interval;
+				p->m_Timeout -= ticks;
+				if (p->m_Timeout == 0)
+				{
+					timer = p;
+					p->m_Timeout = p->m_Interval;
+				}
+			}
+			OS_ExitCritical(flag, FromISR);
+			if (timer != NULL)
+			{
+				timer->Touch();
+				gTimer.AddSort([](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; }, timer);
 			}
 		}
-		OS_ExitCritical(flag, FromISR);
-		if (timer != NULL)
-		{
-			timer->Touch();
-		}
+		ticks = 0;
 	}
+
 }
 } // namespace Edf
 
