@@ -1,3 +1,0 @@
-[submodule "third_party/serial"]
-	path = third_party/serial
-	url = https://github.com/wjwwood/serial.git
