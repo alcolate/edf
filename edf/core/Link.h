@@ -49,22 +49,22 @@ public:
 	{
 		return m_Count;
 	}
-	bool IsExist(bool (*Call)(T* This, T* That), T* That)
+	bool IsExist(void * Content, bool (*Call)(T* This, void * Content))
 	{
-		ASSERT(That);
+		ASSERT(Content);
 
-		T* Item = FindItem(Call, That);
+		T* Item = FindItem(Content, Call);
 
 		return (Item != NULL);
 	}
 
-	T* FindItem(bool (*Call)(T* This, T* That), T* That)
+	T* FindItem(void * Content, bool (*Call)(T* This, void * Content))
 	{
 		T* Item;
 
-		ASSERT(That);
+		ASSERT(Content);
 
-		for (Item = m_Head; Item && !Call(Item, That); Item = Item->m_Next);
+		for (Item = m_Head; Item && !Call(Item, Content); Item = Item->m_Next);
 
 		return Item;
 	}
@@ -114,32 +114,32 @@ protected:
 		++m_Count;
 	}
 
-	void LinkSort(bool (*Call)(T* This, T* That), T* That)
+	void LinkSort(T* Item, bool (*Call)(T* This, T * Item))
 	{
 		T *p, *q;
 
-		ASSERT(That);
+		ASSERT(Item);
 
 		if (NULL == m_Head)
 		{
-			LinkHead(That);
+			LinkHead(Item);
 			return;
 		}
 
-		for (p = q = m_Head; p && !Call(p, That); q = p, p = p->m_Next);
+		for (p = q = m_Head; p && !Call(p, Item); q = p, p = p->m_Next);
 
 		if (!p)
 		{
-			LinkTail(That);
+			LinkTail(Item);
 		}
 		else if (q == m_Head && q == p)
 		{
-			LinkHead(That);
+			LinkHead(Item);
 		}
 		else
 		{
-			That->m_Next = p;
-			q->m_Next = That;
+			Item->m_Next = p;
+			q->m_Next = Item;
 			++m_Count;
 		}
 	}
@@ -194,13 +194,13 @@ protected:
 		}
 	}
 
-	T* UnLinkItem(bool (*Call)(T* This, T* That), T* That)
+	T* UnLinkItem(void * Content, bool (*Call)(T* This, void * Content))
 	{
 		T *p, *q;
 
-		ASSERT(That);
+		ASSERT(Content);
 
-		for (p = q = m_Head; p && !Call(p, That); q = p, p = p->m_Next);
+		for (p = q = m_Head; p && !Call(p, Content); q = p, p = p->m_Next);
 
 		if (p)
 		{
@@ -293,9 +293,9 @@ public:
 	{
 		CLink<T>::LinkTail(Item);
 	}
-	void AddSort(bool (*Call)(T* This, T* That), T* That)
+	void AddSort(T* Item, bool (*Call)(T* This, T * Item))
 	{
-		CLink<T>::LinkSort(Call, That);
+		CLink<T>::LinkSort(Item, Call);
 	}
 	T* RemoveHead()
 	{
@@ -305,9 +305,9 @@ public:
 	{
 		return CLink<T>::UnLinkTail();
 	}
-	T* RemoveItem(bool (*Call)(T* This, T* That), T* That)
+	T* RemoveItem(void *Content, bool (*Call)(T* This, void * Content))
 	{
-		return CLink<T>::UnLinkItem(Call, That);
+		return CLink<T>::UnLinkItem(Content, Call);
 	}
 };
 

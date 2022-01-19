@@ -38,10 +38,10 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 {
 	OS_EnterCritical();
-	gTimer.RemoveItem([](CTimeEvent* This, CTimeEvent* That)->bool { return That == This; }, this);
+	gTimer.RemoveItem(this, [](CTimeEvent* This, void* Timer)->bool { return Timer == This; });
 	this->m_Timeout = Timeout;
 	this->m_Interval = Interval? Interval: NEVER;
-	gTimer.AddSort([](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; }, this);
+	gTimer.AddSort(this, [](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; });
 	OS_ExitCritical();
 }
 
@@ -49,7 +49,7 @@ void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 void CTimeEvent::UnTrigger()
 {
 	OS_EnterCritical();
-	gTimer.RemoveItem([](CTimeEvent* This, CTimeEvent* That)->bool { return That == This; }, this);
+	gTimer.RemoveItem(this, [](CTimeEvent* This, void* Timer)->bool { return Timer == This; });
 	OS_ExitCritical();
 }
 
@@ -75,8 +75,8 @@ void CTimeEvent::Tick(bool FromISR)
 					{
 						timer = p;
 						p->m_Timeout = p->m_Interval;
-						gTimer.RemoveItem([](CTimeEvent* This, CTimeEvent* That)->bool { return That == This; }, p);
-						gTimer.AddSort([](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; }, p);
+						gTimer.RemoveItem(p, [](CTimeEvent* This, void* Timer)->bool { return Timer == This; });
+						gTimer.AddSort(p, [](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; });
 					}
 				}
 				OS_ExitCritical(flag, true);

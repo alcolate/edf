@@ -87,15 +87,9 @@ void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
 {
 	OS_EnterCritical();
 
-	CSubscriber *sub = new CSubscriber(Act, m_Subs[Sig].Head()? m_Subs[Sig].Head()->m_Number: 0);
-
-	if (m_Subs[Sig].IsExist([](CSubscriber *This, CSubscriber *That) -> bool {return This->m_Act == That->m_Act;}, sub))
+	if (!m_Subs[Sig].IsExist((void*)Act, [](CSubscriber *This, void *Act) -> bool {return This->m_Act == Act;}))
 	{
-		delete sub;
-	}
-	else
-	{
-		m_Subs[Sig].AddHead(sub);
+		m_Subs[Sig].AddHead(new CSubscriber(Act, m_Subs[Sig].Head() ? m_Subs[Sig].Head()->m_Number : 0));
 	}	
 	
 	OS_ExitCritical();
@@ -106,9 +100,7 @@ void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 {
 	OS_EnterCritical();
 
-	CSubscriber Sub(Act);
-
-	CSubscriber* Item = m_Subs[Sig].RemoveItem([](CSubscriber* This, CSubscriber* That) -> bool {return This->m_Act == That->m_Act; },  &Sub);
+	CSubscriber* Item = m_Subs[Sig].RemoveItem((void*)Act, [](CSubscriber* This, void* Act) -> bool {return This->m_Act == Act; });
 
 	if (Item)
 	{
