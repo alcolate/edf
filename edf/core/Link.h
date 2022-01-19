@@ -49,31 +49,42 @@ public:
 	{
 		return m_Count;
 	}
-	bool IsExist(void * Content, bool (*Call)(T* This, void * Content))
+	bool IsExist(T* Item)
 	{
-		ASSERT(Content);
+		T* p = FindItem(Item);
 
-		T* Item = FindItem(Content, Call);
+		return (p != NULL);
+	}
+	template <typename F>
+	bool IsExist(F Func)
+	{
+		T* Item = FindItem(Func);
 
 		return (Item != NULL);
 	}
+	T* FindItem(T* Item)
+	{
+		T* p;
 
-	T* FindItem(void * Content, bool (*Call)(T* This, void * Content))
+		for (p = m_Head; p && p != Item; Item = Item->m_Next);
+
+		return p;
+	}
+	template <typename F>
+	T* FindItem(F Func)
 	{
 		T* Item;
 
-		ASSERT(Content);
-
-		for (Item = m_Head; Item && !Call(Item, Content); Item = Item->m_Next);
+		for (Item = m_Head; Item && !Func(Item); Item = Item->m_Next);
 
 		return Item;
 	}
-
-	void ForEach(T* From, void (*Call)(T* Item))
+	template <typename F>
+	void ForEach(T* From, F Func)
 	{
 		ASSERT(From);
 
-		for (T* Item = From; Item ; Call(Item), Item = Item->m_Next);
+		for (T* Item = From; Item ; Func(Item), Item = Item->m_Next);
 	}
 
 protected:
@@ -114,7 +125,8 @@ protected:
 		++m_Count;
 	}
 
-	void LinkSort(T* Item, bool (*Call)(T* This, T * Item))
+	template <typename F>
+	void LinkSort(T* Item, F Func)
 	{
 		T *p, *q;
 
@@ -126,7 +138,7 @@ protected:
 			return;
 		}
 
-		for (p = q = m_Head; p && !Call(p, Item); q = p, p = p->m_Next);
+		for (p = q = m_Head; p && !Func(p); q = p, p = p->m_Next);
 
 		if (!p)
 		{
@@ -193,15 +205,8 @@ protected:
 			return p;
 		}
 	}
-
-	T* UnLinkItem(void * Content, bool (*Call)(T* This, void * Content))
+	T* UnLinkItem(T* p, T* q)
 	{
-		T *p, *q;
-
-		ASSERT(Content);
-
-		for (p = q = m_Head; p && !Call(p, Content); q = p, p = p->m_Next);
-
 		if (p)
 		{
 			if (p == m_Head)
@@ -217,7 +222,7 @@ protected:
 			{
 				if (p == m_Tail)
 				{
-					m_Tail = q;	
+					m_Tail = q;
 				}
 
 				q->m_Next = p->m_Next;
@@ -228,8 +233,27 @@ protected:
 			return p;
 
 		}
-		
+
 		return NULL;
+	}
+	T* UnLinkItem(T* Item)
+	{
+		T* p, * q;
+
+		ASSERT(Item);
+
+		for (p = q = m_Head; p && p!= Item ; q = p, p = p->m_Next);
+
+		return UnLinkItem(p, q);
+	}
+	template <typename F>
+	T* UnLinkItem(F Func)
+	{
+		T *p, *q;
+
+		for (p = q = m_Head; p && !Func(p); q = p, p = p->m_Next);
+
+		return UnLinkItem(p, q);
 	}
 private:
     T *m_Head;
@@ -293,9 +317,10 @@ public:
 	{
 		CLink<T>::LinkTail(Item);
 	}
-	void AddSort(T* Item, bool (*Call)(T* This, T * Item))
+	template <typename F>
+	void AddSort(T* Item, F Func)
 	{
-		CLink<T>::LinkSort(Item, Call);
+		CLink<T>::LinkSort(Item, Func);
 	}
 	T* RemoveHead()
 	{
@@ -305,9 +330,14 @@ public:
 	{
 		return CLink<T>::UnLinkTail();
 	}
-	T* RemoveItem(void *Content, bool (*Call)(T* This, void * Content))
+	T* RemoveItem(T* Item)
 	{
-		return CLink<T>::UnLinkItem(Content, Call);
+		return CLink<T>::UnLinkItem(Item);
+	}
+	template <typename F>
+	T* RemoveItem(F Func)
+	{
+		return CLink<T>::UnLinkItem(Func);
 	}
 };
 

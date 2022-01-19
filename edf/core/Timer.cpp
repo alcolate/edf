@@ -38,10 +38,10 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 {
 	OS_EnterCritical();
-	gTimer.RemoveItem(this, [](CTimeEvent* This, void* Timer)->bool { return Timer == This; });
+	gTimer.RemoveItem(this);
 	this->m_Timeout = Timeout;
 	this->m_Interval = Interval? Interval: NEVER;
-	gTimer.AddSort(this, [](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; });
+	gTimer.AddSort(this, [this](CTimeEvent* Item)->bool { return this->m_Timeout <= Item->m_Timeout; });
 	OS_ExitCritical();
 }
 
@@ -49,7 +49,7 @@ void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 void CTimeEvent::UnTrigger()
 {
 	OS_EnterCritical();
-	gTimer.RemoveItem(this, [](CTimeEvent* This, void* Timer)->bool { return Timer == This; });
+	gTimer.RemoveItem(this);
 	OS_ExitCritical();
 }
 
@@ -60,35 +60,28 @@ void CTimeEvent::Touch()
 
 void CTimeEvent::Tick(bool FromISR)
 {
-	if (++ticks == gTimer.Head()->m_Timeout)
-	{
-		gTimer.ForEach(gTimer.Head(), 
-			[](CTimeEvent *Timer)  -> void 
-			{
-				CTimeEvent* timer = NULL, * p = Timer;
+	gTimer.ForEach(gTimer.Head(), 
+		[&FromISR](CTimeEvent *Timer)  -> void 
+		{
+			CTimeEvent* runTimer = NULL;
 				
-				uint32_t flag = OS_EnterCritical(true);
-				if (p->m_Timeout != NEVER)
+			uint32_t flag = OS_EnterCritical(FromISR);
+			if (Timer->m_Timeout != NEVER)
+			{
+				Timer->m_Timeout --;
+				if (Timer->m_Timeout == 0)
 				{
-					p->m_Timeout -= ticks;
-					if (p->m_Timeout == 0)
-					{
-						timer = p;
-						p->m_Timeout = p->m_Interval;
-						gTimer.RemoveItem(p, [](CTimeEvent* This, void* Timer)->bool { return Timer == This; });
-						gTimer.AddSort(p, [](CTimeEvent* This, CTimeEvent* That)->bool { return That->m_Timeout <= This->m_Timeout; });
-					}
-				}
-				OS_ExitCritical(flag, true);
-				if (timer != NULL)
-				{
-					timer->Touch();				
+					runTimer = Timer;
+					Timer->m_Timeout = Timer->m_Interval;
 				}
 			}
-		);
-		ticks = 0;
-	}
-
+			OS_ExitCritical(flag, FromISR);
+			if (runTimer != NULL)
+			{
+				runTimer->Touch();				
+			}
+		}
+	);
 }
 } // namespace Edf
 
