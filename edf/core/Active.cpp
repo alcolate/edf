@@ -25,7 +25,7 @@ CActive::CActive(char *Name, uint32_t DQSize)
 	m_Name = Name;
 	m_Queue = 0;
 	m_Thread = 0;
-	m_Priority = DefPrioity;
+	m_Priority = DEF_PRIOITY;
 	m_StackSize = MINIMAL_STACK_SIZE;
 	if (DQSize)
 	{
@@ -45,19 +45,19 @@ CActive::~CActive()
 
 void CActive::Start()
 {
-	Start(m_Priority, EQ_SIZE, sizeof(Event *));
+	Start(m_Priority, m_StackSize, EQ_SIZE);
 }
 
-void CActive::Start(uint32_t Priority, uint32_t QueueLen, uint32_t ItemSize)
-{
-	QueueLen = QueueLen;
-	ItemSize = ItemSize;
-	
+void CActive::Start(uint32_t Priority, uint32_t StackSize, uint32_t EQSize)
+{	
+	m_Priority = Priority;
+	m_StackSize = StackSize;
+
 	this->m_Thread = OS_TaskCreate(
 			m_Name,
 			m_StackSize,               
 			this,                       
-			Priority, &(this->m_Queue), EQ_SIZE);  
+			m_Priority, &(this->m_Queue), EQSize);  
 
 	ASSERT(this->m_Queue);
 

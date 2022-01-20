@@ -18,7 +18,6 @@ Contact information:
 *****************************************************************************/
 #pragma once
 
-#include "osal.h"
 #include "Active.h"
 
 namespace Edf

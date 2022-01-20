@@ -26,7 +26,7 @@ Contact information:
 
 namespace Edf
 {
-constexpr uint32_t DefPrioity = (MAX_PRIORITIES - 5);
+constexpr uint32_t DEF_PRIOITY = (MAX_PRIORITIES - 5);
 
 class CActive
 {
@@ -36,23 +36,13 @@ public:
 
 	void Start();
 
-	void Start(uint32_t Priority, uint32_t QueueLen, uint32_t ItemSize);
+	void Start(uint32_t Priority, uint32_t StackSize, uint32_t EQSize);
 
 	bool Post(Event const *const e, bool FromISR = false);
 
 	void Run(void);
 
 	virtual void Initial() = 0;
-
-	void SetPriority(uint32_t Priority)
-	{
-		m_Priority = Priority;
-	}
-
-	void SetStackSize(uint32_t StackSize)
-	{
-		m_StackSize = StackSize;
-	}
 
 	bool DeferEvent(Event const* const e);
 
@@ -83,7 +73,7 @@ private:
     uint32_t m_Priority;
 	uint32_t m_StackSize;
 
-	enum {EQ_SIZE = 100};
+	enum {EQ_SIZE = 20};
 
 };
 
