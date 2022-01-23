@@ -68,7 +68,7 @@ bool CHdlcImp::Parser(const uint8_t* Data, uint32_t Len)
 
 	switch (RcvControl.frame)
 	{
-	case YAHDLC_FRAME_ACK:    
+	case YAHDLC_FRAME_ACK:
 	{
 		delete he;
 
@@ -90,7 +90,7 @@ bool CHdlcImp::Parser(const uint8_t* Data, uint32_t Len)
 		{
 			m_ControlRecv = RcvControl;
 			Publish(he);
-		}        
+		}
 	}
 	break;
 
@@ -106,7 +106,7 @@ bool CHdlcImp::Parser(const uint8_t* Data, uint32_t Len)
 
 
 
-CHdlc::CHdlc() : CActive((char*)"Hdlc", 1), m_Timer(TIMEOUT_SIG, this)
+CHdlc::CHdlc() : CMacLayer((char*)"Hdlc", 1), m_Timer(TIMEOUT_SIG, this)
 {
 
 }
@@ -165,7 +165,7 @@ void CHdlc::S_Idle(Event const* const e)
 		break;
 
 	case HW_RSP_SIG:
-		if (IsMe(e))
+		if (IsToMe(e))
 		{
 			if (m_Hdlc->Parser(EventCast(CSerialEvent)->m_Data, EventCast(CSerialEvent)->m_DataCount))
 			{
@@ -190,7 +190,7 @@ void CHdlc::S_WaitResponse(Event const* const e)
 		break;
 
 	case HW_RSP_SIG:
-		if (IsMe(e))
+		if (IsToMe(e))
 		{
 			if (m_Hdlc->Parser(EventCast(CSerialEvent)->m_Data, EventCast(CSerialEvent)->m_DataCount))
 			{
@@ -238,7 +238,7 @@ void CHdlc::S_ReSend(Event const* const e)
 	}
 
 	case HW_RSP_SIG:
-		if (IsMe(e))
+		if (IsToMe(e))
 		{
 			if (m_Hdlc->Parser(EventCast(CSerialEvent)->m_Data, EventCast(CSerialEvent)->m_DataCount))
 			{
@@ -252,7 +252,7 @@ void CHdlc::S_ReSend(Event const* const e)
 	}
 }
 
-inline bool CHdlc::IsMe(Event const* const e)
+inline bool CHdlc::IsToMe(Event const* const e)
 {
 	return EventCast(CSerialEvent)->m_Device == m_Uart->m_Device;
 }
@@ -261,5 +261,5 @@ void CHdlc::Request(const uint8_t* Data, uint32_t Len)
 {
 	m_Hdlc->PacketData(Data, Len);
 }
- 
+
 
