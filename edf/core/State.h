@@ -60,6 +60,11 @@ public:
 		this->Dispatcher(&EntryEvent);
 	}
 
+	bool InState(const STATE State)
+	{
+		return m_State == State;
+	}
+
 	void Dispatcher(Event const* const e)
 	{
 		switch (e->Sig)
@@ -105,12 +110,16 @@ public:
 
 
 #define INIT_TRANS(state) \
-		do {\
-			this->m_StateMachine.Init(this, state, #state);\
-		}while(0)
+			do {\
+				this->m_StateMachine.Init(this, state, #state);\
+			}while(0)
 
 #define TRANS(to) \
-		do {\
-			this->m_StateMachine.Trans(to, #to); \
-		}while(0)
+			do {\
+				this->m_StateMachine.Trans(to, #to); \
+			}while(0)
 
+#define IN_STATE(state) \
+			this->m_StateMachine.InState(State)
+
+			

@@ -5,6 +5,7 @@
 #ifndef YAHDLC_H
 #define YAHDLC_H
 
+#include <stdint.h>
 #include "fcs.h"
 #include <errno.h>
 
@@ -81,7 +82,7 @@ int yahdlc_get_state(yahdlc_state_t *state);
  * @see yahdlc_get_data_with_state
  */
 int yahdlc_get_data(yahdlc_control_t *control, const char *src,
-                    unsigned int src_len, char *dest, unsigned int *dest_len);
+                    uint32_t src_len, char *dest, uint32_t *dest_len);
 
 /**
  * Retrieves data from specified buffer containing the HDLC frame. Frames can be
@@ -94,7 +95,7 @@ int yahdlc_get_data(yahdlc_control_t *control, const char *src,
  * @see yahdlc_get_data
  */
 int yahdlc_get_data_with_state(yahdlc_state_t *state, yahdlc_control_t *control, const char *src,
-                               unsigned int src_len, char *dest, unsigned int *dest_len);
+                               uint32_t src_len, char *dest, uint32_t *dest_len);
 
 
 /**
@@ -125,7 +126,7 @@ void yahdlc_get_data_reset_with_state(yahdlc_state_t *state);
  * @retval -EINVAL Invalid parameter
  */
 int yahdlc_frame_data(yahdlc_control_t *control, const char *src,
-                      unsigned int src_len, char *dest, unsigned int *dest_len);
+                      uint32_t src_len, char *dest, uint32_t *dest_len);
 
 #ifdef __cplusplus
 }

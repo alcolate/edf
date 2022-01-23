@@ -25,6 +25,16 @@ template <class T>
 class CLink
 {
 public:
+	class CItem
+	{
+	public:
+		CItem(T *Content) : m_Content(Content){}
+
+		T *m_Content;
+
+		CItem *m_Next;
+	};
+public:
 	CLink() : m_Head(0), m_Tail(0), m_Count(0)
     {
 
@@ -84,7 +94,7 @@ public:
 	{
 		ASSERT(From);
 
-		for (T* Item = From; Item ; Func(Item), Item = Item->m_Next);
+		for (T* Cur = From, *Next = From; Next; Cur = Next, Next = Next->m_Next, Func(Cur));
 	}
 
 protected:

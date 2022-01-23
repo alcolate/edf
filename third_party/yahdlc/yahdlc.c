@@ -115,15 +115,15 @@ void yahdlc_get_data_reset_with_state(yahdlc_state_t *state) {
 }
 
 int yahdlc_get_data(yahdlc_control_t *control, const char *src,
-                    unsigned int src_len, char *dest, unsigned int *dest_len) {
+                    uint32_t src_len, char *dest, uint32_t *dest_len) {
   return yahdlc_get_data_with_state(&yahdlc_state, control, src, src_len, dest, dest_len);
 }
 
 int yahdlc_get_data_with_state(yahdlc_state_t *state, yahdlc_control_t *control, const char *src,
-                    unsigned int src_len, char *dest, unsigned int *dest_len) {
+                    uint32_t src_len, char *dest, uint32_t *dest_len) {
   int ret;
   char value;
-  unsigned int i;
+  uint32_t i;
 
   // Make sure that all parameters are valid
   if (!state || !control || !src || !dest || !dest_len) {
@@ -207,8 +207,8 @@ int yahdlc_get_data_with_state(yahdlc_state_t *state, yahdlc_control_t *control,
 }
 
 int yahdlc_frame_data(yahdlc_control_t *control, const char *src,
-                      unsigned int src_len, char *dest, unsigned int *dest_len) {
-  unsigned int i;
+                      uint32_t src_len, char *dest, uint32_t *dest_len) {
+  uint32_t i;
   int dest_index = 0;
   unsigned char value = 0;
   FCS_SIZE fcs = FCS_INIT_VALUE;
