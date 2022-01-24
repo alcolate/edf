@@ -64,7 +64,7 @@ public:
 private:
 
 public:
-	char* m_Name;
+	char m_Name[10];
 	
 private:
 	CEventQ* m_DQ;

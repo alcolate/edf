@@ -16,13 +16,14 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
+#include <stdio.h>
 #include "Active.h"
 
 namespace Edf
 {
 CActive::CActive(char *Name, uint32_t DQSize)
 {
-	m_Name = Name;
+	snprintf(m_Name, sizeof(m_Name), "%s", Name);
 	m_Queue = 0;
 	m_Thread = 0;
 	m_Priority = DEF_PRIOITY;

@@ -152,8 +152,13 @@ void CDevice::FetchDeferedEvent()
 
 CDevKeeper* CDevKeeper::Instance()
 {
-	static CDevKeeper dk;
-	return &dk;
+	static CDevKeeper *dk = nullptr;
+	if (dk == nullptr)
+	{
+		dk = new CDevKeeper();
+	}
+
+	return dk;
 }
 
 void CDevKeeper::RegDevice(CDevice* Device)

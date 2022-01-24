@@ -34,7 +34,7 @@ T_HANDLE OS_TaskCreate(    const char * const pcName,
                         Q_HANDLE *Q, 
                         uint32_t Q_Size)
 {
-    T_HANDLE CreatedTask;
+    T_HANDLE CreatedTask = 0;
     
     *Q = OS_QueueCreate(Q_Size, sizeof(void *));
 

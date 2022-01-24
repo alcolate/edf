@@ -92,8 +92,6 @@ public:
 	template <typename F>
 	void ForEach(T* From, F Func)
 	{
-		ASSERT(From);
-
 		for (T* Cur = From, *Next = From; Next; Cur = Next, Next = Next->m_Next, Func(Cur));
 	}
 
