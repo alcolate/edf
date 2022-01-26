@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\edf\components\hdlc;..\..\..\third_party\yahdlc;..\..\..\edf\include;..\..\..\edf\os_ports\windows;..\..\..\edf\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\edf\components\protocol;..\..\..\third_party\yahdlc;..\..\..\edf\include;..\..\..\edf\os_ports\windows;..\..\..\edf\driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,7 +142,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\edf\components\hdlc\Hdlc.cpp" />
+    <ClCompile Include="..\..\..\edf\components\protocol\Hdlc.cpp" />
+    <ClCompile Include="..\..\..\edf\components\protocol\protocol.cpp" />
     <ClCompile Include="..\..\..\edf\core\Active.cpp" />
     <ClCompile Include="..\..\..\edf\core\Event.cpp" />
     <ClCompile Include="..\..\..\edf\core\Publish.cpp" />
@@ -165,7 +166,8 @@
     <ClCompile Include="UartTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\edf\components\hdlc\Hdlc.h" />
+    <ClInclude Include="..\..\..\edf\components\protocol\Hdlc.h" />
+    <ClInclude Include="..\..\..\edf\components\protocol\protocol.h" />
     <ClInclude Include="..\..\..\edf\core\Active.h" />
     <ClInclude Include="..\..\..\edf\core\Event.h" />
     <ClInclude Include="..\..\..\edf\core\Link.h" />

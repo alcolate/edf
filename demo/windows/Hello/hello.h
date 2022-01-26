@@ -29,6 +29,17 @@ Contact information:
 std::atomic<uint32_t> create_c(0);
 std::atomic<uint32_t> recycle_c(0);
 
+enum
+{
+	TEST_SIG = USER_SIG,
+	TEST2_SIG,
+	TEST3_SIG,
+	TEST4_SIG,
+	TEST5_SIG,
+};
+
+uint32_t MAX_SIG = TEST5_SIG + 1;
+
 class CTestEvent : public Event
 {
 public:
@@ -57,7 +68,6 @@ public:
 		static int ObjCount = 0;
 		char* name = new char[50];
 		sprintf(name, "%s%3d", m_Name, ObjCount ++);
-		m_Name = name;
 	}
 
 	static CHello* Instance()
@@ -153,7 +163,6 @@ public:
 		static int ObjCount = 0;
 		char* name = new char[50];
 		sprintf(name, "%s%3d", m_Name, ObjCount ++);
-		m_Name = name;
 	}
 
 	static CWorld* Instance()

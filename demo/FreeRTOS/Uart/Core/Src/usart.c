@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -278,82 +278,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
-#include "SerialDrv.h"
-
-UART_HANDLE  UART_0 = (UART_HANDLE)&huart1;
-UART_HANDLE  UART_1 = (UART_HANDLE)&huart2;
-UART_HANDLE  UART_2 = (UART_HANDLE)&huart3;
-/**
-  * @brief  Tx Transfer completed callbacks.
-  * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
-  *                the configuration information for the specified UART module.
-  * @retval None
-  */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-  /* NOTE: This function should not be modified, when the callback is needed,
-           the HAL_UART_TxCpltCallback could be implemented in the user file
-   */
-
-	Uart_SendComplete((UART_HANDLE)huart);
-}
-
-
-/**
-  * @brief  Rx Transfer completed callbacks.
-  * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
-  *                the configuration information for the specified UART module.
-  * @retval None
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-  /* NOTE: This function should not be modified, when the callback is needed,
-           the HAL_UART_RxCpltCallback could be implemented in the user file
-   */
-
-	uint8_t *Data = (huart->pRxBuffPtr - huart->RxXferSize);
-
-	Uart_Recv((UART_HANDLE)huart, *Data);
-
-	HAL_UART_Receive_IT(huart, Data, huart->RxXferSize);
-
-	return;
-}
-
-bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
-{
-	if (Uart == UART_0)
-	{
-		MX_USART1_UART_Init();
-
-	}
-	else if (Uart == UART_1)
-	{
-		MX_USART1_UART_Init();
-	}
-	else if (Uart == UART_2)
-	{
-		MX_USART3_UART_Init();
-	}
-	else
-	{
-		return false;
-	}
-
-	HAL_UART_Receive_IT((UART_HandleTypeDef *)Uart, Config->RecvBuff, 1);
-
-    return true;
-}
-
-bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
-{
-    return (HAL_OK == HAL_UART_Transmit_IT((UART_HandleTypeDef *)Uart, Data, DataLen));
-}
-
 
 /* USER CODE END 1 */
 

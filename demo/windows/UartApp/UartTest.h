@@ -26,7 +26,7 @@ Contact information:
 #include "Hdlc.h"
 #pragma warning(disable : 4996)
 
-
+uint32_t MAX_SIG = USER_SIG;
 
 class CSession : public CActive
 {

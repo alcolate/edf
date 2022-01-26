@@ -139,7 +139,7 @@ public:
 	}
 
 public:
-	CHdlc* m_MacLayer;
+	CMacLayer* m_MacLayer;
 	CTimeEvent m_Time;
 	CLed* m_Led;
 

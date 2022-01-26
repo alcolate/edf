@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    gpio.c
-  * @brief   This file provides code for the configuration
-  *          of all used GPIO pins.
+  * @file    spi.h
+  * @brief   This file contains all the function prototypes for
+  *          the spi.c file
   ******************************************************************************
   * @attention
   *
@@ -16,40 +16,37 @@
   *
   ******************************************************************************
   */
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __SPI_H__
+#define __SPI_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "gpio.h"
+#include "main.h"
 
-/* USER CODE BEGIN 0 */
+/* USER CODE BEGIN Includes */
 
-/* USER CODE END 0 */
+/* USER CODE END Includes */
 
-/*----------------------------------------------------------------------------*/
-/* Configure GPIO                                                             */
-/*----------------------------------------------------------------------------*/
-/* USER CODE BEGIN 1 */
+extern SPI_HandleTypeDef hspi2;
 
-/* USER CODE END 1 */
+/* USER CODE BEGIN Private defines */
 
-/** Configure pins as
-        * Analog
-        * Input
-        * Output
-        * EVENT_OUT
-        * EXTI
-*/
-void MX_GPIO_Init(void)
-{
+/* USER CODE END Private defines */
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
+void MX_SPI2_Init(void);
 
+/* USER CODE BEGIN Prototypes */
+
+/* USER CODE END Prototypes */
+
+#ifdef __cplusplus
 }
+#endif
 
-/* USER CODE BEGIN 2 */
-
-/* USER CODE END 2 */
+#endif /* __SPI_H__ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
