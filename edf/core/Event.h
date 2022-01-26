@@ -28,13 +28,7 @@ enum Signals
 	INIT_SIG, 
 	ENTRY_SIG,
 	EXIT_SIG,
-	USER_SIG,  /* first signal available to the users */
 	TIMEOUT_SIG,
-	TEST_SIG,
-	TEST2_SIG,
-	TEST3_SIG,
-	TEST4_SIG,
-	TEST5_SIG,
 	HW_RSP_SIG,   // get from serial
 	HW_OUT_COMPLETE_SIG, // send completely
 	MAC_REQ_SIG,  // send to serial
@@ -42,7 +36,7 @@ enum Signals
 	PC_REQ_SIG,
 	APP_REQ_SIG,
 	UART_SIM_SIG,
-	MAX_SIG,
+	USER_SIG,  /* first signal available to the users */
 };
 
 

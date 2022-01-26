@@ -22,7 +22,6 @@ Contact information:
 namespace Edf
 {
 static const uint32_t NEVER = (uint32_t)(-1);
-static uint32_t ticks = 0;
 
 static CList<CTimeEvent> gTimer;
 

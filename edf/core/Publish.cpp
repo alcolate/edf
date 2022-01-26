@@ -18,6 +18,8 @@ Contact information:
 *****************************************************************************/
 #include "Active.h"
 
+extern uint32_t MAX_SIG;
+
 namespace Edf
 {
 class CSubscriber
@@ -69,7 +71,7 @@ private:
 	CPublisher();
 	~CPublisher();
 private:
-	CList <CSubscriber> m_Subs[MAX_SIG];
+	CList <CSubscriber> *m_Subs;
 
 };
 
@@ -137,15 +139,15 @@ void CPublisher::Publish(Event const * const e, bool FromISR)
 
 CPublisher::CPublisher()
 {
-
+	this->m_Subs = new CList <CSubscriber> [MAX_SIG] ;
 }
 
 CPublisher::~CPublisher()
 {
-	for (uint32_t i = 0; i < sizeof(m_Subs) / sizeof(m_Subs[0]); i ++)
+	for (uint32_t i = 0; i < MAX_SIG; i ++)
 	{
 		CSubscriber* p;
-		while (p = m_Subs[i].RemoveHead())
+		while ((p = m_Subs[i].RemoveHead()) != nullptr)
 		{
 			delete p;
 		}

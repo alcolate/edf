@@ -122,7 +122,7 @@ void CActive::ClearDeferedEvent()
 {
 	const Event* e;
 
-	while (e = m_DQ->Fetch())
+	while ((e = m_DQ->Fetch()) != nullptr)
 	{
 		(const_cast<Event*>(e))->DecRef();
 	}
