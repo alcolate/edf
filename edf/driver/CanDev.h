@@ -46,7 +46,7 @@ public:
 	virtual void Initial(CActive* Owner);
 
 protected:
-	virtual bool Send(uint8_t* Data, uint32_t Len);
+	virtual bool Send(Event const* const e);
 
 public:
 

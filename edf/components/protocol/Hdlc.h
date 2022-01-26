@@ -57,7 +57,7 @@ public:
 	virtual void Initial() override;
 
 	void S_Idle(Event const* const e);
-	void S_WaitResponse(Event const* const e);
+	void S_Sending(Event const* const e);
 
 	void S_ReSend(Event const* const e);
 

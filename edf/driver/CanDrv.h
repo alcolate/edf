@@ -33,6 +33,12 @@ typedef struct __canconfig
 extern CAN_HANDLE  CAN_0;
 extern CAN_HANDLE  CAN_1;
 extern CAN_HANDLE  CAN_2;
+extern CAN_HANDLE  CAN_3;
+extern CAN_HANDLE  CAN_4;
+extern CAN_HANDLE  CAN_5;
+extern CAN_HANDLE  CAN_6;
+extern CAN_HANDLE  CAN_7;
+extern CAN_HANDLE  CAN_8;
 
 bool Can_Init(CAN_HANDLE Can, CanConfig* Config);
 bool Can_Send(CAN_HANDLE Can, uint8_t* Data, uint16_t DataLen);

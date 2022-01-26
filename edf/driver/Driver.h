@@ -55,13 +55,13 @@ public:
 	virtual void Initial(CActive *Owner);
 
 	void S_Idle(Event const* const e);
-	void S_WaitComplete(Event const* const e);
+	void S_Sending(Event const* const e);
 
 	void PostIrqEvent(Signals Sig);
 
 	bool DeferEvent(Event const* const e);
 
-	void FetchDeferedEvent();
+	Event const * FetchDeferedEvent();
 
 	bool operator == (DEV_HANDLE DevHandle) 
 	{
@@ -69,7 +69,7 @@ public:
 	}
 
 protected:
-	virtual bool Send(uint8_t *Data, uint32_t Len) = 0;
+	virtual bool Send(Event const* const e) = 0;
 
 public:
 

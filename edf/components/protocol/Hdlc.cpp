@@ -161,7 +161,7 @@ void CHdlc::S_Idle(Event const* const e)
 		DeferEvent(e);
 		Request(EventCast(CAppEvent)->m_Data, EventCast(CAppEvent)->m_DataLen);
 		m_Retries = 0;
-		TRANS(&CHdlc::S_WaitResponse);
+		TRANS(&CHdlc::S_Sending);
 		break;
 
 	case HW_RSP_SIG:
@@ -178,7 +178,7 @@ void CHdlc::S_Idle(Event const* const e)
 		break;
 	}
 }
-void CHdlc::S_WaitResponse(Event const* const e)
+void CHdlc::S_Sending(Event const* const e)
 {
 	switch (e->Sig)
 	{
@@ -233,7 +233,7 @@ void CHdlc::S_ReSend(Event const* const e)
 	case APP_REQ_SIG:
 	{
 		Request(EventCast(CAppEvent)->m_Data, EventCast(CAppEvent)->m_DataLen);
-		TRANS(&CHdlc::S_WaitResponse);
+		TRANS(&CHdlc::S_Sending);
 		break;
 	}
 

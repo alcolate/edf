@@ -93,26 +93,35 @@ void CDevice::S_Idle(Event const* const e)
 {
 	switch (e->Sig)
 	{
-	case ENTRY_SIG:
-		FetchDeferedEvent();
-		break;
-
 	case MAC_REQ_SIG:
-		Send(const_cast<uint8_t*>(EventCast(CDeviceEvent)->m_Data), EventCast(CDeviceEvent)->m_DataCount);
-		TRANS(&CDevice::S_WaitComplete);
+		DeferEvent(e);		
+		TRANS(&CDevice::S_Sending);
 		break;
 
 	default:
 		break;
 	}
 }
-void CDevice::S_WaitComplete(Event const* const e)
+void CDevice::S_Sending(Event const* const e)
 {
+	CDeviceEvent const *de;
+
 	switch (e->Sig)
 	{
+	case ENTRY_SIG:
+		de = static_cast<CDeviceEvent const*>(FetchDeferedEvent());
+		Send(de);
+		break;
 	case HW_OUT_COMPLETE_SIG:
-
-		TRANS(&CDevice::S_Idle);
+		de = static_cast<CDeviceEvent const*>(FetchDeferedEvent());
+		if (de)
+		{
+			Send(de);
+		}
+		else
+		{
+			TRANS(&CDevice::S_Idle);
+		}
 		break;
 	case MAC_REQ_SIG:
 		DeferEvent(e);
@@ -140,14 +149,9 @@ bool CDevice::DeferEvent(Event const* const e)
 	return m_DQ->Defer(e);
 }
 
-void CDevice::FetchDeferedEvent()
+Event const * CDevice::FetchDeferedEvent()
 {
-	const Event* e = m_DQ->Fetch();
-
-	if (e)
-	{
-		m_Owner->Post(e);
-	}
+	return m_DQ->Fetch();
 }
 
 CDevKeeper* CDevKeeper::Instance()

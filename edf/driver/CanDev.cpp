@@ -54,9 +54,9 @@ namespace Edf
 
 		CDevice::Initial(Owner);
 	}
-	bool CCan::Send(uint8_t* Data, uint32_t Len)
+	bool CCan::Send(Event const* const e)
 	{
-		return Can_Send(m_Device, Data, Len);
+		return Can_Send(m_Device, const_cast<uint8_t *>(EventCast(CCanEvent)->m_Data), EventCast(CCanEvent)->m_DataCount);
 	}
 
 } // namespace Edf

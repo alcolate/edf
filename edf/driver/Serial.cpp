@@ -58,9 +58,9 @@ void CUart::Initial(CActive *Owner)
 
 	CDevice::Initial(Owner);
 }
-bool CUart::Send(uint8_t *Data, uint32_t Len)
+bool CUart::Send(Event const* const e)
 {
-	return Uart_Send(m_Device, Data, Len);
+	return Uart_Send(m_Device, const_cast<uint8_t *>(EventCast(CSerialEvent)->m_Data), EventCast(CSerialEvent)->m_DataCount);
 }
 
 

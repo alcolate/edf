@@ -51,6 +51,12 @@ typedef struct __uartconfig
 extern UART_HANDLE  UART_0;
 extern UART_HANDLE  UART_1;
 extern UART_HANDLE  UART_2;
+extern UART_HANDLE  UART_3;
+extern UART_HANDLE  UART_4;
+extern UART_HANDLE  UART_5;
+extern UART_HANDLE  UART_6;
+extern UART_HANDLE  UART_7;
+extern UART_HANDLE  UART_8;
 
 bool Uart_Init(UART_HANDLE Uart, UartConfig* Config);
 bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen);
