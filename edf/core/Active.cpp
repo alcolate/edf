@@ -28,14 +28,7 @@ CActive::CActive(char *Name, uint32_t DQSize)
 	m_Thread = 0;
 	m_Priority = DEF_PRIOITY;
 	m_StackSize = MINIMAL_STACK_SIZE;
-	if (DQSize)
-	{
-		m_DQ = new CEventQ(DQSize);
-	}
-	else
-	{
-		m_DQ = NULL;
-	}
+	m_DQ = DQSize? new CEventQ(DQSize): NULL;
 }
 
 CActive::~CActive()

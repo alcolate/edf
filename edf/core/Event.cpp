@@ -30,45 +30,41 @@ Event::~Event()
 	
 }
 void Event::InitRef(uint32_t Ref, bool FromISR)
-{
-
-	uint32_t flag = OS_EnterCritical(FromISR);
+{	
 	if (DynamicAlloc)
 	{
+		uint32_t flag = OS_EnterCritical(FromISR);
 		ASSERT(RefCount == 0);
 		RefCount = Ref;
-		//LOG_DEBUG("event init: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
-	}
-	OS_ExitCritical(flag, FromISR);
+		OS_ExitCritical(flag, FromISR);
+	}	
 }
-void Event::IncRef(uint32_t Ref, bool FromISR)
+void Event::IncRef(bool FromISR)
 {
-
-	uint32_t flag = OS_EnterCritical(FromISR);
 	if (DynamicAlloc)
 	{        
-		RefCount += Ref;
-		//LOG_DEBUG("event add: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
-	}    
-	OS_ExitCritical(flag, FromISR);
+		uint32_t flag = OS_EnterCritical(FromISR);
+		++ RefCount;
+		OS_ExitCritical(flag, FromISR);
+	}
 }
 void Event::DecRef(bool FromISR)
 {
 	bool ToFree = false;
-	uint32_t flag = OS_EnterCritical(FromISR);
+	
 	if (DynamicAlloc)
 	{
+		uint32_t flag = OS_EnterCritical(FromISR);
 		if (RefCount)
 		{
-			RefCount --;
-		} 
+			-- RefCount;
+		}
 		if (RefCount == 0)
 		{
 			ToFree = true;
 		}
-		//LOG_DEBUG("event delete: %llX,  sig = %d, ref = %d\r\n", (long long)this, Sig, RefCount);
+		OS_ExitCritical(flag, FromISR);
 	}
-	OS_ExitCritical(flag, FromISR);
 
 	if (ToFree)
 	{
@@ -106,7 +102,7 @@ bool CEventQ::Defer(Event const* const Evt)
 	}
 	else
 	{
-		(const_cast<Event*>(Evt))->IncRef(1);
+		(const_cast<Event*>(Evt))->IncRef();
 		item->m_Evt = Evt;
 		item->m_Next = 0;
 
