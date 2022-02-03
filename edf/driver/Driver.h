@@ -32,8 +32,6 @@ public:
 	CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, bool Dynamic = true);
 	virtual ~CDeviceEvent();
 
-	void SetSig(Signals Sig);
-
 	DEV_HANDLE	m_Device;
 	uint8_t* 	m_Data;
 	uint32_t 	m_DataCount;
@@ -46,8 +44,7 @@ using MACCALLBACK = bool (*)(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCo
 class CDevice
 {
 public:
-	CDevice(char *Name, DEV_HANDLE Device, uint16_t MaxFrameLen, 
-				MACCALLBACK MacCall, uint32_t DQSize = 2);
+	CDevice(char *Name, DEV_HANDLE Device, uint32_t DQSize = 2);
 	virtual ~CDevice();
 
 	void Dispatcher(Event const* const e);
@@ -57,11 +54,17 @@ public:
 	void S_Idle(Event const* const e);
 	void S_Sending(Event const* const e);
 
-	void PostIrqEvent(Signals Sig);
+	void PostIrqSendCompleteEvent();
+
+	virtual void PostIrqRecvEvent();
+
+	virtual bool MacCall(uint8_t *Data, uint32_t Len);
 
 	bool DeferEvent(Event const* const e);
 
 	Event const * FetchDeferedEvent();
+
+	void RecycleEvent(Event const* const e);
 
 	bool operator == (DEV_HANDLE DevHandle) 
 	{
@@ -77,13 +80,9 @@ public:
 
 	DEV_HANDLE  m_Device;			// the handle. of Device hardware
 
-	uint8_t* m_Buff4MacCall;
-	uint16_t 	m_BuffSize;
-	uint16_t 	m_BuffCount;
-	MACCALLBACK m_MacCall;
-	CDeviceEvent* m_IrqEvent;
-	uint32_t	m_IrqEventIndex;
+	CDeviceEvent  *m_IrqSendCompleteEvent;
 
+	Event const *m_SendingEvent;
 	CEventQ* m_DQ;
 	CActive* m_Owner;
 	USE_LINK(CDevice);

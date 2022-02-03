@@ -25,7 +25,6 @@
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi2;
-SPI_HandleTypeDef hspi3;
 
 /* SPI2 init function */
 void MX_SPI2_Init(void)
@@ -57,38 +56,6 @@ void MX_SPI2_Init(void)
   /* USER CODE BEGIN SPI2_Init 2 */
 
   /* USER CODE END SPI2_Init 2 */
-
-}
-/* SPI3 init function */
-void MX_SPI3_Init(void)
-{
-
-  /* USER CODE BEGIN SPI3_Init 0 */
-
-  /* USER CODE END SPI3_Init 0 */
-
-  /* USER CODE BEGIN SPI3_Init 1 */
-
-  /* USER CODE END SPI3_Init 1 */
-  hspi3.Instance = SPI3;
-  hspi3.Init.Mode = SPI_MODE_MASTER;
-  hspi3.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-  hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi3.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI3_Init 2 */
-
-  /* USER CODE END SPI3_Init 2 */
 
 }
 
@@ -127,34 +94,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 
   /* USER CODE END SPI2_MspInit 1 */
   }
-  else if(spiHandle->Instance==SPI3)
-  {
-  /* USER CODE BEGIN SPI3_MspInit 0 */
-
-  /* USER CODE END SPI3_MspInit 0 */
-    /* SPI3 clock enable */
-    __HAL_RCC_SPI3_CLK_ENABLE();
-
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**SPI3 GPIO Configuration
-    PB3     ------> SPI3_SCK
-    PB4     ------> SPI3_MISO
-    PB5     ------> SPI3_MOSI
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_5;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_4;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN SPI3_MspInit 1 */
-
-  /* USER CODE END SPI3_MspInit 1 */
-  }
 }
 
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
@@ -181,29 +120,97 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 
   /* USER CODE END SPI2_MspDeInit 1 */
   }
-  else if(spiHandle->Instance==SPI3)
-  {
-  /* USER CODE BEGIN SPI3_MspDeInit 0 */
-
-  /* USER CODE END SPI3_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_SPI3_CLK_DISABLE();
-
-    /**SPI3 GPIO Configuration
-    PB3     ------> SPI3_SCK
-    PB4     ------> SPI3_MISO
-    PB5     ------> SPI3_MOSI
-    */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5);
-
-  /* USER CODE BEGIN SPI3_MspDeInit 1 */
-
-  /* USER CODE END SPI3_MspDeInit 1 */
-  }
 }
 
 /* USER CODE BEGIN 1 */
+#include "SpiDrv.h"
 
+SPI_HANDLE  Spi_0 = (SPI_HANDLE)nullptr;
+SPI_HANDLE  Spi_1 = (SPI_HANDLE)nullptr;
+SPI_HANDLE  Spi_2 = (SPI_HANDLE)&hspi2;
+SPI_HANDLE  Spi_3 = (SPI_HANDLE)nullptr;
+SPI_HANDLE  Spi_4 = (SPI_HANDLE)nullptr;
+SPI_HANDLE  Spi_5 = (SPI_HANDLE)nullptr;
+SPI_HANDLE  Spi_6 = (SPI_HANDLE)nullptr;
+SPI_HANDLE  Spi_7 = (SPI_HANDLE)nullptr;
+SPI_HANDLE  Spi_8 = (SPI_HANDLE)nullptr;
+
+
+bool Spi_Init(SPI_HANDLE Spi, SpiConfig* Config)
+{
+	if (Spi == Spi_2)
+	{
+		MX_SPI2_Init();
+		return true;
+	}
+
+	return false;
+}
+bool Spi_Transmit(SPI_HANDLE Spi, uint8_t* Data, uint32_t DataLen)
+{
+	return HAL_OK == HAL_SPI_Transmit_IT((SPI_HandleTypeDef*)Spi, Data, DataLen);
+}
+bool Spi_Receive(SPI_HANDLE Spi, uint8_t* Data, uint32_t DataLen)
+{
+	return HAL_OK == HAL_SPI_Receive_IT((SPI_HandleTypeDef*)Spi, Data, DataLen);
+}
+bool Spi_TransmitReceive(SPI_HANDLE Spi, uint8_t* TxData, uint32_t TxDataLen, uint8_t* RxData, uint32_t RxDataLen)
+{
+	assert_param(TxDataLen == RxDataLen);
+	return HAL_OK == HAL_SPI_TransmitReceive_IT((SPI_HandleTypeDef*)Spi, TxData, RxData, TxDataLen);
+}
+
+/**
+  * @brief  Tx Transfer completed callback.
+  * @param  hspi pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+  Spi_SendComplete(hspi);
+
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_SPI_TxCpltCallback should be implemented in the user file
+   */
+}
+
+/**
+  * @brief  Rx Transfer completed callback.
+  * @param  hspi pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+  Spi_SendComplete(hspi);
+  Spi_Recv(hspi, hspi->pRxBuffPtr - hspi->RxXferSize, hspi->RxXferSize);
+
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_SPI_RxCpltCallback should be implemented in the user file
+   */
+}
+
+/**
+  * @brief  Tx and Rx Transfer completed callback.
+  * @param  hspi pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+  Spi_SendComplete(hspi);
+  Spi_Recv(hspi, hspi->pRxBuffPtr - hspi->RxXferSize, hspi->RxXferSize);
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_SPI_TxRxCpltCallback should be implemented in the user file
+   */
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

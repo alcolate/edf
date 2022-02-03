@@ -68,7 +68,7 @@ public:
 public:
 	uint32_t m_Retries;
 	// lower layer
-	CUart *m_Uart;
+	CSerial *m_Uart;
 	CHdlcImp *m_Hdlc;
 	CTimeEvent m_Timer;
 	// upper layer

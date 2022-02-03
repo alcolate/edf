@@ -24,41 +24,66 @@ Contact information:
 namespace Edf
 {
 
-	CCanEvent::CCanEvent(Signals Sig, CAN_HANDLE CanHandle, uint32_t BuffSize, bool Dynamic)
-		: CDeviceEvent(Sig, CanHandle, BuffSize, Dynamic)
-	{
+CCanEvent::CCanEvent(Signals Sig, CAN_HANDLE CanHandle, uint32_t BuffSize, bool Dynamic)
+	: CDeviceEvent(Sig, CanHandle, BuffSize, Dynamic)
+{
 
-	}
-
-
-	CCanEvent::~CCanEvent()
-	{
-
-	}
+}
 
 
-	CCan::CCan(char* Name, CAN_HANDLE Can, uint16_t MaxFrameLen, MACCALLBACK MacCall, uint32_t DQSize) 
-		: CDevice(Name, Can, MaxFrameLen, MacCall, DQSize)
-	{
-		CDevKeeper::Instance()->RegDevice(this);
-	}
-	CCan::~CCan()
-	{
+CCanEvent::~CCanEvent()
+{
 
-	}
+}
 
-	void CCan::Initial(CActive* Owner)
-	{
-		bool result = Can_Init(m_Device, &m_Config);
-		ASSERT(result);
 
-		CDevice::Initial(Owner);
-	}
-	bool CCan::Send(Event const* const e)
-	{
-		return Can_Send(m_Device, const_cast<uint8_t *>(EventCast(CCanEvent)->m_Data), EventCast(CCanEvent)->m_DataCount);
-	}
+CCan::CCan(char* Name, CAN_HANDLE Can, uint16_t MaxFrameLen, MACCALLBACK MacCall, uint32_t DQSize) 
+	: CDevice(Name, Can, DQSize)
+{
+	m_IrqRecvEvent = new  CDeviceEvent[2]{
+		CDeviceEvent(HW_RSP_SIG, m_Device, MaxFrameLen, false),
+		CDeviceEvent(HW_RSP_SIG, m_Device, MaxFrameLen, false)
+	};
+	ASSERT(m_IrqRecvEvent);
+	m_IrqRecvEventIndex = 0;
 
+	m_BuffSize = MaxFrameLen;
+	m_BuffCount = 0;
+	m_Buff4MacCall = m_IrqRecvEvent[m_IrqRecvEventIndex].m_Data;
+
+	m_MacCall = MacCall;	
+
+	CDevKeeper::Instance()->RegDevice(this);
+}
+CCan::~CCan()
+{
+	delete [] m_IrqRecvEvent;
+}
+
+void CCan::Initial(CActive* Owner)
+{
+	bool result = Can_Init(m_Device, &m_Config);
+	ASSERT(result);
+
+	CDevice::Initial(Owner);
+}
+bool CCan::Send(Event const* const e)
+{
+	return Can_Send(m_Device, const_cast<uint8_t *>(EventCast(CCanEvent)->m_Data), EventCast(CCanEvent)->m_DataCount);
+}
+
+void CCan::PostIrqRecvEvent()
+{
+	Publish(&m_IrqRecvEvent[m_IrqRecvEventIndex], true);
+	m_IrqRecvEventIndex ^= 0x01;
+	m_BuffCount = 0;
+	m_Buff4MacCall = m_IrqRecvEvent[m_IrqRecvEventIndex].m_Data;
+}
+
+bool CCan::MacCall(uint8_t *Data, uint32_t Len)
+{
+	return m_MacCall && m_MacCall(m_Buff4MacCall, m_BuffSize, m_BuffCount, Data, Len);
+}
 } // namespace Edf
 
 void Can_SendComplete(CAN_HANDLE Can)

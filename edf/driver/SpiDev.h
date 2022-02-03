@@ -19,31 +19,36 @@ Contact information:
 #pragma once
 
 #include <memory.h>
-#include "CanDrv.h"
+#include "SpiDrv.h"
 #include "Driver.h"
 #include "Edf.h"
 
 namespace Edf
 {
 
-
-class CCanEvent : public CDeviceEvent
+class CSpiEvent : public CDeviceEvent
 {
 public:
-	CCanEvent(Signals Sig, CAN_HANDLE CanHandle, uint32_t BuffSize, bool Dynamic = true);
+	CSpiEvent(Signals Sig, SPI_HANDLE SpiHandle,
+			uint8_t *Tx, uint32_t TxLen, uint8_t *Rx, uint32_t RxLen, bool Dynamic = true);
 
-	virtual ~CCanEvent();
+	virtual ~CSpiEvent();
+
+	uint8_t *m_Tx;
+	uint32_t m_TxLen;
+	uint8_t *m_Rx;
+	uint32_t m_RxLen;
 };
 
 
-class CCan : public CDevice
+class CSPI : public CDevice
 {
 public:
-	CCan(char* Name, CAN_HANDLE Can,
-		uint16_t MaxFrameLen, MACCALLBACK MacCall, uint32_t DQSize = 2);
-	~CCan();
+	CSPI(char* Name, SPI_HANDLE Spi);
+	~CSPI();
 
-	virtual void Initial(CActive* Owner);
+	virtual void Initial(CActive* Owner) override;
+
 	virtual void PostIrqRecvEvent() override;
 
 	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
@@ -51,17 +56,12 @@ protected:
 	virtual bool Send(Event const* const e) override;
 
 public:
-	uint8_t* m_Buff4MacCall;
-	uint16_t 	m_BuffSize;
-	uint16_t 	m_BuffCount;
-	MACCALLBACK m_MacCall;
-	
+
 	CDeviceEvent* m_IrqRecvEvent;
-	uint32_t	m_IrqRecvEventIndex;
-	CanConfig 	m_Config;
+
+	SpiConfig 	m_Config;
 
 };
 
 
-
-} // namespace Edf
+}

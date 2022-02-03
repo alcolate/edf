@@ -156,7 +156,6 @@
     <ClCompile Include="..\..\..\third_party\yahdlc\fcs.c" />
     <ClCompile Include="..\..\..\third_party\yahdlc\yahdlc.c" />
     <ClCompile Include="CanDrvSim.cpp" />
-    <ClCompile Include="P1200.cpp" />
     <ClCompile Include="SerialDrv.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>

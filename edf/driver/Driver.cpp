@@ -24,24 +24,22 @@ CDeviceEvent::CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, 
 {
 	this->m_Device = Device_H;
 	this->m_DataCount = BuffSize;
-	this->m_Data = new uint8_t[BuffSize];
-	ASSERT(this->m_Data);
+	this->m_Data = nullptr;
+	if (BuffSize)
+	{
+		this->m_Data = new uint8_t[BuffSize];
+		ASSERT(this->m_Data);
+	}
 	this->m_DataSize = BuffSize;
 }
 
 CDeviceEvent::~CDeviceEvent()
 {
-	delete m_Data;
+	if (m_Data)
+		delete m_Data;
 }
 
-void CDeviceEvent::SetSig(Signals Sig)
-{
-	this->Sig = Sig;
-}
-
-
-CDevice::CDevice(char *Name, DEV_HANDLE Device, uint16_t MaxFrameLen, 
-				MACCALLBACK MacCall, uint32_t DQSize)
+CDevice::CDevice(char *Name, DEV_HANDLE Device, uint32_t DQSize)
 {
 	if (Name)
 	{
@@ -54,28 +52,18 @@ CDevice::CDevice(char *Name, DEV_HANDLE Device, uint16_t MaxFrameLen,
 
 	m_Device = Device;
 
-	m_IrqEvent = new  CDeviceEvent[2]{
-		CDeviceEvent(HW_RSP_SIG, m_Device, MaxFrameLen, false),
-		CDeviceEvent(HW_RSP_SIG, m_Device, MaxFrameLen, false)
-	};
-	ASSERT(m_IrqEvent);
-	m_IrqEventIndex = 0;
-
-	m_BuffSize = MaxFrameLen;
-	m_BuffCount = 0;
-	m_Buff4MacCall = m_IrqEvent[m_IrqEventIndex].m_Data;
-
-	m_MacCall = MacCall;
+	m_IrqSendCompleteEvent = new CDeviceEvent(HW_OUT_COMPLETE_SIG, m_Device, 0, false);
+	ASSERT(m_IrqSendCompleteEvent);
 
 	m_DQ = new CEventQ(DQSize);
-	ASSERT(m_DQ);
-
-	
+	ASSERT(m_DQ);	
 }
 
 CDevice::~CDevice()
 {
-	delete[] m_IrqEvent;
+	delete [] m_IrqSendCompleteEvent;
+	
+	delete [] m_DQ;
 }
 
 void CDevice::Dispatcher(Event const* const e)
@@ -104,19 +92,18 @@ void CDevice::S_Idle(Event const* const e)
 }
 void CDevice::S_Sending(Event const* const e)
 {
-	CDeviceEvent const *de;
-
 	switch (e->Sig)
 	{
 	case ENTRY_SIG:
-		de = static_cast<CDeviceEvent const*>(FetchDeferedEvent());
-		Send(de);
+		m_SendingEvent = FetchDeferedEvent();
+		Send(m_SendingEvent);
 		break;
 	case HW_OUT_COMPLETE_SIG:
-		de = static_cast<CDeviceEvent const*>(FetchDeferedEvent());
-		if (de)
+		RecycleEvent(m_SendingEvent);
+		m_SendingEvent = FetchDeferedEvent();
+		if (m_SendingEvent)
 		{
-			Send(de);
+			Send(m_SendingEvent);
 		}
 		else
 		{
@@ -132,15 +119,19 @@ void CDevice::S_Sending(Event const* const e)
 }
 
 // call from Device driver
-void CDevice::PostIrqEvent(Signals Sig)
+void CDevice::PostIrqSendCompleteEvent()
 {
-	m_IrqEvent[m_IrqEventIndex].SetSig(Sig);
-	Publish(&m_IrqEvent[m_IrqEventIndex], true);
-	m_IrqEventIndex ^= 0x01;
-	m_BuffCount = 0;
-	m_Buff4MacCall = m_IrqEvent[m_IrqEventIndex].m_Data;
+	Publish(m_IrqSendCompleteEvent, true);
+}
+void CDevice::PostIrqRecvEvent()
+{
+
 }
 
+bool CDevice::MacCall(uint8_t *Data, uint32_t Len)
+{
+	return true;
+}
 
 bool CDevice::DeferEvent(Event const* const e)
 {
@@ -152,6 +143,11 @@ bool CDevice::DeferEvent(Event const* const e)
 Event const * CDevice::FetchDeferedEvent()
 {
 	return m_DQ->Fetch();
+}
+
+void CDevice::RecycleEvent(Event const* const e)
+{
+	const_cast<Event *>(e)->DecRef();
 }
 
 CDevKeeper* CDevKeeper::Instance()
@@ -184,7 +180,6 @@ CDevice* CDevKeeper::GetDevice(DEV_HANDLE DevHandle)
 
 	ASSERT(p);
 	return p;
-
 }
 
 void CDevKeeper::Initial()
@@ -217,9 +212,7 @@ void CDevKeeper::SendComplete(DEV_HANDLE DevHandle)
 
 	if (Device)
 	{
-		LOG_DEBUG("keeper send completely: %s \r\n", Device->m_Name);
-
-		Device->PostIrqEvent(HW_OUT_COMPLETE_SIG);
+		Device->PostIrqSendCompleteEvent();
 	}
 }
 
@@ -227,11 +220,9 @@ void CDevKeeper::Receive(DEV_HANDLE DevHandle, uint8_t* Data, uint32_t Len)
 {
 	CDevice* Device = GetDevice(DevHandle);
 
-	if (Device && Device->m_MacCall(Device->m_Buff4MacCall, Device->m_BuffSize, Device->m_BuffCount, Data, Len))
+	if (Device && Device->MacCall(Data, Len))
 	{
-		LOG_DEBUG("keeper get: %d \r\n", Device->m_BuffCount);
-
-		Device->PostIrqEvent(HW_RSP_SIG);
+		Device->PostIrqRecvEvent();
 	}
 }
 

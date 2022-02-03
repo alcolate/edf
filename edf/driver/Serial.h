@@ -33,26 +33,33 @@ public:
 	CSerialEvent(Signals Sig, UART_HANDLE UartHandle, uint32_t BuffSize, bool Dynamic = true);
 
 	virtual ~CSerialEvent();
-
-
 };
 
 
-class CUart : public CDevice
+class CSerial : public CDevice
 {
 public:
-	CUart(char *Name, UART_HANDLE Uart, 
+	CSerial(char *Name, UART_HANDLE Uart, 
 			UART_Baudrate Baudrate, UART_Parity Parity, UART_StopBit Stopbit,
 			uint16_t MaxFrameLen, 
 			MACCALLBACK MacCall, uint32_t DQSize = 2);
-	~CUart();
+	~CSerial();
 
-	virtual void Initial(CActive *Owner);
+	virtual void Initial(CActive *Owner) override;
+	virtual void PostIrqRecvEvent() override;
 
+	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
 protected:
 	virtual bool Send(Event const* const e) override;
 
 public:
+	uint8_t* m_Buff4MacCall;
+	uint16_t 	m_BuffSize;
+	uint16_t 	m_BuffCount;
+	MACCALLBACK m_MacCall;
+	
+	CDeviceEvent* m_IrqRecvEvent;
+	uint32_t	m_IrqRecvEventIndex;
 
 	UartConfig 	m_Config;
 

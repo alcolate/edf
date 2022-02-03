@@ -137,7 +137,7 @@ bool CHdlc::MacCall(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint
 
 void CHdlc::Initial()
 {
-	m_Uart = new CUart((char*)"AppUart",
+	m_Uart = new CSerial((char*)"AppUart",
 		UART_0, 9600, Parity_None, StopBit_1Bit,
 		128, CHdlc::MacCall);
 	ASSERT(m_Uart);

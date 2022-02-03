@@ -21,13 +21,15 @@ Contact information:
 
 #include "UartTest.h"
 
+uint32_t MAX_SIG = USER_SIG;
+
 void App_Start(void)
 {
     CDevKeeper::Instance()->Start();
 
-    CSession app;
+    CSession *app = new CSession();
 
-    app.Start();
+    app->Start();
 
 
     Edf::EdfStart();
