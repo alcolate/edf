@@ -106,7 +106,7 @@ bool CHdlcImp::Parser(const uint8_t* Data, uint32_t Len)
 
 
 
-CHdlc::CHdlc() : CMacLayer((char*)"Hdlc", 1), m_Timer(TIMEOUT_SIG, this)
+CHdlc::CHdlc() : CMacLayer((char*)"Hdlc", 0), m_Timer(TIMEOUT_SIG, this)
 {
 
 }
@@ -145,6 +145,9 @@ void CHdlc::Initial()
 	m_Hdlc = new CHdlcImp(this);
 	ASSERT(m_Hdlc);
 
+	m_DQ = new CEventQ(2);
+	ASSERT(m_DQ);
+
 	Subscribe(APP_REQ_SIG, this);
 	Subscribe(HW_RSP_SIG, this);
 
@@ -158,9 +161,8 @@ void CHdlc::S_Idle(Event const* const e)
 
 	case APP_REQ_SIG:
 
-		DeferEvent(e);
-		Request(EventCast(CAppEvent)->m_Data, EventCast(CAppEvent)->m_DataLen);
-		m_Retries = 0;
+		m_DQ->Defer(e);
+
 		TRANS(&CHdlc::S_Sending);
 		break;
 
@@ -184,8 +186,12 @@ void CHdlc::S_Sending(Event const* const e)
 	{
 	case ENTRY_SIG:
 		m_Timer.Trigger(100, 100);
+		m_SendingEvent = static_cast<CAppEvent const *>(m_DQ->Fetch());
+		Request(m_SendingEvent);
+		m_Retries = MAX_RETRIES;
 		break;
 	case EXIT_SIG:
+		(const_cast<CAppEvent *>(m_SendingEvent))->DecRef();
 		m_Timer.UnTrigger();
 		break;
 
@@ -194,7 +200,6 @@ void CHdlc::S_Sending(Event const* const e)
 		{
 			if (m_Hdlc->Parser(EventCast(CSerialEvent)->m_Data, EventCast(CSerialEvent)->m_DataCount))
 			{
-				ClearDeferedEvent();
 				TRANS(&CHdlc::S_Idle);
 			}
 		}
@@ -203,13 +208,12 @@ void CHdlc::S_Sending(Event const* const e)
 	case TIMEOUT_SIG:
 		if (m_Retries == 0)
 		{
-			TRANS(&CHdlc::S_ReSend);
+			TRANS(&CHdlc::S_Idle);
 		}
 		else
 		{
-			Publish(new CMacEvent(MAC_RSP_SIG, CMacEvent::SEND_ERROR, NULL, 0));
-			ClearDeferedEvent();
-			TRANS(&CHdlc::S_Idle);
+			m_Retries --;
+			Request(m_SendingEvent);
 		}
 
 		break;
@@ -223,43 +227,16 @@ void CHdlc::S_Sending(Event const* const e)
 	}
 }
 
-void CHdlc::S_ReSend(Event const* const e)
-{
-	switch (e->Sig)
-	{
-	case ENTRY_SIG:
-		FetchDeferedEvent();
-		break;
-	case APP_REQ_SIG:
-	{
-		Request(EventCast(CAppEvent)->m_Data, EventCast(CAppEvent)->m_DataLen);
-		TRANS(&CHdlc::S_Sending);
-		break;
-	}
 
-	case HW_RSP_SIG:
-		if (IsToMe(e))
-		{
-			if (m_Hdlc->Parser(EventCast(CSerialEvent)->m_Data, EventCast(CSerialEvent)->m_DataCount))
-			{
-
-			}
-		}
-
-		break;
-	default:
-		break;
-	}
-}
 
 inline bool CHdlc::IsToMe(Event const* const e)
 {
 	return EventCast(CSerialEvent)->m_Device == m_Uart->m_Device;
 }
 
-void CHdlc::Request(const uint8_t* Data, uint32_t Len)
+void CHdlc::Request(CAppEvent const * const e)
 {
-	m_Hdlc->PacketData(Data, Len);
+	m_Hdlc->PacketData(e->m_Data, e->m_DataLen);
 }
 
 

@@ -59,20 +59,23 @@ public:
 	void S_Idle(Event const* const e);
 	void S_Sending(Event const* const e);
 
-	void S_ReSend(Event const* const e);
-
 	inline bool IsToMe(Event const* const e);
 
-	void Request(const uint8_t* Data, uint32_t Len);
+	void Request(CAppEvent const * const e);
 
+	enum {MAX_RETRIES = 3};
 public:
+	CSerial *m_Uart;
+
+private:
 	uint32_t m_Retries;
 	// lower layer
-	CSerial *m_Uart;
 	CHdlcImp *m_Hdlc;
 	CTimeEvent m_Timer;
 	// upper layer
 
+	CAppEvent const *m_SendingEvent;
+	CEventQ* m_DQ;
 
 public:
 	DEF_STATEMACHINE(CHdlc);

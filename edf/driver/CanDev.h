@@ -20,8 +20,7 @@ Contact information:
 
 #include <memory.h>
 #include "CanDrv.h"
-#include "Driver.h"
-#include "Edf.h"
+#include "Device.h"
 
 namespace Edf
 {

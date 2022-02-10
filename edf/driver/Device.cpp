@@ -18,7 +18,7 @@ Contact information:
 *****************************************************************************/
 #include <string.h>
 #include <stdio.h>
-#include "Driver.h"
+#include "Device.h"
 
 CDeviceEvent::CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, bool Dynamic) : Event(Sig, Dynamic)
 {
