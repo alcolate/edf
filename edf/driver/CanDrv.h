@@ -23,27 +23,27 @@ Contact information:
 extern "C" {
 #endif
 
-typedef void* CAN_HANDLE;
+#include "Driver.h"
 
 typedef struct __canconfig
 {
 	uint8_t			RecvBuff[64];
 }CanConfig;
 
-extern CAN_HANDLE  CAN_0;
-extern CAN_HANDLE  CAN_1;
-extern CAN_HANDLE  CAN_2;
-extern CAN_HANDLE  CAN_3;
-extern CAN_HANDLE  CAN_4;
-extern CAN_HANDLE  CAN_5;
-extern CAN_HANDLE  CAN_6;
-extern CAN_HANDLE  CAN_7;
-extern CAN_HANDLE  CAN_8;
+extern DEV_HANDLE  CAN_0;
+extern DEV_HANDLE  CAN_1;
+extern DEV_HANDLE  CAN_2;
+extern DEV_HANDLE  CAN_3;
+extern DEV_HANDLE  CAN_4;
+extern DEV_HANDLE  CAN_5;
+extern DEV_HANDLE  CAN_6;
+extern DEV_HANDLE  CAN_7;
+extern DEV_HANDLE  CAN_8;
 
-bool Can_Init(CAN_HANDLE Can, CanConfig* Config);
-bool Can_Send(CAN_HANDLE Can, uint8_t* Data, uint16_t DataLen);
-void Can_SendComplete(CAN_HANDLE Can);
-void Can_Recv(CAN_HANDLE Can, uint8_t* Data, uint32_t Len);
+bool Can_Init(DEV_HANDLE Can, CanConfig* Config);
+bool Can_Send(DEV_HANDLE Can, uint8_t* Data, uint16_t DataLen);
+void Can_SendComplete(DEV_HANDLE Can);
+void Can_Recv(DEV_HANDLE Can, uint8_t* Data, uint32_t Len);
 
 #ifdef __cplusplus
 }

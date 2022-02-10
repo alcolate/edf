@@ -20,15 +20,15 @@ Contact information:
 #include "Serial.h"
 #include "../../../third_party/serial/include/serial/serial.h"
 
-UART_HANDLE  UART_0 = (UART_HANDLE)"COM1";
-UART_HANDLE  UART_1 = (UART_HANDLE)"COM2";
-UART_HANDLE  UART_2 = (UART_HANDLE)"COM3";
+DEV_HANDLE  UART_0 = (DEV_HANDLE)"COM1";
+DEV_HANDLE  UART_1 = (DEV_HANDLE)"COM2";
+DEV_HANDLE  UART_2 = (DEV_HANDLE)"COM3";
 
 static serial::Serial *Serial0;
 static serial::Serial* Serial1;
 static serial::Serial* Serial2;
 
-UART_HANDLE SerialToHandle(serial::Serial* Serial)
+DEV_HANDLE SerialToHandle(serial::Serial* Serial)
 {
     if (Serial == Serial0)
     {
@@ -49,7 +49,7 @@ UART_HANDLE SerialToHandle(serial::Serial* Serial)
     }
 }
 
-serial::Serial** HandleToSerial(UART_HANDLE Uart)
+serial::Serial** HandleToSerial(DEV_HANDLE Uart)
 {
     if (Uart == UART_0)
     {
@@ -89,7 +89,7 @@ static DWORD WINAPI ThreadExe(LPVOID p)
     return 0;
 }
 
-bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
+bool Uart_Init(DEV_HANDLE Uart, UartConfig* Config)
 {
     bool isOpen;
     char* port = (char*)Uart;
@@ -125,7 +125,7 @@ bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
     return true;
 
 }
-bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
+bool Uart_Send(DEV_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
 {
     (* HandleToSerial(Uart))->write(Data, DataLen);
 

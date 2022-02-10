@@ -21,19 +21,19 @@ Contact information:
 #include <memory>
 #include "CanDrv.h"
 
-CAN_HANDLE  UART_0 = (CAN_HANDLE)1;
-CAN_HANDLE  UART_1 = (CAN_HANDLE)2;
-CAN_HANDLE  UART_2 = (CAN_HANDLE)3;
+DEV_HANDLE  UART_0 = (DEV_HANDLE)1;
+DEV_HANDLE  UART_1 = (DEV_HANDLE)2;
+DEV_HANDLE  UART_2 = (DEV_HANDLE)3;
 
 
 
-bool Can_Init(CAN_HANDLE Can, CanConfig* Config)
+bool Can_Init(DEV_HANDLE Can, CanConfig* Config)
 {
 
 	return true;
 }
 
-bool Can_Send(CAN_HANDLE Can, uint8_t* Data, uint16_t DataLen)
+bool Can_Send(DEV_HANDLE Can, uint8_t* Data, uint16_t DataLen)
 {
 	return true;
 }

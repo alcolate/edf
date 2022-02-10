@@ -131,8 +131,8 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 
 /* USER CODE BEGIN 1 */
 CAN_HANDLE  CAN_0 = (CAN_HANDLE)&hcan;
-CAN_HANDLE  CAN_1 = 0;
-CAN_HANDLE  CAN_2 = 0;
+DEV_HANDLE  CAN_1 = 0;
+DEV_HANDLE  CAN_2 = 0;
 
 typedef struct
 {
@@ -225,7 +225,7 @@ uint8_t CAN_Transmit(CAN_TxPacketTypeDef* packet)
 }
 
 CAN_TxPacketTypeDef g_CanTxPacket;
-bool Can_Send(CAN_HANDLE Can, uint8_t* Data, uint16_t DataLen)
+bool Can_Send(DEV_HANDLE Can, uint8_t* Data, uint16_t DataLen)
 {
 	g_CanTxPacket.hdr.StdId = 0x321;			// 标准ID
 //	g_CanTxPacket.hdr.ExtId = 0x10F01234;		// 扩展ID

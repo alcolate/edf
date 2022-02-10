@@ -280,9 +280,9 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 /* USER CODE BEGIN 1 */
 #include "SerialDrv.h"
 
-UART_HANDLE  UART_0 = (UART_HANDLE)&huart1;
-UART_HANDLE  UART_1 = (UART_HANDLE)&huart2;
-UART_HANDLE  UART_2 = (UART_HANDLE)&huart3;
+DEV_HANDLE  UART_0 = (DEV_HANDLE)&huart1;
+DEV_HANDLE  UART_1 = (DEV_HANDLE)&huart2;
+DEV_HANDLE  UART_2 = (DEV_HANDLE)&huart3;
 /**
   * @brief  Tx Transfer completed callbacks.
   * @param  huart  Pointer to a UART_HandleTypeDef structure that contains
@@ -297,7 +297,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
            the HAL_UART_TxCpltCallback could be implemented in the user file
    */
 
-	Uart_SendComplete((UART_HANDLE)huart);
+	Uart_SendComplete((DEV_HANDLE)huart);
 }
 
 

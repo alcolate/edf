@@ -23,19 +23,8 @@ Contact information:
 namespace Edf
 {
 
-CSerialEvent::CSerialEvent(Signals Sig, UART_HANDLE UartHandle, uint32_t BuffSize, bool Dynamic) 
-	: CDeviceEvent(Sig, UartHandle, BuffSize,  Dynamic) 
-{
 
-}
-
-CSerialEvent::~CSerialEvent()
-{
-
-}
-
-
-CSerial::CSerial(char *Name, UART_HANDLE Uart, 
+CSerial::CSerial(char *Name, DEV_HANDLE Uart,
 		UART_Baudrate Baudrate, UART_Parity Parity, UART_StopBit Stopbit,
 		uint16_t MaxFrameLen,  MACCALLBACK MacCall, uint32_t DQSize) :
 		CDevice(Name, Uart, DQSize)
@@ -55,9 +44,8 @@ CSerial::CSerial(char *Name, UART_HANDLE Uart,
 	m_BuffCount = 0;
 	m_Buff4MacCall = m_IrqRecvEvent[m_IrqRecvEventIndex].m_Data;
 
-	m_MacCall = MacCall;	
+	m_MacCall = MacCall;
 
-	CDevKeeper::Instance()->RegDevice(this);
 }
 CSerial::~CSerial()
 {
@@ -73,7 +61,7 @@ void CSerial::Initial(CActive *Owner)
 }
 bool CSerial::Send(Event const* const e)
 {
-	return Uart_Send(m_Device, const_cast<uint8_t *>(EventCast(CSerialEvent)->m_Data), EventCast(CSerialEvent)->m_DataCount);
+	return Uart_Send(m_Device, const_cast<uint8_t *>(EventCast(CDeviceEvent)->m_Data), EventCast(CDeviceEvent)->m_DataCount);
 }
 
 void CSerial::PostIrqRecvEvent()
@@ -91,11 +79,11 @@ bool CSerial::MacCall(uint8_t *Data, uint32_t Len)
 
 } // namespace Edf
 
-void Uart_SendComplete(UART_HANDLE Uart)
+void Uart_SendComplete(DEV_HANDLE Uart)
 {
 	CDevKeeper::Instance()->SendComplete(Uart);
 }
-void Uart_Recv(UART_HANDLE Uart, uint8_t Data)
+void Uart_Recv(DEV_HANDLE Uart, uint8_t Data)
 {
 	CDevKeeper::Instance()->Receive(Uart, &Data, 1);
 }

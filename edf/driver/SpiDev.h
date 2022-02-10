@@ -25,25 +25,13 @@ Contact information:
 namespace Edf
 {
 
-class CSpiEvent : public CDeviceEvent
-{
-public:
-	CSpiEvent(Signals Sig, SPI_HANDLE SpiHandle,
-			uint8_t *Tx, uint32_t TxLen, uint8_t *Rx, uint32_t RxLen, bool Dynamic = true);
 
-	virtual ~CSpiEvent();
-
-	uint8_t *m_Tx;
-	uint32_t m_TxLen;
-	uint8_t *m_Rx;
-	uint32_t m_RxLen;
-};
 
 
 class CSPI : public CDevice
 {
 public:
-	CSPI(char* Name, SPI_HANDLE Spi);
+	CSPI(char* Name, DEV_HANDLE Spi);
 	~CSPI();
 
 	virtual void Initial(CActive* Owner) override;

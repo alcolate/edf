@@ -24,20 +24,9 @@ Contact information:
 namespace Edf
 {
 
-CCanEvent::CCanEvent(Signals Sig, CAN_HANDLE CanHandle, uint32_t BuffSize, bool Dynamic)
-	: CDeviceEvent(Sig, CanHandle, BuffSize, Dynamic)
-{
-
-}
 
 
-CCanEvent::~CCanEvent()
-{
-
-}
-
-
-CCan::CCan(char* Name, CAN_HANDLE Can, uint16_t MaxFrameLen, MACCALLBACK MacCall, uint32_t DQSize) 
+CCan::CCan(char* Name, DEV_HANDLE Can, uint16_t MaxFrameLen, MACCALLBACK MacCall, uint32_t DQSize) 
 	: CDevice(Name, Can, DQSize)
 {
 	m_IrqRecvEvent = new  CDeviceEvent[2]{
@@ -51,9 +40,7 @@ CCan::CCan(char* Name, CAN_HANDLE Can, uint16_t MaxFrameLen, MACCALLBACK MacCall
 	m_BuffCount = 0;
 	m_Buff4MacCall = m_IrqRecvEvent[m_IrqRecvEventIndex].m_Data;
 
-	m_MacCall = MacCall;	
-
-	CDevKeeper::Instance()->RegDevice(this);
+	m_MacCall = MacCall;
 }
 CCan::~CCan()
 {
@@ -69,7 +56,7 @@ void CCan::Initial(CActive* Owner)
 }
 bool CCan::Send(Event const* const e)
 {
-	return Can_Send(m_Device, const_cast<uint8_t *>(EventCast(CCanEvent)->m_Data), EventCast(CCanEvent)->m_DataCount);
+	return Can_Send(m_Device, const_cast<uint8_t *>(EventCast(CDeviceEvent)->m_Data), EventCast(CDeviceEvent)->m_DataCount);
 }
 
 void CCan::PostIrqRecvEvent()
@@ -86,11 +73,11 @@ bool CCan::MacCall(uint8_t *Data, uint32_t Len)
 }
 } // namespace Edf
 
-void Can_SendComplete(CAN_HANDLE Can)
+void Can_SendComplete(DEV_HANDLE Can)
 {
 	CDevKeeper::Instance()->SendComplete(Can);
 }
-void Can_Recv(CAN_HANDLE Can, uint8_t* Data, uint32_t Len)
+void Can_Recv(DEV_HANDLE Can, uint8_t* Data, uint32_t Len)
 {
 	CDevKeeper::Instance()->Receive(Can, Data, Len);
 }

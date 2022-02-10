@@ -23,7 +23,7 @@ Contact information:
 extern "C" {
 #endif
 
-typedef void* UART_HANDLE;
+#include "Driver.h"
 
 typedef uint32_t UART_Baudrate;
 
@@ -48,20 +48,20 @@ typedef struct __uartconfig
 	uint8_t			RecvBuff[1];
 }UartConfig;
 
-extern UART_HANDLE  UART_0;
-extern UART_HANDLE  UART_1;
-extern UART_HANDLE  UART_2;
-extern UART_HANDLE  UART_3;
-extern UART_HANDLE  UART_4;
-extern UART_HANDLE  UART_5;
-extern UART_HANDLE  UART_6;
-extern UART_HANDLE  UART_7;
-extern UART_HANDLE  UART_8;
+extern DEV_HANDLE  UART_0;
+extern DEV_HANDLE  UART_1;
+extern DEV_HANDLE  UART_2;
+extern DEV_HANDLE  UART_3;
+extern DEV_HANDLE  UART_4;
+extern DEV_HANDLE  UART_5;
+extern DEV_HANDLE  UART_6;
+extern DEV_HANDLE  UART_7;
+extern DEV_HANDLE  UART_8;
 
-bool Uart_Init(UART_HANDLE Uart, UartConfig* Config);
-bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen);
-void Uart_SendComplete(UART_HANDLE Uart);
-void Uart_Recv(UART_HANDLE Uart, uint8_t Data);
+bool Uart_Init(DEV_HANDLE Uart, UartConfig* Config);
+bool Uart_Send(DEV_HANDLE Uart, uint8_t* Data, uint16_t DataLen);
+void Uart_SendComplete(DEV_HANDLE Uart);
+void Uart_Recv(DEV_HANDLE Uart, uint8_t Data);
 
 #ifdef __cplusplus
 }

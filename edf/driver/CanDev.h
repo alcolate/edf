@@ -26,19 +26,11 @@ namespace Edf
 {
 
 
-class CCanEvent : public CDeviceEvent
-{
-public:
-	CCanEvent(Signals Sig, CAN_HANDLE CanHandle, uint32_t BuffSize, bool Dynamic = true);
-
-	virtual ~CCanEvent();
-};
-
 
 class CCan : public CDevice
 {
 public:
-	CCan(char* Name, CAN_HANDLE Can,
+	CCan(char* Name, DEV_HANDLE Can,
 		uint16_t MaxFrameLen, MACCALLBACK MacCall, uint32_t DQSize = 2);
 	~CCan();
 

@@ -24,7 +24,7 @@ Contact information:
 namespace Edf
 {
 
-CSpiEvent::CSpiEvent(Signals Sig, SPI_HANDLE SpiHandle, 	
+CSpiEvent::CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle, 	
 						uint8_t *Tx, uint32_t TxLen, uint8_t *Rx, uint32_t RxLen, bool Dynamic)
 	: CDeviceEvent(Sig, SpiHandle, 0, Dynamic)
 {
@@ -41,7 +41,7 @@ CSpiEvent::~CSpiEvent()
 }
 
 
-CSPI::CSPI(char* Name, SPI_HANDLE Spi) 
+CSPI::CSPI(char* Name, DEV_HANDLE Spi) 
 	: CDevice(Name, Spi, 1)
 {
 	m_IrqRecvEvent = new  CDeviceEvent(HW_RSP_SIG, m_Device, 0, false);
@@ -93,11 +93,11 @@ bool CSPI::MacCall(uint8_t *Data, uint32_t Len)
 }
 } // namespace Edf
 
-void Spi_SendComplete(SPI_HANDLE Spi)
+void Spi_SendComplete(DEV_HANDLE Spi)
 {
 	CDevKeeper::Instance()->SendComplete(Spi);
 }
-void Spi_Recv(SPI_HANDLE Spi, uint8_t* Data, uint32_t Len)
+void Spi_Recv(DEV_HANDLE Spi, uint8_t* Data, uint32_t Len)
 {
 	CDevKeeper::Instance()->Receive(Spi, Data, Len);
 }

@@ -26,19 +26,10 @@ namespace Edf
 {
 
 
-class CSerialEvent : public CDeviceEvent
-{
-public:
-	CSerialEvent(Signals Sig, UART_HANDLE UartHandle, uint32_t BuffSize, bool Dynamic = true);
-
-	virtual ~CSerialEvent();
-};
-
-
 class CSerial : public CDevice
 {
 public:
-	CSerial(char *Name, UART_HANDLE Uart, 
+	CSerial(char *Name, DEV_HANDLE Uart, 
 			UART_Baudrate Baudrate, UART_Parity Parity, UART_StopBit Stopbit,
 			uint16_t MaxFrameLen, 
 			MACCALLBACK MacCall, uint32_t DQSize = 2);

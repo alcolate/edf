@@ -125,18 +125,18 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 /* USER CODE BEGIN 1 */
 #include "SpiDrv.h"
 
-SPI_HANDLE  Spi_0 = (SPI_HANDLE)nullptr;
-SPI_HANDLE  Spi_1 = (SPI_HANDLE)nullptr;
-SPI_HANDLE  Spi_2 = (SPI_HANDLE)&hspi2;
-SPI_HANDLE  Spi_3 = (SPI_HANDLE)nullptr;
-SPI_HANDLE  Spi_4 = (SPI_HANDLE)nullptr;
-SPI_HANDLE  Spi_5 = (SPI_HANDLE)nullptr;
-SPI_HANDLE  Spi_6 = (SPI_HANDLE)nullptr;
-SPI_HANDLE  Spi_7 = (SPI_HANDLE)nullptr;
-SPI_HANDLE  Spi_8 = (SPI_HANDLE)nullptr;
+DEV_HANDLE  Spi_0 = (DEV_HANDLE)nullptr;
+DEV_HANDLE  Spi_1 = (DEV_HANDLE)nullptr;
+DEV_HANDLE  Spi_2 = (DEV_HANDLE)&hspi2;
+DEV_HANDLE  Spi_3 = (DEV_HANDLE)nullptr;
+DEV_HANDLE  Spi_4 = (DEV_HANDLE)nullptr;
+DEV_HANDLE  Spi_5 = (DEV_HANDLE)nullptr;
+DEV_HANDLE  Spi_6 = (DEV_HANDLE)nullptr;
+DEV_HANDLE  Spi_7 = (DEV_HANDLE)nullptr;
+DEV_HANDLE  Spi_8 = (DEV_HANDLE)nullptr;
 
 
-bool Spi_Init(SPI_HANDLE Spi, SpiConfig* Config)
+bool Spi_Init(DEV_HANDLE Spi, SpiConfig* Config)
 {
 	if (Spi == Spi_2)
 	{
@@ -146,15 +146,15 @@ bool Spi_Init(SPI_HANDLE Spi, SpiConfig* Config)
 
 	return false;
 }
-bool Spi_Transmit(SPI_HANDLE Spi, uint8_t* Data, uint32_t DataLen)
+bool Spi_Transmit(DEV_HANDLE Spi, uint8_t* Data, uint32_t DataLen)
 {
 	return HAL_OK == HAL_SPI_Transmit_IT((SPI_HandleTypeDef*)Spi, Data, DataLen);
 }
-bool Spi_Receive(SPI_HANDLE Spi, uint8_t* Data, uint32_t DataLen)
+bool Spi_Receive(DEV_HANDLE Spi, uint8_t* Data, uint32_t DataLen)
 {
 	return HAL_OK == HAL_SPI_Receive_IT((SPI_HandleTypeDef*)Spi, Data, DataLen);
 }
-bool Spi_TransmitReceive(SPI_HANDLE Spi, uint8_t* TxData, uint32_t TxDataLen, uint8_t* RxData, uint32_t RxDataLen)
+bool Spi_TransmitReceive(DEV_HANDLE Spi, uint8_t* TxData, uint32_t TxDataLen, uint8_t* RxData, uint32_t RxDataLen)
 {
 	assert_param(TxDataLen == RxDataLen);
 	return HAL_OK == HAL_SPI_TransmitReceive_IT((SPI_HandleTypeDef*)Spi, TxData, RxData, TxDataLen);

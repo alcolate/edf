@@ -18,13 +18,14 @@ Contact information:
 *****************************************************************************/
 #pragma once
 
+#include "Driver.h"
 #include "Edf.h"
 
 namespace Edf
 {
 
 
-typedef void * DEV_HANDLE;
+
 
 class CDeviceEvent : public Event
 {
@@ -37,6 +38,20 @@ public:
 	uint32_t 	m_DataCount;
 	uint32_t	m_DataSize;
 
+};
+
+class CSpiEvent : public CDeviceEvent
+{
+public:
+	CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle,
+			uint8_t *Tx, uint32_t TxLen, uint8_t *Rx, uint32_t RxLen, bool Dynamic = true);
+
+	virtual ~CSpiEvent();
+
+	uint8_t *m_Tx;
+	uint32_t m_TxLen;
+	uint8_t *m_Rx;
+	uint32_t m_RxLen;
 };
 
 using MACCALLBACK = bool (*)(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint8_t *Data, uint32_t Len);

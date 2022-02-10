@@ -23,9 +23,9 @@ Contact information:
 #include "Edf.h"
 #include "yahdlc.h"
 
-UART_HANDLE  UART_0 = (UART_HANDLE)1;
-UART_HANDLE  UART_1 = (UART_HANDLE)2;
-UART_HANDLE  UART_2 = (UART_HANDLE)3;
+DEV_HANDLE  UART_0 = (DEV_HANDLE)1;
+DEV_HANDLE  UART_1 = (DEV_HANDLE)2;
+DEV_HANDLE  UART_2 = (DEV_HANDLE)3;
 
 
 class CUartDrvSim : public CActive
@@ -114,14 +114,14 @@ public:
 			break;
 		}
 	}
-	void SendGet(UART_HANDLE Uart)
+	void SendGet(DEV_HANDLE Uart)
 	{
 		Uart_SendComplete(Uart);
 	}
 
 
 
-	void SendAck(UART_HANDLE Uart)
+	void SendAck(DEV_HANDLE Uart)
 	{
 		static yahdlc_control_t control = { YAHDLC_FRAME_ACK, 1 };
 		control.seq_no += 1;
@@ -136,7 +136,7 @@ public:
 			Uart_Recv(Uart, AckData[i]);
 		}
 	}
-	void SendResponse(UART_HANDLE Uart, uint8_t* Data, uint16_t Len)
+	void SendResponse(DEV_HANDLE Uart, uint8_t* Data, uint16_t Len)
 	{
 		for (uint16_t i = 0; i < Len; i++)
 		{
@@ -146,14 +146,14 @@ public:
 
 
 public:
-	CUartDrvSim(UART_HANDLE Uart) : CActive((char*)"UartDrvSim"), m_Time(TIMEOUT_SIG, this)
+	CUartDrvSim(DEV_HANDLE Uart) : CActive((char*)"UartDrvSim"), m_Time(TIMEOUT_SIG, this)
 	{
 		m_Device = Uart;
 	}
 
 public:
 	CTimeEvent m_Time;
-	UART_HANDLE m_Device;
+	DEV_HANDLE m_Device;
 
 	uint8_t  m_Buff[128];
 	uint32_t m_BuffCount;
@@ -162,7 +162,7 @@ public:
 	DEF_STATEMACHINE(CUartDrvSim);
 };
 
-bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
+bool Uart_Init(DEV_HANDLE Uart, UartConfig* Config)
 {
 	CUartDrvSim* uartsim = new CUartDrvSim(Uart);
 
@@ -171,7 +171,7 @@ bool Uart_Init(UART_HANDLE Uart, UartConfig* Config)
 	return true;
 }
 
-bool Uart_Send(UART_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
+bool Uart_Send(DEV_HANDLE Uart, uint8_t* Data, uint16_t DataLen)
 {
 	CSerialEvent* e = new CSerialEvent(UART_SIM_SIG, Uart, DataLen);
 
