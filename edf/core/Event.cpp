@@ -86,7 +86,7 @@ CEventQ::CItem* CEventQ::GetFreeItem()
 {
 	for (uint32_t i = 0; i < m_ItemCount; i++)
 	{
-		if (m_Items[i].m_Evt == 0) return m_Items;
+		if (m_Items[i].m_Evt == 0) return &m_Items[i];
 	}
 	LOG_INFO("DQ is full\r\n");
 	return NULL;

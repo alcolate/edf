@@ -26,6 +26,10 @@ Contact information:
 
 namespace Edf
 {
+
+#if (MAX_PRIORITIES < 5)
+	#error "The maximum priority must be greater than 5"
+#endif
 constexpr uint32_t DEF_PRIOITY = (MAX_PRIORITIES - 5);
 
 class CActive
