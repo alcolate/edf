@@ -59,8 +59,7 @@ void CTimeEvent::Touch()
 
 void CTimeEvent::Tick(bool FromISR)
 {
-	gTimer.ForEach(gTimer.Head(), 
-		[&FromISR](CTimeEvent *Timer)  -> void 
+	gTimer.ForEach([&FromISR](CTimeEvent *Timer)  -> void 
 		{
 			CTimeEvent* runTimer = NULL;
 				

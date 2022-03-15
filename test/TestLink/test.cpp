@@ -49,6 +49,8 @@
 
 // GOOGLETEST_CM0001 DO NOT DELETE
 #include "pch.h"
+#include "assert.h"
+#define ASSERT assert
 #include "Link.h"
 
 using namespace Edf;
@@ -59,45 +61,45 @@ TEST(TestCaseName, TestName) {
   EXPECT_TRUE(true);
 }
 */
-class CItem
+class CSection
 {
 public:
-	CItem(int index)
+	CSection(int index)
 	{
 		m_Index = index;
 	}
 
 	uint32_t m_Index;
-	CItem* m_Next;
 };
 
 
 TEST(TestStack, OneItem)
 {
-	CStack<CItem> stack;
-	CItem item(1);
+	CStack<CSection> stack;
+	CSection item(1);
 
 	stack.Push(&item);
 
-	CItem* pitem;
+	CSection* pitem;
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
+
 	
 	pitem = stack.Pop();
-	ASSERT_EQ(pitem, (CItem *)NULL);
+	ASSERT_EQ(pitem, (CSection *)NULL);
 }
 
 
 TEST(TestStack, 5Items_0)
 {
-	CStack<CItem> stack;
-	CItem item1(1);
-	CItem item2(2);
-	CItem item3(3);
-	CItem item4(4);
-	CItem item5(5);
+	CStack<CSection> stack;
+	CSection item1(1);
+	CSection item2(2);
+	CSection item3(3);
+	CSection item4(4);
+	CSection item5(5);
 
 	stack.Push(&item1);
 	stack.Push(&item2);
@@ -105,103 +107,103 @@ TEST(TestStack, 5Items_0)
 	stack.Push(&item4);
 	stack.Push(&item5);
 
-	CItem* pitem;
+	CSection* pitem;
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 5);
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 4);
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 3);
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 2);
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 
 	pitem = stack.Pop();
-	ASSERT_EQ(pitem, (CItem *)NULL);
+	ASSERT_EQ(pitem, (CSection *)NULL);
 }
 
 TEST(TestStack, 5Items_1)
 {
-	CStack<CItem> stack;
-	CItem item1(1);
-	CItem item2(2);
-	CItem item3(3);
-	CItem item4(4);
-	CItem item5(5);
+	CStack<CSection> stack;
+	CSection item1(1);
+	CSection item2(2);
+	CSection item3(3);
+	CSection item4(4);
+	CSection item5(5);
 
 	stack.Push(&item1);
 	stack.Push(&item2);
 	stack.Push(&item3);
 
 
-	CItem* pitem;
+	CSection* pitem;
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 3);
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 2);
 
 	stack.Push(&item4);
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	stack.Push(&item5);
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 5);
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 4);
 
 	pitem = stack.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 
 	pitem = stack.Pop();
-	ASSERT_EQ(pitem, (CItem *)NULL);
+	ASSERT_EQ(pitem, (CSection *)NULL);
 }
 
 
 TEST(TestQueue, OneItem)
 {
-	CQueue<CItem> queue;
-	CItem item(1);
+	CQueue<CSection> queue;
+	CSection item(1);
 
 	queue.Push(&item);
 
-	CItem* pitem;
+	CSection* pitem;
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 
 	pitem = queue.Pop();
-	ASSERT_EQ(pitem, (CItem *)NULL);
+	ASSERT_EQ(pitem, (CSection *)NULL);
 }
 
 
 TEST(TestQueue, 5Items_0)
 {
-	CQueue<CItem> queue;
-	CItem item1(1);
-	CItem item2(2);
-	CItem item3(3);
-	CItem item4(4);
-	CItem item5(5);
+	CQueue<CSection> queue;
+	CSection item1(1);
+	CSection item2(2);
+	CSection item3(3);
+	CSection item4(4);
+	CSection item5(5);
 
 	queue.Push(&item1);
 	queue.Push(&item2);
@@ -209,124 +211,124 @@ TEST(TestQueue, 5Items_0)
 	queue.Push(&item4);
 	queue.Push(&item5);
 
-	CItem* pitem;
+	CSection* pitem;
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 2);
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 3);
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 4);
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 5);
 
 	pitem = queue.Pop();
-	ASSERT_EQ(pitem, (CItem *)NULL);
+	ASSERT_EQ(pitem, (CSection *)NULL);
 }
 
 TEST(TestQueue, 5Items_1)
 {
-	CQueue<CItem> queue;
-	CItem item1(1);
-	CItem item2(2);
-	CItem item3(3);
-	CItem item4(4);
-	CItem item5(5);
+	CQueue<CSection> queue;
+	CSection item1(1);
+	CSection item2(2);
+	CSection item3(3);
+	CSection item4(4);
+	CSection item5(5);
 
 	queue.Push(&item1);
 	queue.Push(&item2);
 	queue.Push(&item3);
 
 
-	CItem* pitem;
+	CSection* pitem;
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 2);
 
 	queue.Push(&item4);
 	queue.Push(&item5);
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 3);
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 4);
 
 	pitem = queue.Pop();
-	ASSERT_NE(pitem, (CItem *)NULL);
+	ASSERT_NE(pitem, (CSection *)NULL);
 	ASSERT_EQ(pitem->m_Index, 5);
 
 	pitem = queue.Pop();
-	ASSERT_EQ(pitem, (CItem *)NULL);
+	ASSERT_EQ(pitem, (CSection *)NULL);
 }
 
 
 
 TEST(TestList, OneItem)
 {
-	CList<CItem> list;
-	CItem* pitem;
-	CItem item(1);
+	CList<CSection> list;
+	CSection* pitem;
+	CSection item(1);
 
 	list.AddHead(&item);
 	pitem = list.RemoveHead();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 	pitem = list.RemoveHead();
-	ASSERT_EQ(pitem, (CItem*)NULL);
+	ASSERT_EQ(pitem, (CSection*)NULL);
 
 
 	list.AddHead(&item);
 	pitem = list.RemoveTail();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 	pitem = list.RemoveHead();
-	ASSERT_EQ(pitem, (CItem*)NULL);
+	ASSERT_EQ(pitem, (CSection*)NULL);
 
 	list.AddTail(&item);
 	pitem = list.RemoveHead();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 	pitem = list.RemoveHead();
-	ASSERT_EQ(pitem, (CItem*)NULL);
+	ASSERT_EQ(pitem, (CSection*)NULL);
 
 
 	list.AddTail(&item);
 	pitem = list.RemoveTail();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 	pitem = list.RemoveHead();
-	ASSERT_EQ(pitem, (CItem*)NULL);
+	ASSERT_EQ(pitem, (CSection*)NULL);
 }
 
 
 TEST(TestList, 5Items_0)
 {
-	CList<CItem> list;
-	CItem* pitem;
-	CItem item1(1);
-	CItem item2(2);
-	CItem item3(3);
-	CItem item4(4);
-	CItem item5(5);
+	CList<CSection> list;
+	CSection* pitem;
+	CSection item1(1);
+	CSection item2(2);
+	CSection item3(3);
+	CSection item4(4);
+	CSection item5(5);
 
 	list.AddHead(&item1);
 	list.AddHead(&item2);
@@ -335,39 +337,39 @@ TEST(TestList, 5Items_0)
 	list.AddHead(&item5);
 
 	pitem = list.RemoveHead();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 5);
 
 	pitem = list.RemoveHead();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 4);
 
 	pitem = list.RemoveHead();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 3);
 
 	pitem = list.RemoveHead();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 2);
 
 	pitem = list.RemoveHead();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 
 	pitem = list.RemoveHead();
-	ASSERT_EQ(pitem, (CItem*)NULL);
+	ASSERT_EQ(pitem, (CSection*)NULL);
 
 }
 
 TEST(TestList, 5Items_1)
 {
-	CList<CItem> list;
-	CItem* pitem;
-	CItem item1(1);
-	CItem item2(2);
-	CItem item3(3);
-	CItem item4(4);
-	CItem item5(5);
+	CList<CSection> list;
+	CSection* pitem;
+	CSection item1(1);
+	CSection item2(2);
+	CSection item3(3);
+	CSection item4(4);
+	CSection item5(5);
 
 	list.AddHead(&item1);
 	list.AddHead(&item2);
@@ -376,39 +378,39 @@ TEST(TestList, 5Items_1)
 	list.AddHead(&item5);
 
 	pitem = list.RemoveTail();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 1);
 
 	pitem = list.RemoveTail();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 2);
 
 	pitem = list.RemoveTail();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 3);
 
 	pitem = list.RemoveTail();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 4);
 
 	pitem = list.RemoveTail();
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 5);
 
 	pitem = list.RemoveHead();
-	ASSERT_EQ(pitem, (CItem*)NULL);
+	ASSERT_EQ(pitem, (CSection*)NULL);
 
 }
 
 TEST(TestList, 5Items_2)
 {
-	CList<CItem> list;
-	CItem* pitem;
-	CItem item1(1);
-	CItem item2(2);
-	CItem item3(3);
-	CItem item4(4);
-	CItem item5(5);
+	CList<CSection> list;
+	CSection* pitem;
+	CSection item1(1);
+	CSection item2(2);
+	CSection item3(3);
+	CSection item4(4);
+	CSection item5(5);
 
 	list.AddHead(&item1);
 	list.AddHead(&item2);
@@ -416,10 +418,18 @@ TEST(TestList, 5Items_2)
 	list.AddHead(&item4);
 	list.AddHead(&item5);
 
-	ASSERT_TRUE(list.IsExist([](CItem* This, CItem* That) -> bool {return This->m_Index == That->m_Index; }, &item2));
+	list.ForEach([](CSection* s) -> void
+		{
+			std::cout << " index = " << s->m_Index << std::endl;
+		});
 
-	pitem = list.RemoveItem([](CItem* This, CItem* That) -> bool {return This->m_Index == That->m_Index; }, &item2);
-	ASSERT_NE(pitem, (CItem*)NULL);
+	ASSERT_TRUE(list.IsExist([&item2](CSection *item) -> bool {return item->m_Index == item2.m_Index; }));
+
+	pitem = list.RemoveItem([&item2](CSection* item) -> bool {return item->m_Index == item2.m_Index; });
+
+	ASSERT_TRUE(!list.IsExist([&item2](CSection* item) -> bool {return item->m_Index == item2.m_Index; }));
+
+	ASSERT_NE(pitem, (CSection*)NULL);
 	ASSERT_EQ(pitem->m_Index, 2);
 
 	ASSERT_EQ(list.Count(), 4);

@@ -173,13 +173,11 @@ void CDevKeeper::AddDevice(CDevice* Device)
 }
 
 CDevice* CDevKeeper::GetDevice(DEV_HANDLE DevHandle)
-{
-	CDevice *p = m_Device.Head();
-
-	for (; p && p->m_Device != DevHandle; p = m_Device.Next(p));
-
-	ASSERT(p);
-	return p;
+{	
+	return m_Device.FindItem([&DevHandle](CDevice *Dev)-> bool
+		{
+			return (Dev->m_Device = DevHandle);
+		});
 }
 
 void CDevKeeper::Initial()

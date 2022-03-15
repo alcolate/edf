@@ -58,15 +58,6 @@ public:
 
 	void Publish(Event const * const e, bool FromISR = false);
 
-
-
-private:
-	void AddTail(CSubscriber **Head, CActive const * const Act);
-
-	void AddHead(CSubscriber **Head, CActive const * const Act);
-
-	void Delete(CSubscriber **Head, CActive const * const Act);
-
 private:
 	CPublisher();
 	~CPublisher();
@@ -118,22 +109,22 @@ void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
 
 void CPublisher::Publish(Event const * const e, bool FromISR)
 {
-	CSubscriber *suber = m_Subs[e->Sig].Head();
+	CSubscriber *head = m_Subs[e->Sig].Head();
 	
-	if (suber)
+	if (head)
 	{		
-		const_cast<Event *>(e)->InitRef(suber->m_Number, FromISR);
+		const_cast<Event *>(e)->InitRef(head->m_Number, FromISR);
+		m_Subs[e->Sig].ForEach(
+			[&e, &FromISR](CSubscriber* suber)-> void {
+				suber->Update(e, FromISR);
+			}
+		);
 	}
 	else
 	{
 		const_cast<Event*>(e)->DecRef(FromISR);
-	}
-	
-	while (suber)
-	{		
-		suber->Update(e, FromISR);
-		suber = m_Subs[e->Sig].Next(suber);
-	}
+	}	
+
 }
 
 

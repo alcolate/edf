@@ -150,7 +150,7 @@
     <ClCompile Include="..\..\..\edf\core\State.cpp" />
     <ClCompile Include="..\..\..\edf\core\Timer.cpp" />
     <ClCompile Include="..\..\..\edf\driver\CanDev.cpp" />
-    <ClCompile Include="..\..\..\edf\driver\Driver.cpp" />
+    <ClCompile Include="..\..\..\edf\driver\Device.cpp" />
     <ClCompile Include="..\..\..\edf\driver\Serial.cpp" />
     <ClCompile Include="..\..\..\edf\os_ports\windows\osal.cpp" />
     <ClCompile Include="..\..\..\third_party\yahdlc\fcs.c" />
@@ -175,6 +175,7 @@
     <ClInclude Include="..\..\..\edf\core\Timer.h" />
     <ClInclude Include="..\..\..\edf\driver\CanDev.h" />
     <ClInclude Include="..\..\..\edf\driver\CanDrv.h" />
+    <ClInclude Include="..\..\..\edf\driver\Device.h" />
     <ClInclude Include="..\..\..\edf\driver\Driver.h" />
     <ClInclude Include="..\..\..\edf\driver\Serial.h" />
     <ClInclude Include="..\..\..\edf\driver\SerialDrv.h" />

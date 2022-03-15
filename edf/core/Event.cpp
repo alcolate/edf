@@ -21,7 +21,7 @@ Contact information:
 namespace Edf
 {
 
-Event::Event(Signal s, bool DynAlloc) : Sig(s), RefCount(0), DynamicAlloc(DynAlloc) 
+Event::Event(Signal s, bool DynAlloc) : Sig(s), RefCount(0), DynamicAlloc(DynAlloc), Freeing(false)
 {
 
 }
@@ -61,7 +61,15 @@ void Event::DecRef(bool FromISR)
 		}
 		if (RefCount == 0)
 		{
-			ToFree = true;
+			if (!Freeing)
+			{
+				ToFree = true;
+				Freeing = true;
+			}
+			else
+			{
+				ASSERT(false);
+			}
 		}
 		OS_ExitCritical(flag, FromISR);
 	}

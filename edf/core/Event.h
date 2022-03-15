@@ -47,8 +47,9 @@ public:
 	Event(Signal s, bool DynAlloc = false);
 	virtual ~Event();
 	Signal Sig; 
-	uint32_t	RefCount;
+	uint32_t	RefCount;	
 	const bool  DynamicAlloc;
+	bool		Freeing;
 	void InitRef(uint32_t Ref, bool FromISR = false);
 	void IncRef(bool FromISR = false);
 	void DecRef(bool FromISR = false);
