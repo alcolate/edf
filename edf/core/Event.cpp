@@ -66,10 +66,6 @@ void Event::DecRef(bool FromISR)
 				ToFree = true;
 				Freeing = true;
 			}
-			else
-			{
-				ASSERT(false);
-			}
 		}
 		OS_ExitCritical(flag, FromISR);
 	}
