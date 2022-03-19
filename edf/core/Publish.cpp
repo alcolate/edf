@@ -44,7 +44,6 @@ public:
 	CActive const *  m_Act;	
 	uint32_t	m_Number;
 
-	USE_LINK(CSubscriber);
 };
 
 class CPublisher

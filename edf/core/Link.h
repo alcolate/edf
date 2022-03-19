@@ -278,8 +278,6 @@ private:
 
 };
 
-#define USE_LINK(T)  T* m_Next = NULL
-
 template <class T>
 class CQueue : public CLink <T>
 {

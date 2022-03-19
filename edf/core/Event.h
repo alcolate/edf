@@ -61,7 +61,7 @@ public:
 class CEventQ
 {
 public:
-	CEventQ(uint32_t ItemCount = DEF_ITEMS);
+	CEventQ(uint32_t MaxItems = DEF_ITEMS);
 	~CEventQ();
 
 public:
@@ -70,19 +70,10 @@ public:
 	const Event* Fetch(void);
 
 private:
-	class CItem
-	{
-	public:
-		CItem(){}
-		Event const* m_Evt = 0;
-		USE_LINK(CItem);
-	};
 
-	CItem* GetFreeItem();
-	CQueue<CItem> m_Queue;
+	CQueue<Event> m_Queue;
 	enum { DEF_ITEMS = 10 };
-	uint32_t m_ItemCount;
-	CItem *m_Items;
+	uint32_t m_MaxItems;
 
 };
 
