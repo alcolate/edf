@@ -21,31 +21,31 @@ Contact information:
 namespace Edf
 {
 
-template <class T>
+template <typename T>
 class CLink
 {
 protected:
-	template <class T>
+	template <typename CT>
 	class CItem
 	{
 	public:
-		CItem(T *Content) : m_Content(Content), m_Next(NULL){}
+		CItem(CT *Content) : m_Content(Content), m_Next(NULL){}
 		virtual ~CItem() {}
 
-		T *m_Content;
+		CT *m_Content;
 
-		CItem<T> *m_Next;
+		CItem<CT> *m_Next;
 	};
 public:
 	CLink() : m_Head(0), m_Tail(0), m_Count(0)
     {
 
     }
-	inline T* Head()
+	inline T *Head()
 	{
 		return ((m_Head != NULL)? m_Head->m_Content: NULL);
 	}
-	inline T* Tail()
+	inline T *Tail()
 	{
 		return ((m_Tail != NULL) ? m_Tail->m_Content: NULL);
 	}
@@ -57,7 +57,7 @@ public:
 	{
 		return m_Count;
 	}
-	bool IsExist(T* Item)
+	bool IsExist(T *Item)
 	{
 		return (FindItem(Item) != NULL);
 	}
@@ -66,18 +66,18 @@ public:
 	{
 		return (FindItem(Func) != NULL);
 	}
-	T* FindItem(T* Item)
+	T *FindItem(T *Item)
 	{
-		CItem<T>* p;
+		CItem<T> *p;
 
 		for (p = m_Head; p && p->m_Content != Item; p = p->m_Next);
 
 		return ((p != NULL) ? p->m_Content: NULL);
 	}
 	template <typename F>
-	T* FindItem(F Func)
+	T *FindItem(F Func)
 	{
-		CItem<T>* p;
+		CItem<T> *p;
 
 		for (p = m_Head; p && !Func(p->m_Content); p = p->m_Next);
 
@@ -86,17 +86,17 @@ public:
 	template <typename F>
 	void ForEach(F Func)
 	{
-		CItem<T>* p, * q;
+		CItem<T> *p, *q;
 		
 		for (p = q = m_Head; p; q = p, p = p->m_Next, Func(q->m_Content));
 	}
 
 protected:
-	void LinkHead(T* Content)
+	void LinkHead(T *Content)
 	{
 		ASSERT(Content);
 
-		CItem <T> *linkItem = new CItem <T>(Content);
+		CItem<T> *linkItem = new CItem<T>(Content);
 
 		if (NULL == m_Head)
 		{
@@ -112,11 +112,11 @@ protected:
 		++m_Count;
 	}
     
-	void LinkTail(T* Content)
+	void LinkTail(T *Content)
 	{
 		ASSERT(Content);
 
-		CItem <T> *linkItem = new CItem <T>(Content);
+		CItem<T> *linkItem = new CItem<T>(Content);
 
 		if (NULL == m_Head)
 		{
@@ -134,9 +134,9 @@ protected:
 	}
 
 	template <typename F>
-	void LinkSort(T* Content, F Func)
+	void LinkSort(T *Content, F Func)
 	{
-		CItem <T> *p, *q;
+		CItem<T> *p, *q;
 
 		ASSERT(Content);		
 
@@ -158,7 +158,7 @@ protected:
 		}
 		else
 		{
-			CItem <T> *linkItem = new CItem <T>(Content);
+			CItem<T> *linkItem = new CItem<T>(Content);
 
 			linkItem->m_Next = p;
 			q->m_Next = linkItem;
@@ -166,7 +166,7 @@ protected:
 		}
 	}
 
-	T* UnLinkHead()
+	T *UnLinkHead()
 	{
 		if (NULL == m_Head)
 		{
@@ -174,7 +174,7 @@ protected:
 		}
 		else
 		{
-			CItem <T>* Item = m_Head;			
+			CItem<T> *Item = m_Head;			
 			m_Head = m_Head->m_Next;
 
 			if (NULL == m_Head)
@@ -184,13 +184,13 @@ protected:
 
 			--m_Count;
 
-			T* Content = Item->m_Content;
+			T *Content = Item->m_Content;
 			delete Item;
 			return Content;
 		}
 	}
 
-	T* UnLinkTail()
+	T *UnLinkTail()
 	{
 		if (NULL == m_Head)
 		{
@@ -198,7 +198,7 @@ protected:
 		}
 		else
 		{
-			CItem <T> *p, *q;
+			CItem<T> *p, *q;
 
 			for (p = q = m_Head; p != m_Tail; q = p, p = p->m_Next);
 
@@ -214,12 +214,12 @@ protected:
 
 			--m_Count;
 
-			T* Content = p->m_Content;
+			T *Content = p->m_Content;
 			delete p;
 			return Content;
 		}
 	}
-	T* UnLinkItem(CItem <T>* p, CItem <T>* q)
+	T *UnLinkItem(CItem<T> *p, CItem<T> *q)
 	{
 		if (p)
 		{
@@ -244,7 +244,7 @@ protected:
 
 			--m_Count;
 
-			T* Content = p->m_Content;
+			T *Content = p->m_Content;
 			delete p;
 			return Content;
 
@@ -252,9 +252,9 @@ protected:
 
 		return NULL;
 	}
-	T* UnLinkItem(T* Item)
+	T *UnLinkItem(T *Item)
 	{
-		CItem <T>* p, * q;
+		CItem<T> *p, *q;
 
 		ASSERT(Item);
 
@@ -263,109 +263,109 @@ protected:
 		return UnLinkItem(p, q);
 	}
 	template <typename F>
-	T* UnLinkItem(F Func)
+	T *UnLinkItem(F Func)
 	{
-		CItem <T> *p, *q;
+		CItem<T> *p, *q;
 
 		for (p = q = m_Head; p && !Func(p->m_Content); q = p, p = p->m_Next);
 
 		return UnLinkItem(p, q);
 	}
 private:
-	CItem <T> *m_Head;
-	CItem <T> *m_Tail;
+	CItem<T> *m_Head;
+	CItem<T> *m_Tail;
 	uint32_t m_Count;
 
 };
 
-template <class T>
-class CQueue : public CLink <T>
+template <typename T>
+class CQueue : public CLink<T>
 {
 public:
 	CQueue(){}
 
-	void Push(T* Item)
+	void Push(T *Item)
 	{
 		CLink<T>::LinkTail(Item);
 	}
-	T* Pop()
+	T *Pop()
 	{
 		return CLink<T>::UnLinkHead();
 	}
 };
 
-template <class T>
-class CDeQueue : public CLink <T>
+template <typename T>
+class CDeQueue : public CLink<T>
 {
 public:
 	CDeQueue(){}
 
-	void PushHead(T* Item)
+	void PushHead(T *Item)
 	{
 		CLink<T>::LinkHead(Item);
 	}
-	void PushTail(T* Item)
+	void PushTail(T *Item)
 	{
 		CLink<T>::LinkTail(Item);
 	}
-	T* PopHead()
+	T *PopHead()
 	{
 		return CLink<T>::UnLinkHead();
 	}
-	T* PopTail()
+	T *PopTail()
 	{
 		return CLink<T>::UnLinkTail();
 	}
 };
 
-template <class T>
-class CList : public CLink <T>
+template <typename T>
+class CList : public CLink<T>
 {
 public:
 	CList() {}
-	void AddHead(T* Item)
+	void AddHead(T *Item)
 	{
 		CLink<T>::LinkHead(Item);
 	}
-	void AddTail(T* Item)
+	void AddTail(T *Item)
 	{
 		CLink<T>::LinkTail(Item);
 	}
 	template <typename F>
-	void AddSort(T* Item, F Func)
+	void AddSort(T *Item, F Func)
 	{
 		CLink<T>::LinkSort(Item, Func);
 	}
-	T* RemoveHead()
+	T *RemoveHead()
 	{
 		return CLink<T>::UnLinkHead();
 	}
-	T* RemoveTail()
+	T *RemoveTail()
 	{
 		return CLink<T>::UnLinkTail();
 	}
-	T* RemoveItem(T* Item)
+	T *RemoveItem(T *Item)
 	{
 		return CLink<T>::UnLinkItem(Item);
 	}
 	template <typename F>
-	T* RemoveItem(F Func)
+	T *RemoveItem(F Func)
 	{
 		return CLink<T>::UnLinkItem(Func);
 	}
 };
 
-template <class T>
-class CStack : public CList <T>
+template <typename T>
+class CStack : public CLink<T>
 {
 public:
 	CStack() {}
 
-	void Push(T* Item)
+	void Push(T *Item)
 	{
 		CLink<T>::LinkHead(Item);
 	}
-	T* Pop()
+	T *Pop()
 	{
 		return CLink<T>::UnLinkHead();
 	}
