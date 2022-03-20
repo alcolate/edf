@@ -68,27 +68,27 @@ public:
 	}
 	T *FindItem(T *Item)
 	{
-		CItem<T> *p;
+		auto p = m_Head;
 
-		for (p = m_Head; p && p->m_Content != Item; p = p->m_Next);
+		for (; p && p->m_Content != Item; p = p->m_Next);
 
 		return ((p != NULL) ? p->m_Content: NULL);
 	}
 	template <typename F>
 	T *FindItem(F Func)
 	{
-		CItem<T> *p;
+		auto p = m_Head;
 
-		for (p = m_Head; p && !Func(p->m_Content); p = p->m_Next);
+		for (; p && !Func(p->m_Content); p = p->m_Next);
 
 		return ((p != NULL) ? p->m_Content: NULL);
 	}
 	template <typename F>
 	void ForEach(F Func)
 	{
-		CItem<T> *p, *q;
-		
-		for (p = q = m_Head; p; q = p, p = p->m_Next, Func(q->m_Content));
+		auto p = m_Head, q = m_Head;
+
+		for (; p; q = p, p = p->m_Next, Func(q->m_Content));
 	}
 
 protected:
@@ -136,7 +136,6 @@ protected:
 	template <typename F>
 	void LinkSort(T *Content, F Func)
 	{
-		CItem<T> *p, *q;
 
 		ASSERT(Content);		
 
@@ -146,7 +145,9 @@ protected:
 			return;
 		}
 
-		for (p = q = m_Head; p && !Func(p->m_Content); q = p, p = p->m_Next);
+		auto p = m_Head, q = m_Head;
+
+		for (; p && !Func(p->m_Content); q = p, p = p->m_Next);
 
 		if (!p)
 		{
@@ -198,9 +199,9 @@ protected:
 		}
 		else
 		{
-			CItem<T> *p, *q;
+			auto p = m_Head, q = m_Head;
 
-			for (p = q = m_Head; p != m_Tail; q = p, p = p->m_Next);
+			for (; p != m_Tail; q = p, p = p->m_Next);
 
 			if (q == p)
 			{
@@ -254,20 +255,20 @@ protected:
 	}
 	T *UnLinkItem(T *Item)
 	{
-		CItem<T> *p, *q;
-
 		ASSERT(Item);
 
-		for (p = q = m_Head; p && p->m_Content != Item ; q = p, p = p->m_Next);
+		auto p = m_Head, q = m_Head;
+
+		for (; p && p->m_Content != Item ; q = p, p = p->m_Next);
 
 		return UnLinkItem(p, q);
 	}
 	template <typename F>
 	T *UnLinkItem(F Func)
 	{
-		CItem<T> *p, *q;
+		auto p = m_Head, q = m_Head;
 
-		for (p = q = m_Head; p && !Func(p->m_Content); q = p, p = p->m_Next);
+		for (; p && !Func(p->m_Content); q = p, p = p->m_Next);
 
 		return UnLinkItem(p, q);
 	}
