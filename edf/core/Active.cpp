@@ -23,7 +23,7 @@ namespace Edf
 {
 CActive::CActive(char *Name, uint32_t DQSize)
 {
-	snprintf(m_Name, sizeof(m_Name), "%s", Name);
+	snprintf(m_Name, sizeof(m_Name) - 1, "%s", Name);
 	m_Queue = 0;
 	m_Thread = 0;
 	m_Priority = DEF_PRIOITY;

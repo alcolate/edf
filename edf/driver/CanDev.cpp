@@ -27,11 +27,11 @@ namespace Edf
 
 
 CCan::CCan(char* Name, DEV_HANDLE Can, uint16_t MaxFrameLen, MACCALLBACK MacCall, uint32_t DQSize) 
-	: CDevice(Name, Can, DQSize)
+	: CDevice(Name, Can, EDeviceType::CAN, DQSize)
 {
 	m_IrqRecvEvent = new  CDeviceEvent[2]{
-		CDeviceEvent(HW_RSP_SIG, m_Device, MaxFrameLen, false),
-		CDeviceEvent(HW_RSP_SIG, m_Device, MaxFrameLen, false)
+		CDeviceEvent(CAN_RSP_SIG, m_HwHandle, MaxFrameLen, false),
+		CDeviceEvent(CAN_RSP_SIG, m_HwHandle, MaxFrameLen, false)
 	};
 	ASSERT(m_IrqRecvEvent);
 	m_IrqRecvEventIndex = 0;
@@ -41,6 +41,8 @@ CCan::CCan(char* Name, DEV_HANDLE Can, uint16_t MaxFrameLen, MACCALLBACK MacCall
 	m_Buff4MacCall = m_IrqRecvEvent[m_IrqRecvEventIndex].m_Data;
 
 	m_MacCall = MacCall;
+
+	CDevKeeper::Instance()->RegDevice(this);
 }
 CCan::~CCan()
 {
@@ -49,14 +51,14 @@ CCan::~CCan()
 
 void CCan::Initial(CActive* Owner)
 {
-	bool result = Can_Init(m_Device, &m_Config);
+	bool result = Can_Init(m_HwHandle, &m_Config);
 	ASSERT(result);
 
 	CDevice::Initial(Owner);
 }
 bool CCan::Send(Event const* const e)
 {
-	return Can_Send(m_Device, const_cast<uint8_t *>(EventCast(CDeviceEvent)->m_Data), EventCast(CDeviceEvent)->m_DataCount);
+	return Can_Send(m_HwHandle, const_cast<uint8_t *>(EventCast(CDeviceEvent)->m_Data), EventCast(CDeviceEvent)->m_DataLen);
 }
 
 void CCan::PostIrqRecvEvent()

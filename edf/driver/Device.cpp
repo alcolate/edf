@@ -22,24 +22,37 @@ Contact information:
 
 CDeviceEvent::CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, bool Dynamic) : Event(Sig, Dynamic)
 {
-	this->m_Device = Device_H;
-	this->m_DataCount = BuffSize;
+	this->m_HwHandle = Device_H;
+	this->m_Size = BuffSize;
+	this->m_DataLen = 0;
 	this->m_Data = nullptr;
 	if (BuffSize)
 	{
 		this->m_Data = new uint8_t[BuffSize];
 		ASSERT(this->m_Data);
 	}
-	this->m_DataSize = BuffSize;
 }
 
 CDeviceEvent::~CDeviceEvent()
 {
 	if (m_Data)
-		delete m_Data;
+		delete [] m_Data;
 }
 
-CDevice::CDevice(char *Name, DEV_HANDLE Device, uint32_t DQSize)
+bool CDeviceEvent::Copy(uint8_t *Data, uint32_t Len)
+{
+	if (Len > m_Size)
+	{
+		return false;
+	}
+
+	m_DataLen = Len;
+	memcpy(m_Data, Data, Len);
+
+	return true;
+}
+
+CDevice::CDevice(char *Name, DEV_HANDLE Device, EDeviceType Type, uint32_t DQSize)
 {
 	if (Name)
 	{
@@ -50,20 +63,31 @@ CDevice::CDevice(char *Name, DEV_HANDLE Device, uint32_t DQSize)
 		m_Name[0] = 0;
 	}
 
-	m_Device = Device;
+	m_HwHandle = Device;
 
-	m_IrqSendCompleteEvent = new CDeviceEvent(HW_OUT_COMPLETE_SIG, m_Device, 0, false);
+	m_Type = Type;
+
+	m_IrqSendCompleteEvent = new CDeviceEvent(HW_OUT_COMPLETE_SIG, m_HwHandle, 0, false);
 	ASSERT(m_IrqSendCompleteEvent);
 
-	m_DQ = new CEventQ(DQSize);
-	ASSERT(m_DQ);	
+	if (DQSize)
+	{
+		m_DQ = new CEventQ(DQSize);
+		ASSERT(m_DQ);	
+	}
+	else
+	{
+		m_DQ = NULL;
+	}
 }
 
 CDevice::~CDevice()
 {
-	delete [] m_IrqSendCompleteEvent;
+	if (m_IrqSendCompleteEvent)
+		delete [] m_IrqSendCompleteEvent;
 	
-	delete [] m_DQ;
+	if (m_DQ)
+		delete [] m_DQ;
 }
 
 void CDevice::Dispatcher(Event const* const e)
@@ -82,7 +106,7 @@ void CDevice::S_Idle(Event const* const e)
 	switch (e->Sig)
 	{
 	case MAC_REQ_SIG:
-		DeferEvent(e);		
+		DeferEvent(e);
 		TRANS(&CDevice::S_Sending);
 		break;
 
@@ -96,7 +120,11 @@ void CDevice::S_Sending(Event const* const e)
 	{
 	case ENTRY_SIG:
 		m_SendingEvent = FetchDeferedEvent();
-		Send(m_SendingEvent);
+		if (!Send(m_SendingEvent))
+		{
+			RecycleEvent(m_SendingEvent);
+			TRANS(&CDevice::S_Idle);
+		}
 		break;
 	case HW_OUT_COMPLETE_SIG:
 		RecycleEvent(m_SendingEvent);
@@ -150,6 +178,12 @@ void CDevice::RecycleEvent(Event const* const e)
 	const_cast<Event *>(e)->DecRef();
 }
 
+CDevKeeper::CDevKeeper() : CActive((char*)"DevKeeper")
+{
+	Edf::Subscribe(MAC_REQ_SIG, this);
+	Edf::Subscribe(HW_OUT_COMPLETE_SIG, this);
+}
+
 CDevKeeper* CDevKeeper::Instance()
 {
 	static CDevKeeper *dk = nullptr;
@@ -163,28 +197,28 @@ CDevKeeper* CDevKeeper::Instance()
 
 void CDevKeeper::RegDevice(CDevice* Device)
 {
+	ASSERT(GetDevice(Device->m_Name, Device->m_Type) == NULL);
 	AddDevice(Device);
 	Device->Initial(this);
 }
 
 void CDevKeeper::AddDevice(CDevice* Device)
 {
+	OS_EnterCritical();
 	m_Device.AddHead(Device);
+	OS_ExitCritical();
 }
 
 CDevice* CDevKeeper::GetDevice(DEV_HANDLE DevHandle)
 {	
 	return m_Device.FindItem([&DevHandle](CDevice *Dev)-> bool
 		{
-			return (Dev->m_Device = DevHandle);
+			return (Dev->m_HwHandle == DevHandle);
 		});
 }
 
 void CDevKeeper::Initial()
 {
-
-	Edf::Subscribe(MAC_REQ_SIG, this);
-	Edf::Subscribe(HW_OUT_COMPLETE_SIG, this);
 	INIT_TRANS(&CDevKeeper::S_Run);
 }
 
@@ -195,7 +229,7 @@ void CDevKeeper::S_Run(Event const* const e)
 
 	case MAC_REQ_SIG:
 	case HW_OUT_COMPLETE_SIG:
-		GetDevice(EventCast(CDeviceEvent)->m_Device)->Dispatcher(e);
+		GetDevice(EventCast(CDeviceEvent)->m_HwHandle)->Dispatcher(e);
 		break;
 
 	default:
@@ -203,6 +237,12 @@ void CDevKeeper::S_Run(Event const* const e)
 	}
 }
 
+CDevice * CDevKeeper::GetDevice(char* Name, EDeviceType Type)
+{
+	return m_Device.FindItem([&Name, &Type](CDevice *Dev) -> bool {
+				return (strcmp(Name, Dev->m_Name) == 0 && Dev->m_Type == Type);
+			});
+}
 
 void CDevKeeper::SendComplete(DEV_HANDLE DevHandle)
 {

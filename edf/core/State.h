@@ -18,6 +18,8 @@ Contact information:
 *****************************************************************************/
 #pragma once
 
+#include "Link.h"
+
 #define TRACE_STATE		0
 
 namespace Edf
@@ -26,17 +28,44 @@ template <class T>
 class CStateMachine
 {
 public:
-	CStateMachine() 
+	CStateMachine()
 	{
 		m_Obj = 0;
 	}
-
-	T* m_Obj;
+	~CStateMachine()
+	{
+		ClearHistory();
+	}
 
 	using STATE = void (T::*)(Event const* const e);
 
-	STATE  m_State;
-	const char* m_StateName;
+	void Push(STATE State)
+	{
+		m_Queue.PushTail(new STATE(State));
+
+		if (m_Queue.Count() > MAX_ITEMS)
+		{
+			STATE* s = m_Queue.PopHead();
+			delete s;
+		}
+	}
+
+	STATE History(void)
+	{
+		STATE t = 0;
+		STATE* s = m_Queue.PopTail();
+		if (s)
+		{
+			t = *s;
+			delete s;
+		}
+		return t;
+	}
+
+	void ClearHistory()
+	{
+		while (History() != 0);
+	}
 
 	void RunState(Event const* const e)
 	{
@@ -54,6 +83,7 @@ public:
 
 	void Trans(STATE State, const char* Name)
 	{
+		Push(m_State);
 		this->Dispatcher(&ExitEvent);
 		m_State = State;
 		m_StateName = Name;
@@ -63,6 +93,11 @@ public:
 	bool InState(const STATE State)
 	{
 		return m_State == State;
+	}
+
+	STATE GetState()
+	{
+		return m_State;
 	}
 
 	void Dispatcher(Event const* const e)
@@ -97,6 +132,13 @@ public:
 		}
 	}
 
+private:
+	STATE  m_State;
+	const char* m_StateName;
+	T* m_Obj;
+	CDeQueue<STATE> m_Queue;
+	enum { MAX_ITEMS = 10 };
+
 };
 } // namespace Edf
 
@@ -122,4 +164,5 @@ public:
 #define IN_STATE(state) \
 			this->m_StateMachine.InState(State)
 
-			
+#define HISTORY() \
+			this->m_StateMachine.History()

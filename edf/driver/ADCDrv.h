@@ -17,33 +17,39 @@ Contact information:
 <9183399@qq.com>
 *****************************************************************************/
 #pragma once
+#include <stdint.h>
 
-#include "Active.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-namespace Edf
+#include "Driver.h"
+
+typedef struct __ADCconfig
 {
-class CTimeEvent : public Event
-{
-public:
-	/*..........................................................................*/
-	CTimeEvent(Signal Sig, CActive *Act);
+	uint8_t			Reserve[1];
+}ADCConfig;
 
-	virtual ~CTimeEvent() {};
-	/*..........................................................................*/
-	void Trigger(uint32_t Timeout, uint32_t Interval);
+extern DEV_HANDLE  ADC_0;
+extern DEV_HANDLE  ADC_1;
+extern DEV_HANDLE  ADC_2;
+extern DEV_HANDLE  ADC_3;
+extern DEV_HANDLE  ADC_4;
+extern DEV_HANDLE  ADC_5;
+extern DEV_HANDLE  ADC_6;
+extern DEV_HANDLE  ADC_7;
+extern DEV_HANDLE  ADC_8;
 
-	/*..........................................................................*/
-	void UnTrigger();
 
-	void Touch(bool FromISR = false);
+bool ADC_Init(DEV_HANDLE ADC, ADCConfig* Config);
+bool ADC_Start(DEV_HANDLE ADC);
+bool ADC_Stop(DEV_HANDLE ADC);
+uint32_t ADC_GetChannels(DEV_HANDLE ADC);
 
-	static void Tick(bool FromISR);
+void ADC_Complete(DEV_HANDLE ADC, uint16_t Data);
 
-private:
-	CActive* m_Act;
-	uint32_t m_Timeout;
-	uint32_t m_Interval;
 
-};
+#ifdef __cplusplus
+}
+#endif
 
-} // namespace Edf

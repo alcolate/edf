@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,32 +18,41 @@ Contact information:
 *****************************************************************************/
 #pragma once
 
-#include "Active.h"
+#include <memory.h>
+#include "ADCDrv.h"
+#include "Device.h"
 
 namespace Edf
 {
-class CTimeEvent : public Event
+
+class CAdc : public CDevice
 {
 public:
-	/*..........................................................................*/
-	CTimeEvent(Signal Sig, CActive *Act);
+	CAdc(char* Name, DEV_HANDLE Adc);
+	~CAdc();
 
-	virtual ~CTimeEvent() {};
-	/*..........................................................................*/
-	void Trigger(uint32_t Timeout, uint32_t Interval);
+	virtual void Initial(CActive* Owner) override;
 
-	/*..........................................................................*/
-	void UnTrigger();
+	virtual void PostIrqRecvEvent() override;
 
-	void Touch(bool FromISR = false);
+	bool Start();
+	bool Stop();
 
-	static void Tick(bool FromISR);
+	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
+protected:
+	virtual bool Send(Event const* const e) override;
 
-private:
-	CActive* m_Act;
-	uint32_t m_Timeout;
-	uint32_t m_Interval;
+public:
+
+	CDeviceEvent* m_IrqRecvEvent;
+
+	uint16_t *m_Channels;
+	uint32_t m_ChannelNum;
+	uint32_t m_CurChannel;
+
+	ADCConfig 	m_Config;
 
 };
 
-} // namespace Edf
+
+}

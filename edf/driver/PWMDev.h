@@ -18,32 +18,56 @@ Contact information:
 *****************************************************************************/
 #pragma once
 
-#include "Active.h"
+#include <memory.h>
+#include "PWMDrv.h"
+#include "Device.h"
 
 namespace Edf
 {
-class CTimeEvent : public Event
+
+
+class CPWM : public CDevice
 {
 public:
-	/*..........................................................................*/
-	CTimeEvent(Signal Sig, CActive *Act);
+	CPWM(char *Name, DEV_HANDLE PWM, uint32_t Channel);
+	~CPWM();
 
-	virtual ~CTimeEvent() {};
-	/*..........................................................................*/
-	void Trigger(uint32_t Timeout, uint32_t Interval);
+	virtual void Initial(CActive *Owner) override;
+	virtual void PostIrqRecvEvent() override;
 
-	/*..........................................................................*/
-	void UnTrigger();
+	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
 
-	void Touch(bool FromISR = false);
+	bool Start(uint32_t Steps);
+	bool Stop();
 
-	static void Tick(bool FromISR);
+	bool SetPeriod(uint16_t Period, uint16_t Duty = 500);
+
+	uint32_t GetSteps();
+protected:
+	virtual bool Send(Event const* const e) override;
 
 private:
-	CActive* m_Act;
-	uint32_t m_Timeout;
-	uint32_t m_Interval;
+
+	CPWMEvent* m_IrqRecvEvent;
+
+	uint32_t m_Steps;
+
+	enum {Shift_Max = 10};
+	uint16_t m_PeriodShifts[Shift_Max * 2 + 1];
+	uint32_t m_StepShifts[Shift_Max * 2 + 1];
+	uint32_t m_ShiftIndex;
+
+	uint16_t m_Period;
+
+	uint16_t m_Duty;
+
+	PWMConfig m_Config;
+
+	uint32_t m_Channel;
 
 };
 
+
+
 } // namespace Edf
+

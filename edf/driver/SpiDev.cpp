@@ -28,23 +28,33 @@ CSpiEvent::CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle,
 						uint8_t *Tx, uint32_t TxLen, uint8_t *Rx, uint32_t RxLen, bool Dynamic)
 	: CDeviceEvent(Sig, SpiHandle, 0, Dynamic)
 {
-	m_Tx = Tx;
-	m_TxLen = TxLen;
-	m_Rx = Rx;
-	m_RxLen = RxLen;
+	m_Tx = m_Rx = NULL;
+	if (TxLen)
+	{
+		m_Tx = new uint8_t[TxLen];
+		memcpy(m_Tx, Tx, TxLen);
+	}
+	if (RxLen)
+	{
+		m_Rx = new uint8_t[RxLen];
+		memcpy(m_Rx, Rx, RxLen);
+	}
 }
 
 
 CSpiEvent::~CSpiEvent()
 {
+	if (m_Rx)
+		delete [] m_Rx;
 
+	if (m_Tx)
+		delete [] m_Tx;
 }
 
-
 CSPI::CSPI(char* Name, DEV_HANDLE Spi) 
-	: CDevice(Name, Spi, 1)
+	: CDevice(Name, Spi, EDeviceType::SPI, 1)
 {
-	m_IrqRecvEvent = new  CDeviceEvent(HW_RSP_SIG, m_Device, 0, false);
+	m_IrqRecvEvent = new  CDeviceEvent(SPI_RSP_SIG, m_HwHandle, 0, false);
 	ASSERT(m_IrqRecvEvent);	
 
 	CDevKeeper::Instance()->RegDevice(this);
@@ -56,7 +66,7 @@ CSPI::~CSPI()
 
 void CSPI::Initial(CActive* Owner)
 {
-	bool result = Spi_Init(m_Device, &m_Config);
+	bool result = Spi_Init(m_HwHandle, &m_Config);
 	ASSERT(result);
 
 	CDevice::Initial(Owner);
@@ -68,16 +78,16 @@ bool CSPI::Send(Event const* const e)
 
 	if (se->m_TxLen && se->m_RxLen)
 	{
-		result = Spi_TransmitReceive(m_Device, const_cast<uint8_t *>(se->m_Tx), se->m_TxLen,
+		result = Spi_TransmitReceive(m_HwHandle, const_cast<uint8_t *>(se->m_Tx), se->m_TxLen,
 				const_cast<uint8_t *>(se->m_Rx), se->m_RxLen);
 	}
 	else if (se->m_TxLen)
 	{
-		result = Spi_Transmit(m_Device, const_cast<uint8_t *>(se->m_Tx), se->m_TxLen);
+		result = Spi_Transmit(m_HwHandle, const_cast<uint8_t *>(se->m_Tx), se->m_TxLen);
 	}
 	else if (se->m_RxLen)
 	{
-		result = Spi_Receive(m_Device, const_cast<uint8_t *>(se->m_Rx), se->m_RxLen);
+		result = Spi_Receive(m_HwHandle, const_cast<uint8_t *>(se->m_Rx), se->m_RxLen);
 	}
 
 	return result;

@@ -31,6 +31,13 @@ enum Signals
 	TIMEOUT_SIG,
 	HW_RSP_SIG,   // get from serial
 	HW_OUT_COMPLETE_SIG, // send completely
+	UART_RSP_SIG,    //  in data
+	CAN_RSP_SIG,	//  in data
+	SPI_RSP_SIG,	//  in data
+	I2C_RSP_SIG,	//  in data
+	PWM_RSP_SIG,		//  in data
+	ADC_RSP_SIG,		//  in data
+	GPIO_RSP_SIG,		//  gpio interrupt
 	MAC_REQ_SIG,  // send to serial
 	MAC_RSP_SIG,
 	PC_REQ_SIG,

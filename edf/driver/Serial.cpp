@@ -27,15 +27,15 @@ namespace Edf
 CSerial::CSerial(char *Name, DEV_HANDLE Uart,
 		UART_Baudrate Baudrate, UART_Parity Parity, UART_StopBit Stopbit,
 		uint16_t MaxFrameLen,  MACCALLBACK MacCall, uint32_t DQSize) :
-		CDevice(Name, Uart, DQSize)
+		CDevice(Name, Uart, EDeviceType::UART, DQSize)
 {
 	m_Config.Baudrate = Baudrate;
 	m_Config.Parity = Parity;
 	m_Config.StopBits = Stopbit;
 
 	m_IrqRecvEvent = new  CDeviceEvent[2]{
-		CDeviceEvent(HW_RSP_SIG, m_Device, MaxFrameLen, false),
-		CDeviceEvent(HW_RSP_SIG, m_Device, MaxFrameLen, false)
+		CDeviceEvent(UART_RSP_SIG, m_HwHandle, MaxFrameLen, false),
+		CDeviceEvent(UART_RSP_SIG, m_HwHandle, MaxFrameLen, false)
 	};
 	ASSERT(m_IrqRecvEvent);
 	m_IrqRecvEventIndex = 0;
@@ -46,6 +46,8 @@ CSerial::CSerial(char *Name, DEV_HANDLE Uart,
 
 	m_MacCall = MacCall;
 
+	CDevKeeper::Instance()->RegDevice(this);
+
 }
 CSerial::~CSerial()
 {
@@ -54,14 +56,14 @@ CSerial::~CSerial()
 
 void CSerial::Initial(CActive *Owner)
 {
-	bool result = Uart_Init(m_Device, &m_Config);
+	bool result = Uart_Init(m_HwHandle, &m_Config);
 	ASSERT(result);
 
 	CDevice::Initial(Owner);
 }
 bool CSerial::Send(Event const* const e)
 {
-	return Uart_Send(m_Device, const_cast<uint8_t *>(EventCast(CDeviceEvent)->m_Data), EventCast(CDeviceEvent)->m_DataCount);
+	return Uart_Send(m_HwHandle, const_cast<uint8_t *>(EventCast(CDeviceEvent)->m_Data), EventCast(CDeviceEvent)->m_DataLen);
 }
 
 void CSerial::PostIrqRecvEvent()

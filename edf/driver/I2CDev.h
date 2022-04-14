@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,32 +18,44 @@ Contact information:
 *****************************************************************************/
 #pragma once
 
-#include "Active.h"
+#include <memory.h>
+#include "I2CDrv.h"
+#include "Device.h"
 
 namespace Edf
 {
-class CTimeEvent : public Event
+
+class CI2C : public CDevice
 {
 public:
-	/*..........................................................................*/
-	CTimeEvent(Signal Sig, CActive *Act);
+	CI2C(char* Name, DEV_HANDLE I2C);
+	~CI2C();
 
-	virtual ~CTimeEvent() {};
-	/*..........................................................................*/
-	void Trigger(uint32_t Timeout, uint32_t Interval);
+	virtual void Initial(CActive* Owner) override;
 
-	/*..........................................................................*/
-	void UnTrigger();
+	virtual void PostIrqRecvEvent() override;
 
-	void Touch(bool FromISR = false);
+	bool Read(uint8_t Address, uint8_t Reg, uint8_t DataLen);
 
-	static void Tick(bool FromISR);
+	bool Write(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen);
 
-private:
-	CActive* m_Act;
-	uint32_t m_Timeout;
-	uint32_t m_Interval;
+	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
+	
+protected:
+	virtual bool Send(Event const* const e) override;
+
+public:
+
+	CDeviceEvent* m_IrqRecvEvent;
+
+	enum {MAX_BUFF_SIZE = 16};
+	uint8_t m_Buff[MAX_BUFF_SIZE];
+	uint8_t m_Slave;
+	uint8_t m_Reg;
+
+	I2CConfig 	m_Config;
 
 };
 
-} // namespace Edf
+
+}

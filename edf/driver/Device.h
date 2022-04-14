@@ -24,19 +24,18 @@ Contact information:
 namespace Edf
 {
 
-
-
-
 class CDeviceEvent : public Event
 {
 public:
 	CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, bool Dynamic = true);
 	virtual ~CDeviceEvent();
 
-	DEV_HANDLE	m_Device;
+	bool Copy(uint8_t *Data, uint32_t Len);
+
+	DEV_HANDLE	m_HwHandle;
 	uint8_t* 	m_Data;
-	uint32_t 	m_DataCount;
-	uint32_t	m_DataSize;
+	uint32_t 	m_DataLen;
+	uint32_t	m_Size;
 
 };
 
@@ -54,12 +53,81 @@ public:
 	uint32_t m_RxLen;
 };
 
+
+class CI2CEvent : public CDeviceEvent
+{
+public:
+	enum MODE
+	{
+		WRITE,
+		READ
+	};
+public:
+	CI2CEvent(Signals Sig, DEV_HANDLE I2C, uint8_t *Data, uint32_t DataLen, bool Dynamic = true);
+
+	virtual ~CI2CEvent();
+
+	uint8_t  m_SlaveAddress;
+	uint8_t  m_RegAddress;
+	MODE	m_Mode;
+};
+
+class CPWMEvent : public CDeviceEvent
+{
+public:
+	CPWMEvent(Signals Sig, DEV_HANDLE PWM, uint32_t Steps, bool Dynamic = true);
+
+	virtual ~CPWMEvent();
+
+	uint32_t m_Steps;
+};
+
+class CGPIOEvent : public CDeviceEvent
+{
+public:
+	enum MODE
+	{
+		HIGH,
+		LOW
+	};
+public:
+	CGPIOEvent(Signals Sig, DEV_HANDLE GPIO, MODE Mode, bool Dynamic = true);
+
+	virtual ~CGPIOEvent();
+
+	MODE m_Mode;
+};
+
+class CAdcEvent : public CDeviceEvent
+{
+public:
+	CAdcEvent(Signals Sig, DEV_HANDLE ADC, bool Dynamic = true);
+
+	virtual ~CAdcEvent();
+
+	enum {MAX_CHANNEL = 16};
+	uint16_t m_Result[MAX_CHANNEL];
+	uint32_t m_ResLen;
+};
+
+
 using MACCALLBACK = bool (*)(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint8_t *Data, uint32_t Len);
+
+enum class EDeviceType
+{
+	UART,
+	SPI,
+	CAN,
+	I2C,
+	GPIO,
+	PWM,
+	ADC
+};
 
 class CDevice
 {
 public:
-	CDevice(char *Name, DEV_HANDLE Device, uint32_t DQSize = 2);
+	CDevice(char *Name, DEV_HANDLE Device, EDeviceType Type, uint32_t DQSize = 2);
 	virtual ~CDevice();
 
 	void Dispatcher(Event const* const e);
@@ -81,9 +149,9 @@ public:
 
 	void RecycleEvent(Event const* const e);
 
-	bool operator == (DEV_HANDLE DevHandle) 
+	virtual bool operator == (DEV_HANDLE DevHandle)
 	{
-		return this->m_Device == DevHandle;
+		return this->m_HwHandle == DevHandle;
 	}
 
 protected:
@@ -93,14 +161,15 @@ public:
 
 	char m_Name[10];
 
-	DEV_HANDLE  m_Device;			// the handle. of Device hardware
+	EDeviceType m_Type;
+
+	DEV_HANDLE  m_HwHandle;			// the handle. of Device hardware
 
 	CDeviceEvent  *m_IrqSendCompleteEvent;
 
 	Event const *m_SendingEvent;
 	CEventQ* m_DQ;
 	CActive* m_Owner;
-	USE_LINK(CDevice);
 
 public:
 	DEF_STATEMACHINE(CDevice);
@@ -114,23 +183,22 @@ public:
 
 	void RegDevice(CDevice* Device);
 
-	virtual void Initial();
+	virtual void Initial() override;
 
 	void SendComplete(DEV_HANDLE DeviceH);
 
 	void Receive(DEV_HANDLE DeviceH, uint8_t *Data, uint32_t Len);
 
-private:
-	void S_Run(Event const* const e);
+	CDevice * GetDevice(char* Name, EDeviceType Type);
 
 	CDevice* GetDevice(DEV_HANDLE DeviceH);
 
+private:
+	void S_Run(Event const* const e);
+
 	void AddDevice(CDevice* Device);
 
-	CDevKeeper() : CActive((char*)"DevKeeper")
-	{
-
-	}
+	CDevKeeper();
 
 	CList<CDevice> m_Device;
 

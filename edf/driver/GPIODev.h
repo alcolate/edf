@@ -18,32 +18,38 @@ Contact information:
 *****************************************************************************/
 #pragma once
 
-#include "Active.h"
+#include <memory.h>
+#include "GPIODrv.h"
+#include "Device.h"
 
 namespace Edf
 {
-class CTimeEvent : public Event
+
+
+class CGPIO : public CDevice
 {
 public:
-	/*..........................................................................*/
-	CTimeEvent(Signal Sig, CActive *Act);
+	CGPIO(char *Name, DEV_HANDLE GPIO, uint32_t DQSize = 1);
+	~CGPIO();
 
-	virtual ~CTimeEvent() {};
-	/*..........................................................................*/
-	void Trigger(uint32_t Timeout, uint32_t Interval);
+	virtual void Initial(CActive *Owner) override;
+	virtual void PostIrqRecvEvent() override;
 
-	/*..........................................................................*/
-	void UnTrigger();
+	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
 
-	void Touch(bool FromISR = false);
-
-	static void Tick(bool FromISR);
+	void Set(CGPIOEvent::MODE Mode);
+	CGPIOEvent::MODE Get();
+	void SetInputMode();
+	void SetOutputMode();
+protected:
+	virtual bool Send(Event const* const e) override;
 
 private:
-	CActive* m_Act;
-	uint32_t m_Timeout;
-	uint32_t m_Interval;
 
+	CGPIOEvent* m_IrqRecvEvent;
 };
 
+
+
 } // namespace Edf
+

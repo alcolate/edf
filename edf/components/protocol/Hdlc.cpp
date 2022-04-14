@@ -34,7 +34,7 @@ void CHdlcImp::Ack(uint8_t SeqNo)
 
 	CDeviceEvent *ue = new CDeviceEvent(MAC_REQ_SIG, m_MacLayer->m_Uart->m_Device, 10);
 
-	yahdlc_frame_data(&Control, NULL, 0, (char *)ue->m_Data, &ue->m_DataCount);
+	yahdlc_frame_data(&Control, NULL, 0, (char *)ue->m_Data, &ue->m_Count);
 
 	Publish(ue);
 }
@@ -45,7 +45,7 @@ void CHdlcImp::PacketData(const uint8_t* Data, uint16_t Len)
 
 	m_ControlSend.frame = YAHDLC_FRAME_DATA;
 	m_ControlSend.seq_no++;
-	yahdlc_frame_data(&m_ControlSend, (char*)Data, Len, (char*)ue->m_Data, &ue->m_DataCount);
+	yahdlc_frame_data(&m_ControlSend, (char*)Data, Len, (char*)ue->m_Data, &ue->m_Count);
 
 	Publish(ue);
 }
@@ -142,8 +142,6 @@ void CHdlc::Initial()
 		128, CHdlc::MacCall);
 	ASSERT(m_Uart);
 
-	CDevKeeper::Instance()->RegDevice(m_Uart);
-
 	m_Hdlc = new CHdlcImp(this);
 	ASSERT(m_Hdlc);
 
@@ -151,7 +149,7 @@ void CHdlc::Initial()
 	ASSERT(m_DQ);
 
 	Subscribe(APP_REQ_SIG, this);
-	Subscribe(HW_RSP_SIG, this);
+	Subscribe(Serial_RSP_SIG, this);
 
 	INIT_TRANS(&CHdlc::S_Idle);
 }
@@ -168,10 +166,10 @@ void CHdlc::S_Idle(Event const* const e)
 		TRANS(&CHdlc::S_Sending);
 		break;
 
-	case HW_RSP_SIG:
+	case Serial_RSP_SIG:
 		if (IsToMe(e))
 		{
-			if (m_Hdlc->Parser(EventCast(CDeviceEvent)->m_Data, EventCast(CDeviceEvent)->m_DataCount))
+			if (m_Hdlc->Parser(EventCast(CDeviceEvent)->m_Data, EventCast(CDeviceEvent)->m_Count))
 			{
 
 			}
@@ -197,10 +195,10 @@ void CHdlc::S_Sending(Event const* const e)
 		m_Timer.UnTrigger();
 		break;
 
-	case HW_RSP_SIG:
+	case Serial_RSP_SIG:
 		if (IsToMe(e))
 		{
-			if (m_Hdlc->Parser(EventCast(CDeviceEvent)->m_Data, EventCast(CDeviceEvent)->m_DataCount))
+			if (m_Hdlc->Parser(EventCast(CDeviceEvent)->m_Data, EventCast(CDeviceEvent)->m_Count))
 			{
 				TRANS(&CHdlc::S_Idle);
 			}

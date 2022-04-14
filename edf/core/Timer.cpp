@@ -23,7 +23,12 @@ namespace Edf
 {
 static const uint32_t NEVER = (uint32_t)(-1);
 
-static CList<CTimeEvent> gTimer;
+static CList<CTimeEvent> & GTimer()
+{
+	static CList<CTimeEvent> gTimer;
+
+	return gTimer;
+}
 
 CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 {
@@ -37,10 +42,10 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
 void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 {
 	OS_EnterCritical();
-	gTimer.RemoveItem(this);
+	GTimer().RemoveItem(this);
 	this->m_Timeout = Timeout;
 	this->m_Interval = Interval? Interval: NEVER;
-	gTimer.AddSort(this, [this](CTimeEvent* Item)->bool { return this->m_Timeout <= Item->m_Timeout; });
+	GTimer().AddSort(this, [this](CTimeEvent* Item)->bool { return this->m_Timeout <= Item->m_Timeout; });
 	OS_ExitCritical();
 }
 
@@ -48,21 +53,21 @@ void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
 void CTimeEvent::UnTrigger()
 {
 	OS_EnterCritical();
-	gTimer.RemoveItem(this);
+	GTimer().RemoveItem(this);
 	OS_ExitCritical();
 }
 
-void CTimeEvent::Touch()
+void CTimeEvent::Touch(bool FromISR)
 {
-	m_Act->Post(this, true);
+	m_Act->Post(this, FromISR);
 }
 
 void CTimeEvent::Tick(bool FromISR)
 {
-	gTimer.ForEach([&FromISR](CTimeEvent *Timer)  -> void 
+	GTimer().ForEach([&FromISR](CTimeEvent *Timer)  -> void
 		{
 			CTimeEvent* runTimer = NULL;
-				
+
 			uint32_t flag = OS_EnterCritical(FromISR);
 			if (Timer->m_Timeout != NEVER)
 			{
@@ -76,7 +81,7 @@ void CTimeEvent::Tick(bool FromISR)
 			OS_ExitCritical(flag, FromISR);
 			if (runTimer != NULL)
 			{
-				runTimer->Touch();				
+				runTimer->Touch(FromISR);
 			}
 		}
 	);
