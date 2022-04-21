@@ -46,10 +46,10 @@ protected:
 
 public:
 
-	CDeviceEvent* m_IrqRecvEvent;
+	CI2CEvent m_IrqRecvEvent;
 
-	enum {MAX_BUFF_SIZE = 16};
-	uint8_t m_Buff[MAX_BUFF_SIZE];
+	enum {BUFF_SIZE = 16};
+	uint8_t m_Buff[BUFF_SIZE];
 	uint8_t m_Slave;
 	uint8_t m_Reg;
 

@@ -35,23 +35,17 @@ CAdcEvent::~CAdcEvent()
 }
 
 CAdc::CAdc(char *Name, DEV_HANDLE Adc) :
-		CDevice(Name, Adc, EDeviceType::ADC, 1)
+		CDevice(Name, Adc, EDeviceType::ADC, 1),
+		m_IrqRecvEvent(ADC_RSP_SIG, Adc, false)
 {
-
-	m_IrqRecvEvent = new  CAdcEvent(ADC_RSP_SIG, m_HwHandle, false);
-	ASSERT(m_IrqRecvEvent);
-
 	m_ChannelNum = ADC_GetChannels(m_HwHandle);
 	ASSERT(m_ChannelNum <= CAdcEvent::MAX_CHANNEL)
-	m_Channels = new uint16_t[m_ChannelNum + 1];
-	ASSERT(m_Channels);
 
 	CDevKeeper::Instance()->RegDevice(this);
 }
 CAdc::~CAdc()
 {
-	delete [] m_IrqRecvEvent;
-	delete [] m_Channels;
+
 }
 
 void CAdc::Initial(CActive *Owner)
@@ -66,7 +60,15 @@ bool CAdc::Send(Event const* const e)
 bool CAdc::Start()
 {
 	m_CurChannel = 0;
-	return ADC_Start(m_HwHandle);
+
+	if (ADC_GetMode(m_HwHandle) == DMA)
+	{
+		return ADC_Start_DMA(m_HwHandle, m_Channels, m_ChannelNum);
+	}
+	else
+	{
+		return ADC_Start(m_HwHandle);
+	}
 }
 
 bool CAdc::Stop()
@@ -76,27 +78,22 @@ bool CAdc::Stop()
 
 void CAdc::PostIrqRecvEvent()
 {
-	CAdcEvent *ae = static_cast<CAdcEvent*>(m_IrqRecvEvent);
-	memcpy(ae->m_Result, m_Channels, m_ChannelNum * sizeof(m_Channels[0]));
-	ae->m_ResLen = m_ChannelNum;
-	Publish(m_IrqRecvEvent, true);
+	memcpy(m_IrqRecvEvent.m_Result, m_Channels, m_ChannelNum * sizeof(m_Channels[0]));
+	m_IrqRecvEvent.m_ResLen = m_ChannelNum;
+	Publish(&m_IrqRecvEvent, true);
 }
 
 bool CAdc::MacCall(uint8_t *Data, uint32_t Len)
 {
-	m_Channels[m_CurChannel] = *(uint16_t*)Data;
+	if (ADC_GetMode(m_HwHandle) == INTERRUPT)
+	{
+		m_Channels[m_CurChannel] = *(uint16_t*)Data;
+	}
 
 	++ m_CurChannel;
 
-	if (m_CurChannel == m_ChannelNum)
-	{
-		ADC_Stop(m_HwHandle);
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	ADC_Stop(m_HwHandle);
+	return true;
 }
 
 } // namespace Edf

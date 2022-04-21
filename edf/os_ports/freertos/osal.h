@@ -26,7 +26,7 @@ Contact information:
 #pragma GCC diagnostic ignored "-Wformat="
 
 #define MAX_PRIORITIES 			configMAX_PRIORITIES
-#define MINIMAL_STACK_SIZE 		(configMINIMAL_STACK_SIZE * 4)
+#define MINIMAL_STACK_SIZE 		(configMINIMAL_STACK_SIZE*2)
 #define MAX_DELAY 				portMAX_DELAY
 #define TICK_RATE_MS			portTICK_RATE_MS
 

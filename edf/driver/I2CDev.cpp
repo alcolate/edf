@@ -39,15 +39,13 @@ CI2CEvent::~CI2CEvent()
 
 CI2C::CI2C(char* Name, DEV_HANDLE I2C)
 	: CDevice(Name, I2C, EDeviceType::I2C, 8)
+	  , m_IrqRecvEvent(I2C_RSP_SIG, I2C, (uint8_t *)"hello world", BUFF_SIZE, false)
 {
-	m_IrqRecvEvent = new  CI2CEvent(I2C_RSP_SIG, m_HwHandle, (uint8_t *)"hello world", MAX_BUFF_SIZE, false);
-	ASSERT(m_IrqRecvEvent);
 
 	CDevKeeper::Instance()->RegDevice(this);
 }
 CI2C::~CI2C()
 {
-	delete [] m_IrqRecvEvent;
 }
 
 void CI2C::Initial(CActive* Owner)
@@ -80,10 +78,10 @@ bool CI2C::Send(Event const* const e)
 
 bool CI2C::Read(uint8_t Address, uint8_t Reg, uint8_t DataLen)
 {
-	ASSERT(DataLen < MAX_BUFF_SIZE);
+	ASSERT(DataLen <= BUFF_SIZE);
 
 	CI2CEvent *ie = new CI2CEvent(MAC_REQ_SIG, m_HwHandle, NULL, DataLen);
-	ie->m_SlaveAddress = Address;
+	ie->m_SlaveAddress = Address << 1;
 	ie->m_RegAddress = Reg;
 	ie->m_Mode = CI2CEvent::READ;
 
@@ -95,10 +93,10 @@ bool CI2C::Read(uint8_t Address, uint8_t Reg, uint8_t DataLen)
 bool CI2C::Write(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
 {
 
-	ASSERT(DataLen < MAX_BUFF_SIZE);
+	ASSERT(DataLen <= BUFF_SIZE);
 
 	CI2CEvent *ie = new CI2CEvent(MAC_REQ_SIG, m_HwHandle, Data, DataLen);
-	ie->m_SlaveAddress = Address;
+	ie->m_SlaveAddress = Address << 1;
 	ie->m_RegAddress = Reg;
 	ie->m_Mode = CI2CEvent::WRITE;
 
@@ -109,15 +107,15 @@ bool CI2C::Write(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
 
 void CI2C::PostIrqRecvEvent()
 {
-	static_cast<CI2CEvent *>(m_IrqRecvEvent)->m_SlaveAddress = m_Slave;
-	static_cast<CI2CEvent *>(m_IrqRecvEvent)->m_RegAddress = m_Reg;
-	Publish(m_IrqRecvEvent, true);
+	m_IrqRecvEvent.m_SlaveAddress = m_Slave;
+	m_IrqRecvEvent.m_RegAddress = m_Reg;
+	Publish(&m_IrqRecvEvent, true);
 }
 
 bool CI2C::MacCall(uint8_t *Data, uint32_t Len)
 {
-	ASSERT(Len <= m_IrqRecvEvent->m_Size);
-	m_IrqRecvEvent->Copy(Data, Len);
+	ASSERT(Len <= m_IrqRecvEvent.m_Size);
+	m_IrqRecvEvent.Copy(Data, Len);
 	return true;
 }
 } // namespace Edf

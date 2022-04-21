@@ -25,15 +25,17 @@ namespace Edf
 class CTimeEvent : public Event
 {
 public:
-	/*..........................................................................*/
 	CTimeEvent(Signal Sig, CActive *Act);
 
 	virtual ~CTimeEvent() {};
-	/*..........................................................................*/
-	void Trigger(uint32_t Timeout, uint32_t Interval);
 
-	/*..........................................................................*/
-	void UnTrigger();
+	void Start(uint32_t Timeout, uint32_t Interval);
+
+	void Stop();
+
+	void Pause();
+
+	void Resume();
 
 	void Touch(bool FromISR = false);
 
@@ -43,6 +45,7 @@ private:
 	CActive* m_Act;
 	uint32_t m_Timeout;
 	uint32_t m_Interval;
+	bool m_Paused;
 
 };
 

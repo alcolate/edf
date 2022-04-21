@@ -30,31 +30,46 @@ static CList<CTimeEvent> & GTimer()
 	return gTimer;
 }
 
-CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig)
+CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig, false)
 {
 	ASSERT(Act);
 	this->m_Act = Act;
 	this->m_Timeout = NEVER;
 	this->m_Interval = NEVER;
+	this->m_Paused = true;
 }
 
-/*..........................................................................*/
-void CTimeEvent::Trigger(uint32_t Timeout, uint32_t Interval)
+void CTimeEvent::Start(uint32_t Timeout, uint32_t Interval)
 {
 	OS_EnterCritical();
 	GTimer().RemoveItem(this);
 	this->m_Timeout = Timeout;
 	this->m_Interval = Interval? Interval: NEVER;
+	this->m_Paused = false;
 	GTimer().AddSort(this, [this](CTimeEvent* Item)->bool { return this->m_Timeout <= Item->m_Timeout; });
 	OS_ExitCritical();
 }
 
-/*..........................................................................*/
-void CTimeEvent::UnTrigger()
+void CTimeEvent::Stop()
 {
 	OS_EnterCritical();
 	GTimer().RemoveItem(this);
 	OS_ExitCritical();
+}
+
+void CTimeEvent::Pause()
+{
+	OS_EnterCritical();
+	this->m_Paused = true;
+	OS_ExitCritical();
+}
+
+void CTimeEvent::Resume()
+{
+	OS_EnterCritical();
+	this->m_Paused = false;
+	OS_ExitCritical();
+
 }
 
 void CTimeEvent::Touch(bool FromISR)
@@ -69,7 +84,7 @@ void CTimeEvent::Tick(bool FromISR)
 			CTimeEvent* runTimer = NULL;
 
 			uint32_t flag = OS_EnterCritical(FromISR);
-			if (Timer->m_Timeout != NEVER)
+			if (!Timer->m_Paused && Timer->m_Timeout != NEVER)
 			{
 				Timer->m_Timeout --;
 				if (Timer->m_Timeout == 0)

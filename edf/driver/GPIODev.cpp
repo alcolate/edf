@@ -36,16 +36,12 @@ CGPIOEvent::~CGPIOEvent()
 
 CGPIO::CGPIO(char *Name, DEV_HANDLE GPIO, uint32_t DQSize) :
 		CDevice(Name, GPIO, EDeviceType::GPIO, DQSize)
+		,m_IrqRecvEvent(GPIO_RSP_SIG, GPIO, CGPIOEvent::HIGH, false)
 {
-
-	m_IrqRecvEvent = new  CGPIOEvent(GPIO_RSP_SIG, m_HwHandle, CGPIOEvent::HIGH, false);
-	ASSERT(m_IrqRecvEvent);
-
 	CDevKeeper::Instance()->RegDevice(this);
 }
 CGPIO::~CGPIO()
 {
-	delete [] m_IrqRecvEvent;
 }
 
 void CGPIO::Initial(CActive *Owner)
@@ -54,16 +50,7 @@ void CGPIO::Initial(CActive *Owner)
 }
 bool CGPIO::Send(Event const* const e)
 {
-	const CGPIOEvent *evt = EventCast(CGPIOEvent);
-
-	if (evt->m_Mode == CGPIOEvent::HIGH)
-	{
-		GPIO_Set(m_HwHandle, GPIO_HIGH);
-	}
-	else if (evt->m_Mode == CGPIOEvent::LOW)
-	{
-		GPIO_Set(m_HwHandle, GPIO_LOW);
-	}
+	CGPIO::Set(EventCast(CGPIOEvent)->m_Mode);
 
 	return false;
 }
@@ -74,9 +61,13 @@ void CGPIO::Set(CGPIOEvent::MODE Mode)
 	{
 		GPIO_Set(m_HwHandle, GPIO_HIGH);
 	}
-	else
+	else if (Mode == CGPIOEvent::LOW)
 	{
 		GPIO_Set(m_HwHandle, GPIO_LOW);
+	}
+	else if (Mode == CGPIOEvent::TOGGLE)
+	{
+		GPIO_Toggle(m_HwHandle);
 	}
 }
 
@@ -102,7 +93,7 @@ void CGPIO::SetOutputMode()
 
 void CGPIO::PostIrqRecvEvent()
 {
-	Publish(m_IrqRecvEvent, true);
+	Publish(&m_IrqRecvEvent, true);
 }
 
 bool CGPIO::MacCall(uint8_t *Data, uint32_t Len)

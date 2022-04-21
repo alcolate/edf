@@ -43,13 +43,12 @@ class CSpiEvent : public CDeviceEvent
 {
 public:
 	CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle,
-			uint8_t *Tx, uint32_t TxLen, uint8_t *Rx, uint32_t RxLen, bool Dynamic = true);
+			uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Dynamic = true);
 
 	virtual ~CSpiEvent();
 
 	uint8_t *m_Tx;
 	uint32_t m_TxLen;
-	uint8_t *m_Rx;
 	uint32_t m_RxLen;
 };
 
@@ -88,7 +87,8 @@ public:
 	enum MODE
 	{
 		HIGH,
-		LOW
+		LOW,
+		TOGGLE,
 	};
 public:
 	CGPIOEvent(Signals Sig, DEV_HANDLE GPIO, MODE Mode, bool Dynamic = true);
@@ -100,6 +100,12 @@ public:
 
 class CAdcEvent : public CDeviceEvent
 {
+public:
+	enum MODE
+	{
+		INTERRUPT,
+		DMA
+	};
 public:
 	CAdcEvent(Signals Sig, DEV_HANDLE ADC, bool Dynamic = true);
 
@@ -127,7 +133,7 @@ enum class EDeviceType
 class CDevice
 {
 public:
-	CDevice(char *Name, DEV_HANDLE Device, EDeviceType Type, uint32_t DQSize = 2);
+	CDevice(char *Name, DEV_HANDLE HwHandle, EDeviceType Type, uint32_t DQSize = 2);
 	virtual ~CDevice();
 
 	void Dispatcher(Event const* const e);
@@ -165,10 +171,10 @@ public:
 
 	DEV_HANDLE  m_HwHandle;			// the handle. of Device hardware
 
-	CDeviceEvent  *m_IrqSendCompleteEvent;
+	CDeviceEvent  m_IrqSendCompleteEvent;
 
 	Event const *m_SendingEvent;
-	CEventQ* m_DQ;
+	CEventQ m_DQ;
 	CActive* m_Owner;
 
 public:

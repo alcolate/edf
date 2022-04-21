@@ -68,6 +68,7 @@ bool CSerial::Send(Event const* const e)
 
 void CSerial::PostIrqRecvEvent()
 {
+	m_IrqRecvEvent[m_IrqRecvEventIndex].m_DataLen = m_BuffCount;
 	Publish(&m_IrqRecvEvent[m_IrqRecvEventIndex], true);
 	m_IrqRecvEventIndex ^= 0x01;
 	m_BuffCount = 0;

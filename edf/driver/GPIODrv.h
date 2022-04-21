@@ -86,6 +86,7 @@ extern DEV_HANDLE  GPIO_49;
 
 bool GPIO_Init(DEV_HANDLE Gpio, GPIOConfig* Config);
 void GPIO_Set(DEV_HANDLE Gpio, uint32_t Value);
+void GPIO_Toggle(DEV_HANDLE Gpio);
 void GPIO_SetInputMode(DEV_HANDLE Gpio);
 void GPIO_SetOutputMode(DEV_HANDLE Gpio);
 uint32_t GPIO_Get(DEV_HANDLE Gpio);

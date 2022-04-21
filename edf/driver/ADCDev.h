@@ -44,9 +44,9 @@ protected:
 
 public:
 
-	CDeviceEvent* m_IrqRecvEvent;
+	CAdcEvent m_IrqRecvEvent;
 
-	uint16_t *m_Channels;
+	uint16_t m_Channels[CAdcEvent::MAX_CHANNEL];
 	uint32_t m_ChannelNum;
 	uint32_t m_CurChannel;
 

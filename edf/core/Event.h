@@ -51,7 +51,7 @@ enum Signals
 class Event 
 {
 public:
-	Event(Signal s, bool DynAlloc = false);
+	Event(Signal s, bool DynAlloc = true);
 	virtual ~Event();
 	Signal Sig; 
 	uint32_t	RefCount;	

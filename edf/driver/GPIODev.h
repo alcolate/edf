@@ -46,7 +46,7 @@ protected:
 
 private:
 
-	CGPIOEvent* m_IrqRecvEvent;
+	CGPIOEvent m_IrqRecvEvent;
 };
 
 

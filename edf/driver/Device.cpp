@@ -52,7 +52,8 @@ bool CDeviceEvent::Copy(uint8_t *Data, uint32_t Len)
 	return true;
 }
 
-CDevice::CDevice(char *Name, DEV_HANDLE Device, EDeviceType Type, uint32_t DQSize)
+CDevice::CDevice(char *Name, DEV_HANDLE HwHandle, EDeviceType Type, uint32_t DQSize)
+			: m_IrqSendCompleteEvent(HW_OUT_COMPLETE_SIG, HwHandle, 0, false), m_DQ(DQSize)
 {
 	if (Name)
 	{
@@ -63,31 +64,15 @@ CDevice::CDevice(char *Name, DEV_HANDLE Device, EDeviceType Type, uint32_t DQSiz
 		m_Name[0] = 0;
 	}
 
-	m_HwHandle = Device;
+	m_HwHandle = HwHandle;
 
 	m_Type = Type;
 
-	m_IrqSendCompleteEvent = new CDeviceEvent(HW_OUT_COMPLETE_SIG, m_HwHandle, 0, false);
-	ASSERT(m_IrqSendCompleteEvent);
-
-	if (DQSize)
-	{
-		m_DQ = new CEventQ(DQSize);
-		ASSERT(m_DQ);	
-	}
-	else
-	{
-		m_DQ = NULL;
-	}
 }
 
 CDevice::~CDevice()
 {
-	if (m_IrqSendCompleteEvent)
-		delete [] m_IrqSendCompleteEvent;
-	
-	if (m_DQ)
-		delete [] m_DQ;
+
 }
 
 void CDevice::Dispatcher(Event const* const e)
@@ -149,7 +134,7 @@ void CDevice::S_Sending(Event const* const e)
 // call from Device driver
 void CDevice::PostIrqSendCompleteEvent()
 {
-	Publish(m_IrqSendCompleteEvent, true);
+	Publish(&m_IrqSendCompleteEvent, true);
 }
 void CDevice::PostIrqRecvEvent()
 {
@@ -165,12 +150,12 @@ bool CDevice::DeferEvent(Event const* const e)
 {
 	ASSERT(e);
 
-	return m_DQ->Defer(e);
+	return m_DQ.Defer(e);
 }
 
 Event const * CDevice::FetchDeferedEvent()
 {
-	return m_DQ->Fetch();
+	return m_DQ.Fetch();
 }
 
 void CDevice::RecycleEvent(Event const* const e)
@@ -186,13 +171,9 @@ CDevKeeper::CDevKeeper() : CActive((char*)"DevKeeper")
 
 CDevKeeper* CDevKeeper::Instance()
 {
-	static CDevKeeper *dk = nullptr;
-	if (dk == nullptr)
-	{
-		dk = new CDevKeeper();
-	}
+	static CDevKeeper dk;
 
-	return dk;
+	return &dk;
 }
 
 void CDevKeeper::RegDevice(CDevice* Device)

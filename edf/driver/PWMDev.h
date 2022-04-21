@@ -48,7 +48,7 @@ protected:
 
 private:
 
-	CPWMEvent* m_IrqRecvEvent;
+	CPWMEvent m_IrqRecvEvent;
 
 	uint32_t m_Steps;
 
@@ -64,6 +64,8 @@ private:
 	PWMConfig m_Config;
 
 	uint32_t m_Channel;
+
+	bool m_Running;
 
 };
 

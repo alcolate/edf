@@ -25,6 +25,11 @@ extern "C" {
 
 #include "Driver.h"
 
+enum ADC_MODE
+{
+	INTERRUPT,
+	DMA,
+};
 typedef struct __ADCconfig
 {
 	uint8_t			Reserve[1];
@@ -43,8 +48,10 @@ extern DEV_HANDLE  ADC_8;
 
 bool ADC_Init(DEV_HANDLE ADC, ADCConfig* Config);
 bool ADC_Start(DEV_HANDLE ADC);
+bool ADC_Start_DMA(DEV_HANDLE ADC, uint16_t *Data, uint32_t DataLen);
 bool ADC_Stop(DEV_HANDLE ADC);
 uint32_t ADC_GetChannels(DEV_HANDLE ADC);
+ADC_MODE ADC_GetMode(DEV_HANDLE ADC);
 
 void ADC_Complete(DEV_HANDLE ADC, uint16_t Data);
 

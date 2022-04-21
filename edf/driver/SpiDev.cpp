@@ -19,86 +19,111 @@ Contact information:
 #include <string.h>
 #include <stdio.h>
 #include "SpiDev.h"
-
+#include "GPIODrv.h"
 
 namespace Edf
 {
 
 CSpiEvent::CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle, 	
-						uint8_t *Tx, uint32_t TxLen, uint8_t *Rx, uint32_t RxLen, bool Dynamic)
+						uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Dynamic)
 	: CDeviceEvent(Sig, SpiHandle, 0, Dynamic)
 {
-	m_Tx = m_Rx = NULL;
+	ASSERT(TxLen <= CSPI::BUFF_SIZE);
+	ASSERT(RxLen <= CSPI::BUFF_SIZE);
+
+	m_TxLen = TxLen;
+	m_RxLen = RxLen;
+
+	m_Tx = NULL;
 	if (TxLen)
 	{
 		m_Tx = new uint8_t[TxLen];
 		memcpy(m_Tx, Tx, TxLen);
 	}
-	if (RxLen)
-	{
-		m_Rx = new uint8_t[RxLen];
-		memcpy(m_Rx, Rx, RxLen);
-	}
+
 }
 
 
 CSpiEvent::~CSpiEvent()
 {
-	if (m_Rx)
-		delete [] m_Rx;
-
 	if (m_Tx)
 		delete [] m_Tx;
+
 }
 
-CSPI::CSPI(char* Name, DEV_HANDLE Spi) 
+CSPI::CSPI(char* Name, DEV_HANDLE Spi, DEV_HANDLE CS)
 	: CDevice(Name, Spi, EDeviceType::SPI, 1)
+	, m_IrqRecvEvent(SPI_RSP_SIG, Spi, BUFF_SIZE * 2, false)
 {
-	m_IrqRecvEvent = new  CDeviceEvent(SPI_RSP_SIG, m_HwHandle, 0, false);
-	ASSERT(m_IrqRecvEvent);	
+
+	m_CS = CS;
+	GPIO_Set(m_CS, GPIO_HIGH);
 
 	CDevKeeper::Instance()->RegDevice(this);
 }
 CSPI::~CSPI()
 {
-	delete [] m_IrqRecvEvent;
+
 }
 
 void CSPI::Initial(CActive* Owner)
 {
-	bool result = Spi_Init(m_HwHandle, &m_Config);
-	ASSERT(result);
+	//bool result = Spi_Init(m_HwHandle, &m_Config);
+	//ASSERT(result);
 
 	CDevice::Initial(Owner);
 }
+
 bool CSPI::Send(Event const* const e)
 {
 	CSpiEvent const *se = EventCast(CSpiEvent);
 	bool result = false;
 
-	if (se->m_TxLen && se->m_RxLen)
-	{
-		result = Spi_TransmitReceive(m_HwHandle, const_cast<uint8_t *>(se->m_Tx), se->m_TxLen,
-				const_cast<uint8_t *>(se->m_Rx), se->m_RxLen);
-	}
-	else if (se->m_TxLen)
-	{
-		result = Spi_Transmit(m_HwHandle, const_cast<uint8_t *>(se->m_Tx), se->m_TxLen);
-	}
-	else if (se->m_RxLen)
-	{
-		result = Spi_Receive(m_HwHandle, const_cast<uint8_t *>(se->m_Rx), se->m_RxLen);
-	}
+	memcpy(m_Tx, se->m_Tx, se->m_TxLen);
+	m_TxLen = se->m_TxLen;
+	m_RxLen = se->m_RxLen;
+
+	GPIO_Set(m_CS, GPIO_LOW);
+
+	result = Spi_TransmitReceive(m_HwHandle, m_Tx, m_Rx, se->m_TxLen + se->m_RxLen);
+
+//	if (se->m_TxLen && se->m_RxLen)
+//	{
+//		result = Spi_TransmitReceive(m_HwHandle, const_cast<uint8_t *>(se->m_Tx), se->m_TxLen,
+//				const_cast<uint8_t *>(se->m_Rx), se->m_RxLen);
+//	}
+//	else if (se->m_TxLen)
+//	{
+//		//result = Spi_Transmit(m_HwHandle, const_cast<uint8_t *>(se->m_Tx), se->m_TxLen);
+//	}
+//	else if (se->m_RxLen)
+//	{
+//		result = Spi_Receive(m_HwHandle, const_cast<uint8_t *>(se->m_Rx), se->m_RxLen);
+//	}
 
 	return result;
 }
+
+void CSPI::Send(uint8_t *Tx, uint8_t TxLen, uint8_t RxLen)
+{
+	ASSERT(TxLen <= BUFF_SIZE);
+	ASSERT(RxLen <= BUFF_SIZE);
+
+	CSpiEvent *se = new CSpiEvent(MAC_REQ_SIG, m_HwHandle, Tx, TxLen, RxLen);
+
+	Publish(se);
+}
+
 void CSPI::PostIrqRecvEvent()
 {
-	Publish(m_IrqRecvEvent, true);
+	m_IrqRecvEvent.Copy(m_Rx + m_TxLen, m_RxLen);
+	Publish(&m_IrqRecvEvent, true);
 }
 
 bool CSPI::MacCall(uint8_t *Data, uint32_t Len)
 {
+	GPIO_Set(m_CS, GPIO_HIGH);
+
 	return true;
 }
 } // namespace Edf
@@ -107,9 +132,9 @@ void Spi_SendComplete(DEV_HANDLE Spi)
 {
 	CDevKeeper::Instance()->SendComplete(Spi);
 }
-void Spi_Recv(DEV_HANDLE Spi, uint8_t* Data, uint32_t Len)
+void Spi_Recv(DEV_HANDLE Spi)
 {
-	CDevKeeper::Instance()->Receive(Spi, Data, Len);
+	CDevKeeper::Instance()->Receive(Spi, 0, 0);
 }
 
 

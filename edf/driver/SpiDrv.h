@@ -43,9 +43,9 @@ extern DEV_HANDLE  Spi_8;
 bool Spi_Init(DEV_HANDLE Spi, SpiConfig* Config);
 bool Spi_Transmit(DEV_HANDLE Spi, uint8_t* Data, uint32_t DataLen);
 bool Spi_Receive(DEV_HANDLE Spi, uint8_t* Data, uint32_t DataLen);
-bool Spi_TransmitReceive(DEV_HANDLE Spi, uint8_t* TxData, uint32_t TxDataLen, uint8_t* RxData, uint32_t RxDataLen);
+bool Spi_TransmitReceive(DEV_HANDLE Spi, uint8_t* TxData, uint8_t* RxData, uint8_t DataLen);
 void Spi_SendComplete(DEV_HANDLE Spi);
-void Spi_Recv(DEV_HANDLE Spi, uint8_t* Data, uint32_t Len);
+void Spi_Recv(DEV_HANDLE Spi);
 
 #ifdef __cplusplus
 }

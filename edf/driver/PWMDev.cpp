@@ -36,17 +36,17 @@ CPWMEvent::~CPWMEvent()
 
 CPWM::CPWM(char *Name, DEV_HANDLE PWM, uint32_t Channel)
 		: CDevice(Name, PWM, EDeviceType::PWM, 1)
+		  ,m_IrqRecvEvent(PWM_RSP_SIG, PWM, 0, false)
 {
 	m_Channel = Channel;
-	m_IrqRecvEvent = new  CPWMEvent(PWM_RSP_SIG, m_HwHandle, 0, false);
-	ASSERT(m_IrqRecvEvent);
+
+	m_Running = false;
 
 	CDevKeeper::Instance()->RegDevice(this);
 
 }
 CPWM::~CPWM()
 {
-	delete [] m_IrqRecvEvent;
 }
 
 void CPWM::Initial(CActive *Owner)
@@ -63,11 +63,11 @@ bool CPWM::Send(Event const* const e)
 	m_Steps = evt->m_Steps;
 	if (m_Steps != 0)
 	{
-		PWM_Start(m_HwHandle, m_Channel);
+		Start(m_Steps);
 	}
 	else
 	{
-		PWM_Stop(m_HwHandle, m_Channel);
+		Stop();
 		Publish(new CPWMEvent(PWM_RSP_SIG, m_HwHandle, m_Steps));
 	}
 
@@ -77,10 +77,12 @@ bool CPWM::Send(Event const* const e)
 
 bool CPWM::Start(uint32_t Steps)
 {
-	if (Steps == 0)
+	if (Steps == 0 || m_Running == true)
 	{
 		return false;
 	}
+
+	m_Running = true;
 
 	const float FreqS[Shift_Max + 1]={
 			1,
@@ -128,6 +130,7 @@ bool CPWM::Start(uint32_t Steps)
 }
 bool CPWM::Stop()
 {
+	m_Running = false;
 	return PWM_Stop(m_HwHandle, m_Channel);
 }
 
@@ -143,8 +146,8 @@ uint32_t CPWM::GetSteps()
 }
 void CPWM::PostIrqRecvEvent()
 {
-	m_IrqRecvEvent->m_Steps = m_Steps;
-	Publish(m_IrqRecvEvent, true);
+	m_IrqRecvEvent.m_Steps = m_Steps;
+	Publish(&m_IrqRecvEvent, true);
 }
 
 bool CPWM::MacCall(uint8_t *Data, uint32_t Len)
@@ -153,14 +156,15 @@ bool CPWM::MacCall(uint8_t *Data, uint32_t Len)
 
 	if (m_Steps == 0)
 	{
+		m_Running = false;
 		PWM_Stop(m_HwHandle, m_Channel);
 		return true;
 	}
 
 	if (m_Steps < m_StepShifts[m_ShiftIndex])
 	{
-		++ m_ShiftIndex;
-		PWM_SetPeriod(m_HwHandle, m_Channel, m_PeriodShifts[m_ShiftIndex], m_Duty);
+//		++ m_ShiftIndex;
+//		PWM_SetPeriod(m_HwHandle, m_Channel, m_PeriodShifts[m_ShiftIndex], m_Duty);
 	}
 
 	return false;

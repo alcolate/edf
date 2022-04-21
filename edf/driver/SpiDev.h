@@ -31,7 +31,7 @@ namespace Edf
 class CSPI : public CDevice
 {
 public:
-	CSPI(char* Name, DEV_HANDLE Spi);
+	CSPI(char* Name, DEV_HANDLE Spi, DEV_HANDLE CS);
 	~CSPI();
 
 	virtual void Initial(CActive* Owner) override;
@@ -39,12 +39,23 @@ public:
 	virtual void PostIrqRecvEvent() override;
 
 	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
+
+	void Send(uint8_t *Tx, uint8_t TxLen, uint8_t RxLen);
+
 protected:
 	virtual bool Send(Event const* const e) override;
 
 public:
 
-	CDeviceEvent* m_IrqRecvEvent;
+	CDeviceEvent m_IrqRecvEvent;
+
+	enum {BUFF_SIZE = 16};
+	uint8_t m_Tx[BUFF_SIZE * 2];
+	uint8_t m_Rx[BUFF_SIZE * 2];
+	uint8_t m_TxLen;
+	uint8_t m_RxLen;
+
+	DEV_HANDLE m_CS;
 
 	SpiConfig 	m_Config;
 
