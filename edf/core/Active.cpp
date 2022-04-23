@@ -60,18 +60,12 @@ void CActive::Start(uint32_t Priority, uint32_t StackSize, uint32_t EQSize)
 
 bool CActive::Post(Event const *const e, bool FromISR)
 {
-	//LOG_DEBUG("%s post sig = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
 	bool result = OS_QueueSend(Q(), e, FromISR);
 	ASSERT(result);
 	return result;
 }
 
 void CActive::Run(void)
-{
-	EventLoop();
-}
-
-void CActive::EventLoop()
 {
 	Event* e;
 	
@@ -82,7 +76,6 @@ void CActive::EventLoop()
 
 		if (OS_QueueReceive(this->m_Queue, &e, MAX_DELAY))
 		{			
-			//LOG_DEBUG("%s get event sig = %d, ref = %d\r\n", m_Name, e->Sig, e->RefCount);
 			this->RunState(e);
 
 			e->DecRef();
@@ -93,6 +86,7 @@ void CActive::EventLoop()
 bool CActive::DeferEvent(Event const* const e)
 {
 	ASSERT(e);
+	ASSERT(m_DQ);
 
 	bool result = m_DQ->Defer(e);
 
@@ -103,6 +97,8 @@ bool CActive::DeferEvent(Event const* const e)
 
 void CActive::FetchDeferedEvent()
 {
+	ASSERT(m_DQ);
+
 	const Event* e = m_DQ->Fetch();
 
 	if (e)
@@ -114,6 +110,7 @@ void CActive::FetchDeferedEvent()
 void CActive::ClearDeferedEvent()
 {
 	const Event* e;
+	ASSERT(m_DQ);
 
 	while ((e = m_DQ->Fetch()) != nullptr)
 	{

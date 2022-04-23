@@ -26,34 +26,29 @@ namespace Edf
 
 CSpiEvent::CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle, 	
 						uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Dynamic)
-	: CDeviceEvent(Sig, SpiHandle, 0, Dynamic)
+	: CDeviceEvent(Sig, SpiHandle, RxLen, Dynamic)
 {
-	ASSERT(TxLen <= CSPI::BUFF_SIZE);
-	ASSERT(RxLen <= CSPI::BUFF_SIZE);
+	ASSERT(TxLen <= CSpiEvent::MAX_SIZE);
+	ASSERT(RxLen <= CSpiEvent::MAX_SIZE);
 
 	m_TxLen = TxLen;
 	m_RxLen = RxLen;
 
-	m_Tx = NULL;
 	if (TxLen)
 	{
-		m_Tx = new uint8_t[TxLen];
 		memcpy(m_Tx, Tx, TxLen);
 	}
-
 }
 
 
 CSpiEvent::~CSpiEvent()
 {
-	if (m_Tx)
-		delete [] m_Tx;
 
 }
 
 CSPI::CSPI(char* Name, DEV_HANDLE Spi, DEV_HANDLE CS)
 	: CDevice(Name, Spi, EDeviceType::SPI, 1)
-	, m_IrqRecvEvent(SPI_RSP_SIG, Spi, BUFF_SIZE * 2, false)
+	, m_IrqRecvEvent(SPI_RSP_SIG, Spi, 0, 0, CSpiEvent::MAX_SIZE, false)
 {
 
 	m_CS = CS;
@@ -106,8 +101,8 @@ bool CSPI::Send(Event const* const e)
 
 void CSPI::Send(uint8_t *Tx, uint8_t TxLen, uint8_t RxLen)
 {
-	ASSERT(TxLen <= BUFF_SIZE);
-	ASSERT(RxLen <= BUFF_SIZE);
+	ASSERT(TxLen <= CSpiEvent::MAX_SIZE);
+	ASSERT(RxLen <= CSpiEvent::MAX_SIZE);
 
 	CSpiEvent *se = new CSpiEvent(MAC_REQ_SIG, m_HwHandle, Tx, TxLen, RxLen);
 

@@ -436,3 +436,58 @@ TEST(TestList, 5Items_2)
 
 }
 
+
+TEST(TestList, Sort1)
+{
+	CList<CSection> list;
+	CSection* pitem;
+	CSection item1(10);
+	CSection item2(20);
+	CSection item3(30);
+	CSection item4(40);
+	CSection item5(50);
+
+	auto sort = [&list](CSection& item)-> void {
+		list.AddSort(&item, [&item](CSection* Item) -> bool { return Item->m_Index < item.m_Index; });
+		list.ForEach([](CSection* s) -> void
+			{
+				std::cout << " index = " << s->m_Index << std::endl;
+			});
+		std::cout << std::endl;
+	};
+
+	sort(item1);
+	sort(item4);
+	sort(item2);
+	sort(item5);
+	sort(item3);
+
+}
+
+TEST(TestList, Sort2)
+{
+	CList<CSection> list;
+	CSection* pitem;
+	CSection item1(10);
+	CSection item2(20);
+	CSection item3(30);
+	CSection item4(40);
+	CSection item5(50);
+
+	auto sort = [&list](CSection& item)-> void {
+		list.AddSort(&item, [&item](CSection* Item) -> bool { return Item->m_Index > item.m_Index; });
+		list.ForEach([](CSection* s) -> void
+			{
+				std::cout << " index = " << s->m_Index << std::endl;
+			});
+		std::cout << std::endl;
+	};
+
+	sort(item1);
+	sort(item4);
+	sort(item2);
+	sort(item5);
+	sort(item3);
+
+}
+

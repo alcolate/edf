@@ -55,8 +55,6 @@ public:
 	void ClearDeferedEvent();
 
 protected:
-	void EventLoop(void);
-
 	virtual void RunState(Event const* const e) = 0;
 
 public:

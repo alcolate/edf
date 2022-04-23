@@ -47,11 +47,11 @@ protected:
 
 public:
 
-	CDeviceEvent m_IrqRecvEvent;
+	CSpiEvent m_IrqRecvEvent;
 
-	enum {BUFF_SIZE = 16};
-	uint8_t m_Tx[BUFF_SIZE * 2];
-	uint8_t m_Rx[BUFF_SIZE * 2];
+
+	uint8_t m_Tx[CSpiEvent::MAX_SIZE * 2];
+	uint8_t m_Rx[CSpiEvent::MAX_SIZE * 2];
 	uint8_t m_TxLen;
 	uint8_t m_RxLen;
 

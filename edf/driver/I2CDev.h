@@ -47,9 +47,8 @@ protected:
 public:
 
 	CI2CEvent m_IrqRecvEvent;
-
-	enum {BUFF_SIZE = 16};
-	uint8_t m_Buff[BUFF_SIZE];
+	
+	uint8_t m_Buff[CI2CEvent::MAX_SIZE];
 	uint8_t m_Slave;
 	uint8_t m_Reg;
 

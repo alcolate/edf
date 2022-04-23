@@ -27,7 +27,7 @@ namespace Edf
 class CDeviceEvent : public Event
 {
 public:
-	CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, bool Dynamic = true);
+	CDeviceEvent(Signals Sig, DEV_HANDLE HwHandle, uint32_t BuffSize, bool Dynamic = true);
 	virtual ~CDeviceEvent();
 
 	bool Copy(uint8_t *Data, uint32_t Len);
@@ -42,12 +42,14 @@ public:
 class CSpiEvent : public CDeviceEvent
 {
 public:
+	enum {MAX_SIZE = 16};
+public:
 	CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle,
 			uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Dynamic = true);
 
 	virtual ~CSpiEvent();
 
-	uint8_t *m_Tx;
+	uint8_t m_Tx[MAX_SIZE];
 	uint32_t m_TxLen;
 	uint32_t m_RxLen;
 };
@@ -61,6 +63,7 @@ public:
 		WRITE,
 		READ
 	};
+	enum {MAX_SIZE = 16};
 public:
 	CI2CEvent(Signals Sig, DEV_HANDLE I2C, uint8_t *Data, uint32_t DataLen, bool Dynamic = true);
 
@@ -106,12 +109,12 @@ public:
 		INTERRUPT,
 		DMA
 	};
+	enum {MAX_CHANNEL = 16};
 public:
 	CAdcEvent(Signals Sig, DEV_HANDLE ADC, bool Dynamic = true);
 
 	virtual ~CAdcEvent();
 
-	enum {MAX_CHANNEL = 16};
 	uint16_t m_Result[MAX_CHANNEL];
 	uint32_t m_ResLen;
 };

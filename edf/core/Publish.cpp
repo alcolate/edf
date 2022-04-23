@@ -49,102 +49,84 @@ public:
 class CPublisher
 {
 public:
-	static CPublisher *Instance();
+	static CPublisher * Instance()
+	{
+		static CPublisher puber;
+		return &puber;
+	}
 
-	void Subscribe(Signal Sig, CActive const * const Act);
+	void Subscribe(Signal Sig, CActive const * const Act)
+	{
+		OS_EnterCritical();
 
-	void UnSubscribe(Signal Sig, CActive const * const Act);
+		if (!m_Subs[Sig].IsExist([&Act](CSubscriber *Item) -> bool {return Item->m_Act == Act;}))
+		{
+			m_Subs[Sig].AddHead(new CSubscriber(Act, m_Subs[Sig].Head() ? m_Subs[Sig].Head()->m_Number : 0));
+		}	
+		
+		OS_ExitCritical();
 
-	void Publish(Event const * const e, bool FromISR = false);
+	}
+
+	void UnSubscribe(Signal Sig, CActive const * const Act)
+	{
+		OS_EnterCritical();
+
+		CSubscriber* Item = m_Subs[Sig].RemoveItem([&Act](CSubscriber* Item) -> bool {return Item->m_Act == Act; });
+
+		if (Item)
+		{
+			delete Item;
+		}
+		else
+		{
+			ASSERT(Item);
+		}
+		
+		OS_ExitCritical();
+	}
+
+	void Publish(Event const * const e, bool FromISR = false)
+	{
+		CSubscriber *head = m_Subs[e->Sig].Head();
+		
+		if (head)
+		{		
+			const_cast<Event *>(e)->InitRef(head->m_Number, FromISR);
+			m_Subs[e->Sig].ForEach(
+				[&e, &FromISR](CSubscriber* suber)-> void {
+					suber->Update(e, FromISR);
+				}
+			);
+		}
+		else
+		{
+			const_cast<Event*>(e)->DecRef(FromISR);
+		}	
+
+	}	
 
 private:
-	CPublisher();
-	~CPublisher();
+	CPublisher()
+	{
+		this->m_Subs = new CList <CSubscriber> [MAX_SIG] ;
+	}	
+	~CPublisher()
+	{
+		for (uint32_t i = 0; i < MAX_SIG; i ++)
+		{
+			CSubscriber* p;
+			while (p = m_Subs[i].RemoveHead())
+			{
+				delete p;
+			}
+		}
+	}
+
 private:
 	CList <CSubscriber> *m_Subs;
 
 };
-
-} // namespace Edf
-
-namespace Edf
-{
-CPublisher * CPublisher::Instance()
-{
-	static CPublisher puber;
-	return &puber;
-}
-
-void CPublisher::Subscribe(Signal Sig, CActive const * const Act)
-{
-	OS_EnterCritical();
-
-	if (!m_Subs[Sig].IsExist([&Act](CSubscriber *Item) -> bool {return Item->m_Act == Act;}))
-	{
-		m_Subs[Sig].AddHead(new CSubscriber(Act, m_Subs[Sig].Head() ? m_Subs[Sig].Head()->m_Number : 0));
-	}	
-	
-	OS_ExitCritical();
-
-}
-
-void CPublisher::UnSubscribe(Signal Sig, CActive const * const Act)
-{
-	OS_EnterCritical();
-
-	CSubscriber* Item = m_Subs[Sig].RemoveItem([&Act](CSubscriber* Item) -> bool {return Item->m_Act == Act; });
-
-	if (Item)
-	{
-		delete Item;
-	}
-	else
-	{
-		ASSERT(Item);
-	}
-	
-	OS_ExitCritical();
-}
-
-void CPublisher::Publish(Event const * const e, bool FromISR)
-{
-	CSubscriber *head = m_Subs[e->Sig].Head();
-	
-	if (head)
-	{		
-		const_cast<Event *>(e)->InitRef(head->m_Number, FromISR);
-		m_Subs[e->Sig].ForEach(
-			[&e, &FromISR](CSubscriber* suber)-> void {
-				suber->Update(e, FromISR);
-			}
-		);
-	}
-	else
-	{
-		const_cast<Event*>(e)->DecRef(FromISR);
-	}	
-
-}
-
-
-CPublisher::CPublisher()
-{
-	this->m_Subs = new CList <CSubscriber> [MAX_SIG] ;
-}
-
-CPublisher::~CPublisher()
-{
-	for (uint32_t i = 0; i < MAX_SIG; i ++)
-	{
-		CSubscriber* p;
-		while ((p = m_Subs[i].RemoveHead()) != nullptr)
-		{
-			delete p;
-		}
-	}
-}
-
-
 
 } // namespace Edf
 
