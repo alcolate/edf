@@ -39,7 +39,7 @@ Contact information:
 #define LOG_ERROR				OS_LOG
 #define LOG_DEBUG				OS_LOG
 #define LOG_WARNING				OS_LOG
-#define LOG_INFO				OS_LOG			
+#define LOG_INFO				OS_LOG
 
 #define LOG_POS					OS_LOG("%s(%d)\r\n", __FUNCTION__, __LINE__)
 
@@ -57,3 +57,8 @@ uint32_t OS_EnterCritical(bool FromISR = false);
 void OS_ExitCritical(uint32_t Flag = 0, bool FromISR = false);
 
 void OS_Start(void);
+
+uint32_t OS_Tick(void);
+
+void OS_MemoryUsage(size_t &Free, size_t &Minimum);
+

@@ -29,7 +29,7 @@ namespace Edf
 class CPWM : public CDevice
 {
 public:
-	CPWM(char *Name, DEV_HANDLE PWM, uint32_t Channel);
+	CPWM(char *Name, DEV_HANDLE PWM, uint32_t Channel, bool EnTune = false);
 	~CPWM();
 
 	virtual void Initial(CActive *Owner) override;
@@ -64,6 +64,8 @@ private:
 	PWMConfig m_Config;
 
 	uint32_t m_Channel;
+
+	bool m_EnTune;
 
 	bool m_Running;
 

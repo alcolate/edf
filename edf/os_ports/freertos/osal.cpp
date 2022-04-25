@@ -98,6 +98,17 @@ void OS_Start(void)
 {
 	vTaskStartScheduler();
 }
+
+uint32_t OS_Tick(void)
+{
+	return xTaskGetTickCount();
+}
+
+void OS_MemoryUsage(size_t &Free, size_t &Minimum)
+{
+	Free = xPortGetFreeHeapSize();
+	Minimum = xPortGetMinimumEverFreeHeapSize();
+}
 /*..........................................................................*/
 
 extern void TimeEvent_Tick(bool FromISR);

@@ -21,6 +21,7 @@ Contact information:
 #include "Link.h"
 
 #define TRACE_STATE		0
+#define STATE_HISTORY   0
 
 namespace Edf
 {
@@ -34,11 +35,14 @@ public:
 	}
 	~CStateMachine()
 	{
+#if (STATE_HISTORY == 1)
 		ClearHistory();
+#endif
 	}
 
 	using STATE = void (T::*)(Event const* const e);
 
+#if (STATE_HISTORY == 1)
 	void Push(STATE State)
 	{
 		m_Queue.PushTail(new STATE(State));
@@ -66,7 +70,7 @@ public:
 	{
 		while (History() != 0);
 	}
-
+#endif
 	void RunState(Event const* const e)
 	{
 		(m_Obj->*m_State)(e);
@@ -83,7 +87,9 @@ public:
 
 	void Trans(STATE State, const char* Name)
 	{
+#if (STATE_HISTORY == 1)
 		Push(m_State);
+#endif
 		this->Dispatcher(&ExitEvent);
 		m_State = State;
 		m_StateName = Name;
@@ -99,6 +105,17 @@ public:
 	{
 		return m_State;
 	}
+
+	void StashState()
+	{
+		m_StashedState = m_State;
+	}
+
+	STATE StashStatePop()
+	{
+		return m_StashedState;
+	}
+
 
 	void Dispatcher(Event const* const e)
 	{
@@ -135,6 +152,7 @@ public:
 private:
 	STATE  m_State;
 	const char* m_StateName;
+	STATE  m_StashedState;
 	T* m_Obj;
 	CDeQueue<STATE> m_Queue;
 	enum { MAX_ITEMS = 10 };
@@ -164,5 +182,15 @@ private:
 #define IN_STATE(state) \
 			this->m_StateMachine.InState(State)
 
+#if (STATE_HISTORY == 1)
 #define HISTORY() \
 			this->m_StateMachine.History()
+#endif
+
+#define STASH_STATE()  \
+			this->m_StateMachine.StashState()
+
+#define STASH_STATE_POP()  \
+			this->m_StateMachine.StashStatePop()
+
+

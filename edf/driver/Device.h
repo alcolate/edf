@@ -209,7 +209,8 @@ private:
 
 	CDevKeeper();
 
-	CList<CDevice> m_Device;
+	enum {DEV_MAX_NUM = 30};
+	CDevice *m_Device[DEV_MAX_NUM];
 
 public:
 	DEF_STATEMACHINE(CDevKeeper);

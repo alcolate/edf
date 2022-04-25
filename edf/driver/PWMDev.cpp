@@ -34,13 +34,15 @@ CPWMEvent::~CPWMEvent()
 
 }
 
-CPWM::CPWM(char *Name, DEV_HANDLE PWM, uint32_t Channel)
+CPWM::CPWM(char *Name, DEV_HANDLE PWM, uint32_t Channel, bool EnTune)
 		: CDevice(Name, PWM, EDeviceType::PWM, 1)
 		  ,m_IrqRecvEvent(PWM_RSP_SIG, PWM, 0, false)
 {
 	m_Channel = Channel;
 
 	m_Running = false;
+
+	m_EnTune = EnTune;
 
 	CDevKeeper::Instance()->RegDevice(this);
 
@@ -84,6 +86,37 @@ bool CPWM::Start(uint32_t Steps)
 
 	m_Running = true;
 
+	m_Steps = Steps;
+
+	m_StepShifts[0] = Steps;
+
+	m_StepShifts[Shift_Max * 2] = 0;
+
+	uint32_t StepShift = Steps / 8 / Shift_Max;
+
+	for (uint32_t i = 0; i < Shift_Max; i ++)
+	{
+		m_StepShifts[i] = Steps - i * StepShift;
+		m_StepShifts[Shift_Max * 2 - i] = i * StepShift;
+	}
+	m_StepShifts[Shift_Max] = m_StepShifts[Shift_Max + 1] + StepShift;
+
+	m_ShiftIndex = 0;
+
+	if (m_EnTune)
+	{
+		PWM_SetPeriod(m_HwHandle, m_Channel, m_PeriodShifts[m_ShiftIndex], m_Duty);
+	}
+	return PWM_Start(m_HwHandle, m_Channel);
+}
+bool CPWM::Stop()
+{
+	m_Running = false;
+	return PWM_Stop(m_HwHandle, m_Channel);
+}
+
+bool CPWM::SetPeriod(uint16_t Period, uint16_t Duty)
+{
 	const float FreqS[Shift_Max + 1]={
 			1,
 			0.98201379,
@@ -97,48 +130,20 @@ bool CPWM::Start(uint32_t Steps)
 			0.01798621,
 			0
 	};
-	uint16_t MaxPeriod = m_Period * Shift_Max;
 
-	m_Steps = Steps;
+	m_Period = Period;
+	m_Duty = Duty;
+
+	uint16_t Times = 2;
+	uint16_t MaxPeriod = m_Period * Times;
 
 	uint16_t Diff = MaxPeriod - m_Period;
-//{260, 255, 248, 232, 197, 143, 88, 53, 37, 30, 26, 30, 37, 53, 88, 143, 197, 232, 248, 255, 260}
 	for (int i = 0; i <= Shift_Max; i ++)
 	{
 		m_PeriodShifts[Shift_Max * 2 - i] = m_PeriodShifts[i] = m_Period + Diff * FreqS[i];
 	}
 
-	m_StepShifts[0] = Steps;
-
-	m_StepShifts[Shift_Max * 2] = 0;
-
-	uint32_t StepShift = Steps / 3 / Shift_Max;
-
-	for (uint32_t i = 0; i < Shift_Max; i ++)
-	{
-		m_StepShifts[i] = Steps - i * StepShift;
-		m_StepShifts[Shift_Max * 2 - i] = i * StepShift;
-	}
-// {6400, 6187, 5974, 5761, 5548, 5335, 5122, 4909, 4696, 4483, 2130, 1917, 1704, 1491, 1278, 1065, 852, 639, 426, 213, 0}
-	m_StepShifts[Shift_Max] = m_StepShifts[Shift_Max + 1] + StepShift;
-
-	m_ShiftIndex = 0;
-
-	PWM_SetPeriod(m_HwHandle, m_Channel, m_PeriodShifts[m_ShiftIndex], m_Duty);
-
-	return PWM_Start(m_HwHandle, m_Channel);
-}
-bool CPWM::Stop()
-{
-	m_Running = false;
-	return PWM_Stop(m_HwHandle, m_Channel);
-}
-
-bool CPWM::SetPeriod(uint16_t Period, uint16_t Duty)
-{
-	m_Period = Period;
-	m_Duty = Duty;
-	return PWM_SetPeriod(m_HwHandle, m_Channel, Period, Duty);
+	return PWM_SetPeriod(m_HwHandle, m_Channel, m_Period, Duty);
 }
 uint32_t CPWM::GetSteps()
 {
@@ -160,11 +165,13 @@ bool CPWM::MacCall(uint8_t *Data, uint32_t Len)
 		PWM_Stop(m_HwHandle, m_Channel);
 		return true;
 	}
-
-	if (m_Steps < m_StepShifts[m_ShiftIndex])
+	if (m_EnTune)
 	{
-//		++ m_ShiftIndex;
-//		PWM_SetPeriod(m_HwHandle, m_Channel, m_PeriodShifts[m_ShiftIndex], m_Duty);
+		if (m_Steps < m_StepShifts[m_ShiftIndex])
+		{
+			++ m_ShiftIndex;
+			PWM_SetPeriod(m_HwHandle, m_Channel, m_PeriodShifts[m_ShiftIndex], m_Duty);
+		}
 	}
 
 	return false;

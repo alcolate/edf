@@ -165,6 +165,7 @@ void CDevice::RecycleEvent(Event const* const e)
 
 CDevKeeper::CDevKeeper() : CActive((char*)"DevKeeper")
 {
+	memset(m_Device, 0, sizeof(m_Device));
 	Edf::Subscribe(MAC_REQ_SIG, this);
 	Edf::Subscribe(HW_OUT_COMPLETE_SIG, this);
 }
@@ -186,16 +187,36 @@ void CDevKeeper::RegDevice(CDevice* Device)
 void CDevKeeper::AddDevice(CDevice* Device)
 {
 	OS_EnterCritical();
-	m_Device.AddHead(Device);
+	uint32_t i;
+
+	for (i = 0; i < DEV_MAX_NUM; i ++)
+	{
+		if (m_Device[i] == 0)
+		{
+			m_Device[i] = Device;
+			break;
+		}
+	}
+
+	ASSERT(i < DEV_MAX_NUM);
+
 	OS_ExitCritical();
 }
 
 CDevice* CDevKeeper::GetDevice(DEV_HANDLE DevHandle)
 {	
-	return m_Device.FindItem([&DevHandle](CDevice *Dev)-> bool
+	CDevice *Device = NULL;
+
+	for (uint32_t i = 0; i < DEV_MAX_NUM; i ++)
+	{
+		if (m_Device[i]->m_HwHandle == DevHandle)
 		{
-			return (Dev->m_HwHandle == DevHandle);
-		});
+			Device = m_Device[i];
+			break;
+		}
+	}
+
+	return Device;
 }
 
 void CDevKeeper::Initial()
@@ -220,9 +241,18 @@ void CDevKeeper::S_Run(Event const* const e)
 
 CDevice * CDevKeeper::GetDevice(char* Name, EDeviceType Type)
 {
-	return m_Device.FindItem([&Name, &Type](CDevice *Dev) -> bool {
-				return (strcmp(Name, Dev->m_Name) == 0 && Dev->m_Type == Type);
-			});
+	CDevice *Device = NULL;
+
+	for (uint32_t i = 0; i < DEV_MAX_NUM; i ++)
+	{
+		if (strcmp(Name, m_Device[i]->m_Name) == 0 && m_Device[i]->m_Type == Type)
+		{
+			Device = m_Device[i];
+			break;
+		}
+	}
+
+	return Device;
 }
 
 void CDevKeeper::SendComplete(DEV_HANDLE DevHandle)
