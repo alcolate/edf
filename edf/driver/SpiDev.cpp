@@ -25,8 +25,8 @@ namespace Edf
 {
 
 CSpiEvent::CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle, 	
-						uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Dynamic)
-	: CDeviceEvent(Sig, SpiHandle, RxLen, Dynamic)
+						uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Releasable)
+	: CDeviceEvent(Sig, SpiHandle, RxLen, Releasable)
 {
 	ASSERT(TxLen <= CSpiEvent::MAX_SIZE);
 	ASSERT(RxLen <= CSpiEvent::MAX_SIZE);
@@ -125,11 +125,11 @@ bool CSPI::MacCall(uint8_t *Data, uint32_t Len)
 
 void Spi_SendComplete(DEV_HANDLE Spi)
 {
-	CDevKeeper::Instance()->SendComplete(Spi);
+	Edf::CDevKeeper::Instance()->SendComplete(Spi);
 }
 void Spi_Recv(DEV_HANDLE Spi)
 {
-	CDevKeeper::Instance()->Receive(Spi, 0, 0);
+	Edf::CDevKeeper::Instance()->Receive(Spi, 0, 0);
 }
 
 

@@ -27,7 +27,7 @@ namespace Edf
 class CDeviceEvent : public Event
 {
 public:
-	CDeviceEvent(Signals Sig, DEV_HANDLE HwHandle, uint32_t BuffSize, bool Dynamic = true);
+	CDeviceEvent(Signals Sig, DEV_HANDLE HwHandle, uint32_t BuffSize, bool Releasable = true);
 	virtual ~CDeviceEvent();
 
 	bool Copy(uint8_t *Data, uint32_t Len);
@@ -45,7 +45,7 @@ public:
 	enum {MAX_SIZE = 16};
 public:
 	CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle,
-			uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Dynamic = true);
+			uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Releasable = true);
 
 	virtual ~CSpiEvent();
 
@@ -65,7 +65,7 @@ public:
 	};
 	enum {MAX_SIZE = 16};
 public:
-	CI2CEvent(Signals Sig, DEV_HANDLE I2C, uint8_t *Data, uint32_t DataLen, bool Dynamic = true);
+	CI2CEvent(Signals Sig, DEV_HANDLE I2C, uint8_t *Data, uint32_t DataLen, bool Releasable = true);
 
 	virtual ~CI2CEvent();
 
@@ -77,7 +77,7 @@ public:
 class CPWMEvent : public CDeviceEvent
 {
 public:
-	CPWMEvent(Signals Sig, DEV_HANDLE PWM, uint32_t Steps, bool Dynamic = true);
+	CPWMEvent(Signals Sig, DEV_HANDLE PWM, uint32_t Steps, bool Releasable = true);
 
 	virtual ~CPWMEvent();
 
@@ -89,12 +89,12 @@ class CGPIOEvent : public CDeviceEvent
 public:
 	enum MODE
 	{
-		HIGH,
 		LOW,
+		HIGH,
 		TOGGLE,
 	};
 public:
-	CGPIOEvent(Signals Sig, DEV_HANDLE GPIO, MODE Mode, bool Dynamic = true);
+	CGPIOEvent(Signals Sig, DEV_HANDLE GPIO, MODE Mode, bool Releasable = true);
 
 	virtual ~CGPIOEvent();
 
@@ -111,7 +111,7 @@ public:
 	};
 	enum {MAX_CHANNEL = 16};
 public:
-	CAdcEvent(Signals Sig, DEV_HANDLE ADC, bool Dynamic = true);
+	CAdcEvent(Signals Sig, DEV_HANDLE ADC, bool Releasable = true);
 
 	virtual ~CAdcEvent();
 
@@ -120,7 +120,7 @@ public:
 };
 
 
-using MACCALLBACK = bool (*)(uint8_t* Buff, uint16_t& BuffSize, uint16_t& BuffCount, uint8_t *Data, uint32_t Len);
+using MACCALLBACK = bool (*)(uint8_t* Buff, const uint16_t& BuffSize, uint16_t& BuffCount, uint8_t *Data, uint32_t Len);
 
 enum class EDeviceType
 {
@@ -190,6 +190,8 @@ public:
 
 	static CDevKeeper* Instance();
 
+	virtual void Start() override;
+
 	void RegDevice(CDevice* Device);
 
 	virtual void Initial() override;
@@ -209,8 +211,7 @@ private:
 
 	CDevKeeper();
 
-	enum {DEV_MAX_NUM = 30};
-	CDevice *m_Device[DEV_MAX_NUM];
+	CList<CDevice> m_Device;
 
 public:
 	DEF_STATEMACHINE(CDevKeeper);

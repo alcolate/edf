@@ -23,8 +23,8 @@ Contact information:
 namespace Edf
 {
 
-CPWMEvent::CPWMEvent(Signals Sig, DEV_HANDLE PWM, uint32_t Steps, bool Dynamic)
-	: CDeviceEvent(Sig, PWM, 0, Dynamic)
+CPWMEvent::CPWMEvent(Signals Sig, DEV_HANDLE PWM, uint32_t Steps, bool Releasable)
+	: CDeviceEvent(Sig, PWM, 0, Releasable)
 {
 	m_Steps = Steps;
 }
@@ -182,5 +182,5 @@ bool CPWM::MacCall(uint8_t *Data, uint32_t Len)
 
 void PWM_Complete(DEV_HANDLE PWM)
 {
-	CDevKeeper::Instance()->Receive(PWM, NULL, 0);
+	Edf::CDevKeeper::Instance()->Receive(PWM, NULL, 0);
 }

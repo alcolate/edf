@@ -162,7 +162,7 @@ private:
 
 #define DEF_STATEMACHINE(T) \
 		Edf::CStateMachine<T> m_StateMachine; \
-		virtual void RunState(Event const * const e)\
+		virtual void RunState(Edf::Event const * const e)\
 		{\
 			this->m_StateMachine.Dispatcher(e);\
 		}

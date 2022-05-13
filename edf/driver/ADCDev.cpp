@@ -23,8 +23,8 @@ Contact information:
 namespace Edf
 {
 
-CAdcEvent::CAdcEvent(Signals Sig, DEV_HANDLE ADC, bool Dynamic)
-	: CDeviceEvent(Sig, ADC, 0, Dynamic)
+CAdcEvent::CAdcEvent(Signals Sig, DEV_HANDLE ADC, bool Releasable)
+	: CDeviceEvent(Sig, ADC, 0, Releasable)
 {
 
 }
@@ -100,5 +100,5 @@ bool CAdc::MacCall(uint8_t *Data, uint32_t Len)
 
 void ADC_Complete(DEV_HANDLE ADC, uint16_t Data)
 {
-	CDevKeeper::Instance()->Receive(ADC, (uint8_t *)&Data, 2);
+	Edf::CDevKeeper::Instance()->Receive(ADC, (uint8_t *)&Data, 2);
 }

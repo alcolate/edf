@@ -39,7 +39,7 @@ CActive::~CActive()
 
 void CActive::Start()
 {
-	Start(m_Priority, m_StackSize, EQ_SIZE);
+	Start(m_Priority, m_StackSize, DEF_EQ_SIZE);
 }
 
 void CActive::Start(uint32_t Priority, uint32_t StackSize, uint32_t EQSize)
@@ -103,7 +103,10 @@ void CActive::FetchDeferedEvent()
 
 	if (e)
 	{
-		Post(e);
+		if (!Post(e))
+		{
+			const_cast<Event *>(e)->DecRef();
+		}
 	}
 }
 

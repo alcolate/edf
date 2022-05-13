@@ -115,11 +115,7 @@ private:
 	{
 		for (uint32_t i = 0; i < MAX_SIG; i ++)
 		{
-			CSubscriber* p;
-			while (p = m_Subs[i].RemoveHead())
-			{
-				delete p;
-			}
+			for (CSubscriber* p = NULL; (p = m_Subs[i].RemoveHead()); delete p);
 		}
 	}
 

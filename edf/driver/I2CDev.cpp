@@ -24,8 +24,8 @@ Contact information:
 namespace Edf
 {
 
-CI2CEvent::CI2CEvent(Signals Sig, DEV_HANDLE I2C, uint8_t *Data, uint32_t DataLen, bool Dynamic)
-		: CDeviceEvent(Sig, I2C, DataLen, Dynamic)
+CI2CEvent::CI2CEvent(Signals Sig, DEV_HANDLE I2C, uint8_t *Data, uint32_t DataLen, bool Releasable)
+		: CDeviceEvent(Sig, I2C, DataLen, Releasable)
 {
 	ASSERT(DataLen <= CI2CEvent::MAX_SIZE);
 	Copy(Data, DataLen);
@@ -116,19 +116,26 @@ void CI2C::PostIrqRecvEvent()
 bool CI2C::MacCall(uint8_t *Data, uint32_t Len)
 {
 	ASSERT(Len <= m_IrqRecvEvent.m_Size);
-	m_IrqRecvEvent.Copy(Data, Len);
+	if (Len)
+	{
+		m_IrqRecvEvent.Copy(Data, Len);
+	}
+	else
+	{
+		m_IrqRecvEvent.m_DataLen = 0;
+	}
 	return true;
 }
 } // namespace Edf
 
 void I2C_SendComplete(DEV_HANDLE I2C)
 {
-	CDevKeeper::Instance()->SendComplete(I2C);
+	Edf::CDevKeeper::Instance()->SendComplete(I2C);
 }
 
 void I2C_Recv(DEV_HANDLE I2C, uint8_t* Data, uint32_t Len)
 {
-	CDevKeeper::Instance()->Receive(I2C, Data, Len);
+	Edf::CDevKeeper::Instance()->Receive(I2C, Data, Len);
 }
 
 

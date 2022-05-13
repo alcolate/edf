@@ -30,17 +30,18 @@ namespace Edf
 #if (MAX_PRIORITIES < 5)
 	#error "The maximum priority must be greater than 5"
 #endif
-constexpr uint32_t DEF_PRIOITY = (MAX_PRIORITIES - 5);
 
 class CActive
 {
 public:
+	static constexpr uint32_t DEF_PRIOITY = (MAX_PRIORITIES - 5);
+	static constexpr uint32_t DEF_EQ_SIZE = 20;
+	static constexpr uint32_t DEF_STACK_SIZE = MINIMAL_STACK_SIZE;
+public:
 	CActive(char* Name, uint32_t DQSize = 0);
 	virtual ~CActive();
 
-	void Start();
-
-	void Start(uint32_t Priority, uint32_t StackSize, uint32_t EQSize);
+	virtual void Start();
 
 	bool Post(Event const *const e, bool FromISR = false);
 
@@ -57,6 +58,7 @@ public:
 protected:
 	virtual void RunState(Event const* const e) = 0;
 
+	void Start(uint32_t Priority, uint32_t StackSize, uint32_t EQSize);
 public:
 	Q_HANDLE Q() const
 	{
@@ -75,7 +77,7 @@ private:
     uint32_t m_Priority;
 	uint32_t m_StackSize;
 
-	enum {EQ_SIZE = 20};
+
 
 };
 

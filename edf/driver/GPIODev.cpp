@@ -23,8 +23,8 @@ Contact information:
 namespace Edf
 {
 
-CGPIOEvent::CGPIOEvent(Signals Sig, DEV_HANDLE GPIO, MODE Mode, bool Dynamic)
-	: CDeviceEvent(Sig, GPIO, 0, Dynamic)
+CGPIOEvent::CGPIOEvent(Signals Sig, DEV_HANDLE GPIO, MODE Mode, bool Releasable)
+	: CDeviceEvent(Sig, GPIO, 0, Releasable)
 {
 	m_Mode = Mode;
 }
@@ -106,5 +106,5 @@ bool CGPIO::MacCall(uint8_t *Data, uint32_t Len)
 
 void GPIO_Complete(DEV_HANDLE GPIO)
 {
-	CDevKeeper::Instance()->Receive(GPIO, NULL, 0);
+	Edf::CDevKeeper::Instance()->Receive(GPIO, NULL, 0);
 }

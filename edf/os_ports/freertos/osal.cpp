@@ -24,7 +24,7 @@ static Q_HANDLE OS_QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
 
 static void ThreadExe(void *p)
 {
-    (static_cast<CActive*>(p))->Run();
+    (static_cast<Edf::CActive*>(p))->Run();
 }
 
 T_HANDLE OS_TaskCreate(    const char * const pcName,
@@ -69,7 +69,6 @@ bool OS_QueueSend(Q_HANDLE q, void const * const p, bool FromISR)
 	{
 		status = xQueueSend(q, (void *)&p, (TickType_t)0);
 	}
-    configASSERT(status == pdTRUE);
 
     return (status == pdTRUE);
 }

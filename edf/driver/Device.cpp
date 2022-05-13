@@ -20,7 +20,10 @@ Contact information:
 #include <stdio.h>
 #include "Device.h"
 
-CDeviceEvent::CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, bool Dynamic) : Event(Sig, Dynamic)
+namespace Edf
+{
+
+CDeviceEvent::CDeviceEvent(Signals Sig, DEV_HANDLE Device_H, uint32_t BuffSize, bool Releasable) : Event(Sig, Releasable)
 {
 	this->m_HwHandle = Device_H;
 	this->m_Size = BuffSize;
@@ -165,7 +168,6 @@ void CDevice::RecycleEvent(Event const* const e)
 
 CDevKeeper::CDevKeeper() : CActive((char*)"DevKeeper")
 {
-	memset(m_Device, 0, sizeof(m_Device));
 	Edf::Subscribe(MAC_REQ_SIG, this);
 	Edf::Subscribe(HW_OUT_COMPLETE_SIG, this);
 }
@@ -187,37 +189,24 @@ void CDevKeeper::RegDevice(CDevice* Device)
 void CDevKeeper::AddDevice(CDevice* Device)
 {
 	OS_EnterCritical();
-	uint32_t i;
-
-	for (i = 0; i < DEV_MAX_NUM; i ++)
-	{
-		if (m_Device[i] == 0)
-		{
-			m_Device[i] = Device;
-			break;
-		}
-	}
-
-	ASSERT(i < DEV_MAX_NUM);
-
+	m_Device.AddHead(Device);
 	OS_ExitCritical();
 }
 
 CDevice* CDevKeeper::GetDevice(DEV_HANDLE DevHandle)
 {	
-	CDevice *Device = NULL;
-
-	for (uint32_t i = 0; i < DEV_MAX_NUM; i ++)
-	{
-		if (m_Device[i]->m_HwHandle == DevHandle)
+	return m_Device.FindItem([&DevHandle](CDevice *Dev)-> bool
 		{
-			Device = m_Device[i];
-			break;
-		}
-	}
-
-	return Device;
+			return (Dev->m_HwHandle == DevHandle);
+		});
 }
+
+
+void CDevKeeper::Start()
+{
+	CActive::Start(DEF_PRIOITY, DEF_STACK_SIZE, DEF_EQ_SIZE * 3);
+}
+
 
 void CDevKeeper::Initial()
 {
@@ -241,18 +230,9 @@ void CDevKeeper::S_Run(Event const* const e)
 
 CDevice * CDevKeeper::GetDevice(char* Name, EDeviceType Type)
 {
-	CDevice *Device = NULL;
-
-	for (uint32_t i = 0; i < DEV_MAX_NUM; i ++)
-	{
-		if (strcmp(Name, m_Device[i]->m_Name) == 0 && m_Device[i]->m_Type == Type)
-		{
-			Device = m_Device[i];
-			break;
-		}
-	}
-
-	return Device;
+	return m_Device.FindItem([&Name, &Type](CDevice *Dev) -> bool {
+				return (strcmp(Name, Dev->m_Name) == 0 && Dev->m_Type == Type);
+			});
 }
 
 void CDevKeeper::SendComplete(DEV_HANDLE DevHandle)
@@ -275,3 +255,4 @@ void CDevKeeper::Receive(DEV_HANDLE DevHandle, uint8_t* Data, uint32_t Len)
 	}
 }
 
+}

@@ -84,10 +84,10 @@ bool CSerial::MacCall(uint8_t *Data, uint32_t Len)
 
 void Uart_SendComplete(DEV_HANDLE Uart)
 {
-	CDevKeeper::Instance()->SendComplete(Uart);
+	Edf::CDevKeeper::Instance()->SendComplete(Uart);
 }
 void Uart_Recv(DEV_HANDLE Uart, uint8_t Data)
 {
-	CDevKeeper::Instance()->Receive(Uart, &Data, 1);
+	Edf::CDevKeeper::Instance()->Receive(Uart, &Data, 1);
 }
 

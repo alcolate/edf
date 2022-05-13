@@ -77,11 +77,11 @@ bool CCan::MacCall(uint8_t *Data, uint32_t Len)
 
 void Can_SendComplete(DEV_HANDLE Can)
 {
-	CDevKeeper::Instance()->SendComplete(Can);
+	Edf::CDevKeeper::Instance()->SendComplete(Can);
 }
 void Can_Recv(DEV_HANDLE Can, uint8_t* Data, uint32_t Len)
 {
-	CDevKeeper::Instance()->Receive(Can, Data, Len);
+	Edf::CDevKeeper::Instance()->Receive(Can, Data, Len);
 }
 
 

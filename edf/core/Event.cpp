@@ -21,7 +21,7 @@ Contact information:
 namespace Edf
 {
 
-Event::Event(Signal s, bool DynAlloc) : Sig(s), RefCount(0), DynamicAlloc(DynAlloc), Freeing(false)
+Event::Event(Signal s, bool Releasable) : Sig(s), RefCount(0), Releasable(Releasable), Freeing(false)
 {
 
 }
@@ -31,7 +31,7 @@ Event::~Event()
 }
 void Event::InitRef(uint32_t Ref, bool FromISR)
 {	
-	if (DynamicAlloc)
+	if (Releasable)
 	{
 		uint32_t flag = OS_EnterCritical(FromISR);
 		ASSERT(RefCount == 0);
@@ -41,7 +41,7 @@ void Event::InitRef(uint32_t Ref, bool FromISR)
 }
 void Event::IncRef(bool FromISR)
 {
-	if (DynamicAlloc)
+	if (Releasable)
 	{        
 		uint32_t flag = OS_EnterCritical(FromISR);
 		++ RefCount;
@@ -52,7 +52,7 @@ void Event::DecRef(bool FromISR)
 {
 	bool ToFree = false;
 	
-	if (DynamicAlloc)
+	if (Releasable)
 	{
 		uint32_t flag = OS_EnterCritical(FromISR);
 		if (RefCount)

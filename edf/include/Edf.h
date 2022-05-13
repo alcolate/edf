@@ -20,7 +20,5 @@ Contact information:
 
 #include "../core/Active.h"
 
-using namespace Edf;
-
 
 
