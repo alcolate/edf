@@ -34,19 +34,20 @@ CTimeEvent::CTimeEvent(Signal Sig, CActive *Act):Event(Sig, false)
 {
 	ASSERT(Act);
 	this->m_Act = Act;
-	this->m_Timeout = NEVER;
-	this->m_Interval = NEVER;
+	this->m_StartPoint = NEVER;
+	this->m_Period = NEVER;
 	this->m_Paused = true;
 }
 
-void CTimeEvent::Start(uint32_t Timeout, uint32_t Interval)
+void CTimeEvent::Start(uint32_t StartPoint, uint32_t Period)
 {
 	OS_EnterCritical();
 	GTimer().RemoveItem(this);
-	this->m_Timeout = Timeout;
-	this->m_Interval = Interval? Interval: NEVER;
+	ASSERT(StartPoint > 0);
+	this->m_StartPoint = StartPoint;
+	this->m_Period = Period? Period: NEVER;
 	this->m_Paused = false;
-	GTimer().AddSort(this, [this](CTimeEvent* Item)->bool { return this->m_Timeout <= Item->m_Timeout; });
+	GTimer().AddSort(this, [this](CTimeEvent* Item)->bool { return this->m_StartPoint <= Item->m_StartPoint; });
 	OS_ExitCritical();
 }
 
@@ -79,18 +80,17 @@ void CTimeEvent::Touch(bool FromISR)
 
 void CTimeEvent::Tick(bool FromISR)
 {
-	GTimer().ForEach([&FromISR](CTimeEvent *Timer)  -> void
-		{
+	GTimer().ForEach([&FromISR](CTimeEvent *Timer)  -> void {
 			CTimeEvent* runTimer = NULL;
 
 			uint32_t flag = OS_EnterCritical(FromISR);
-			if (!Timer->m_Paused && Timer->m_Timeout != NEVER)
+			if (!Timer->m_Paused && Timer->m_StartPoint != NEVER)
 			{
-				Timer->m_Timeout --;
-				if (Timer->m_Timeout == 0)
+				Timer->m_StartPoint --;
+				if (Timer->m_StartPoint == 0)
 				{
 					runTimer = Timer;
-					Timer->m_Timeout = Timer->m_Interval;
+					Timer->m_StartPoint = Timer->m_Period;
 				}
 			}
 			OS_ExitCritical(flag, FromISR);
@@ -98,8 +98,7 @@ void CTimeEvent::Tick(bool FromISR)
 			{
 				runTimer->Touch(FromISR);
 			}
-		}
-	);
+		});
 }
 } // namespace Edf
 
