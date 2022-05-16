@@ -29,7 +29,7 @@ public:
 
 	virtual ~CTimeEvent() {};
 
-	void Start(uint32_t Timeout, uint32_t Interval);
+	void Start(uint32_t StartPoint, uint32_t Period);
 
 	void Stop();
 
@@ -43,8 +43,8 @@ public:
 
 private:
 	CActive* m_Act;
-	uint32_t m_Timeout;
-	uint32_t m_Interval;
+	uint32_t m_StartPoint;
+	uint32_t m_Period;
 	bool m_Paused;
 
 };
