@@ -71,6 +71,8 @@ void CActive::Run(void)
 	
 	this->Initial();
 
+	//OS_Sleep(10);
+
 	for (;;) 
 	{
 

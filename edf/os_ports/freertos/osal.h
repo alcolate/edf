@@ -50,6 +50,7 @@ T_HANDLE OS_TaskCreate(const char *const pcName,
 		uint16_t usStackDepth, void *const pvParameters,
 		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
 
+Q_HANDLE OS_QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize);
 bool OS_QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
 bool OS_QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 

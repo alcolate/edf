@@ -42,22 +42,30 @@ public:
 
 	void Send(uint8_t *Tx, uint8_t TxLen, uint8_t RxLen);
 
+	bool SendSync(uint8_t *Tx, uint8_t TxLen, uint8_t *Rx, uint8_t RxLen);
+
+	void Release();
+
 protected:
 	virtual bool Send(Event const* const e) override;
 
 public:
 
-	CSpiEvent m_IrqRecvEvent;
+	CSpiEvent *m_IrqRecvEvent;
 
 
-	uint8_t m_Tx[CSpiEvent::MAX_SIZE * 2];
-	uint8_t m_Rx[CSpiEvent::MAX_SIZE * 2];
+	uint8_t *m_Tx;
+	uint8_t *m_Rx;
 	uint8_t m_TxLen;
 	uint8_t m_RxLen;
 
 	DEV_HANDLE m_CS;
 
 	SpiConfig 	m_Config;
+
+	Q_HANDLE   m_RecvQ;
+
+	MODE m_Mode;
 
 };
 

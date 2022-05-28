@@ -39,6 +39,10 @@ public:
 
 	bool Write(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen);
 
+	bool ReadSync(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen);
+
+	bool WriteSync(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen);
+
 	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
 	
 protected:
@@ -46,7 +50,7 @@ protected:
 
 public:
 
-	CI2CEvent m_IrqRecvEvent;
+	CI2CEvent *m_IrqRecvEvent;
 	
 	uint8_t m_Buff[CI2CEvent::MAX_SIZE];
 	uint8_t m_Slave;
@@ -54,6 +58,9 @@ public:
 
 	I2CConfig 	m_Config;
 
+	Q_HANDLE   m_RecvQ;
+
+	MODE m_Mode;
 };
 
 

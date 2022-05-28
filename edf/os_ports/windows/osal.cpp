@@ -27,7 +27,7 @@ static DWORD WINAPI ThreadExe(LPVOID p)
 {
     OS_QueueCreate(0, 0);
     
-    (static_cast<CActive*>(p))->Run();
+    (static_cast<Edf::CActive*>(p))->Run();
 
     return 0;
 }
@@ -111,6 +111,11 @@ void OS_ExitCritical(uint32_t Flag, bool FromISR)
 {
     ASSERT(g_hMutex != NULL);
     LeaveCriticalSection(g_hMutex);
+}
+
+void OS_Sleep(uint32_t Milliseconds)
+{
+    Sleep(Milliseconds);
 }
 
 

@@ -51,6 +51,9 @@ CI2C::~CI2C()
 
 void CI2C::Initial(CActive* Owner)
 {
+	m_RecvQ = OS_QueueCreate(1, sizeof(void *));
+    configASSERT(m_RecvQ);
+
 	I2C_Init(m_HwHandle);
 
 	CDevice::Initial(Owner);
@@ -81,6 +84,8 @@ bool CI2C::Read(uint8_t Address, uint8_t Reg, uint8_t DataLen)
 {
 	ASSERT(DataLen <= CI2CEvent::MAX_SIZE);
 
+	m_Mode = CDevice::MODE::MODE_ASYNC;
+
 	CI2CEvent *ie = new CI2CEvent(MAC_REQ_SIG, m_HwHandle, NULL, DataLen);
 	ie->m_SlaveAddress = Address << 1;
 	ie->m_RegAddress = Reg;
@@ -96,6 +101,8 @@ bool CI2C::Write(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
 
 	ASSERT(DataLen <= CI2CEvent::MAX_SIZE);
 
+	m_Mode = CDevice::MODE::MODE_ASYNC;
+
 	CI2CEvent *ie = new CI2CEvent(MAC_REQ_SIG, m_HwHandle, Data, DataLen);
 	ie->m_SlaveAddress = Address << 1;
 	ie->m_RegAddress = Reg;
@@ -106,23 +113,68 @@ bool CI2C::Write(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
 	return true;
 }
 
+bool CI2C::ReadSync(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
+{
+	uint8_t d_result, result;
+
+	m_Mode = CDevice::MODE::MODE_SYNC;
+
+	d_result = I2C_Read7(m_HwHandle, Address << 1, Reg, Data, DataLen);
+
+	ASSERT(d_result == 1);
+
+	CSpiEvent *e;
+
+	result = OS_QueueReceive(m_RecvQ, &e, MAX_DELAY);
+
+	ASSERT(result);
+
+	return result;
+}
+
+bool CI2C::WriteSync(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
+{
+	uint8_t d_result, result;
+
+	m_Mode = CDevice::MODE::MODE_SYNC;
+
+	d_result = I2C_Write7(m_HwHandle, Address << 1, Reg, Data, DataLen);
+
+	ASSERT(d_result == 1);
+
+	CSpiEvent *e;
+
+	result = OS_QueueReceive(m_RecvQ, &e, MAX_DELAY);
+
+	ASSERT(result);
+
+	return result;
+}
+
 void CI2C::PostIrqRecvEvent()
 {
-	m_IrqRecvEvent.m_SlaveAddress = m_Slave;
-	m_IrqRecvEvent.m_RegAddress = m_Reg;
-	Publish(&m_IrqRecvEvent, true);
+	if (m_Mode == CDevice::MODE::MODE_ASYNC)
+	{
+		m_IrqRecvEvent->m_SlaveAddress = m_Slave;
+		m_IrqRecvEvent->m_RegAddress = m_Reg;
+		Publish(m_IrqRecvEvent, true);
+	}
+	else
+	{
+		OS_QueueSend(m_RecvQ, m_IrqRecvEvent, true);
+	}
 }
 
 bool CI2C::MacCall(uint8_t *Data, uint32_t Len)
 {
-	ASSERT(Len <= m_IrqRecvEvent.m_Size);
+	ASSERT(Len <= m_IrqRecvEvent->m_Size);
 	if (Len)
 	{
-		m_IrqRecvEvent.Copy(Data, Len);
+		m_IrqRecvEvent->Copy(Data, Len);
 	}
 	else
 	{
-		m_IrqRecvEvent.m_DataLen = 0;
+		m_IrqRecvEvent->m_DataLen = 0;
 	}
 	return true;
 }

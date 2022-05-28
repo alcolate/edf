@@ -42,14 +42,14 @@ public:
 class CSpiEvent : public CDeviceEvent
 {
 public:
-	enum {MAX_SIZE = 16};
+	enum {MAX_SIZE = 256};
 public:
 	CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle,
 			uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Releasable = true);
 
 	virtual ~CSpiEvent();
 
-	uint8_t m_Tx[MAX_SIZE];
+	uint8_t *m_Tx;
 	uint32_t m_TxLen;
 	uint32_t m_RxLen;
 };
@@ -166,6 +166,12 @@ public:
 protected:
 	virtual bool Send(Event const* const e) = 0;
 
+public:
+	enum class MODE
+	{
+		MODE_SYNC,
+		MODE_ASYNC,
+	};
 public:
 
 	char m_Name[10];

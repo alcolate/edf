@@ -51,11 +51,11 @@ enum Signals
 class Event 
 {
 public:
-	Event(Signal s, bool DynAlloc = true);
+	Event(Signal s, bool Releasable = true);
 	virtual ~Event();
 	Signal Sig; 
 	uint32_t	RefCount;	
-	const bool  DynamicAlloc;
+	const bool  Releasable;
 	bool		Freeing;
 	void InitRef(uint32_t Ref, bool FromISR = false);
 	void IncRef(bool FromISR = false);
