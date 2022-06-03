@@ -22,6 +22,7 @@ Contact information:
 namespace Edf
 {
 static const uint32_t NEVER = (uint32_t)(-1);
+uint32_t CTimeEvent::m_Tick = 0;
 
 static CList<CTimeEvent> & GTimer()
 {
@@ -43,7 +44,6 @@ void CTimeEvent::Start(uint32_t StartPoint, uint32_t Period)
 {
 	OS_EnterCritical();
 	GTimer().RemoveItem(this);
-	ASSERT(StartPoint > 0);
 	this->m_StartPoint = StartPoint;
 	this->m_Period = Period? Period: NEVER;
 	this->m_Paused = false;
@@ -70,7 +70,16 @@ void CTimeEvent::Resume()
 	OS_EnterCritical();
 	this->m_Paused = false;
 	OS_ExitCritical();
+}
 
+void CTimeEvent::Resume(uint32_t HisPoint)
+{
+	OS_EnterCritical();
+	uint32_t Pass = (CTimeEvent::m_Tick >= HisPoint)? (CTimeEvent::m_Tick - HisPoint)
+						: (NEVER - (HisPoint - CTimeEvent::m_Tick));
+	this->m_StartPoint = (Pass >= this->m_StartPoint)? 0: (this->m_StartPoint - Pass);
+	this->m_Paused = false;
+	OS_ExitCritical();
 }
 
 void CTimeEvent::Touch(bool FromISR)
@@ -78,19 +87,32 @@ void CTimeEvent::Touch(bool FromISR)
 	m_Act->Post(this, FromISR);
 }
 
+uint32_t CTimeEvent::GetTick()
+{
+	OS_EnterCritical();
+	uint32_t Tick = CTimeEvent::m_Tick;
+	OS_ExitCritical();
+	return Tick;
+}
+
 void CTimeEvent::Tick(bool FromISR)
 {
+	++ CTimeEvent::m_Tick;
+
 	GTimer().ForEach([&FromISR](CTimeEvent *Timer)  -> void {
 			CTimeEvent* runTimer = NULL;
 
 			uint32_t flag = OS_EnterCritical(FromISR);
 			if (!Timer->m_Paused && Timer->m_StartPoint != NEVER)
-			{
-				Timer->m_StartPoint --;
+			{				
 				if (Timer->m_StartPoint == 0)
 				{
 					runTimer = Timer;
 					Timer->m_StartPoint = Timer->m_Period;
+				}
+				else
+				{
+					-- Timer->m_StartPoint;
 				}
 			}
 			OS_ExitCritical(flag, FromISR);

@@ -52,7 +52,7 @@ CI2C::~CI2C()
 void CI2C::Initial(CActive* Owner)
 {
 	m_RecvQ = OS_QueueCreate(1, sizeof(void *));
-    configASSERT(m_RecvQ);
+	ASSERT(m_RecvQ);
 
 	I2C_Init(m_HwHandle);
 

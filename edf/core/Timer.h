@@ -37,16 +37,20 @@ public:
 
 	void Resume();
 
+	void Resume(uint32_t HisPoint);
+
 	void Touch(bool FromISR = false);
 
 	static void Tick(bool FromISR);
+
+	uint32_t GetTick();
 
 private:
 	CActive* m_Act;
 	uint32_t m_StartPoint;
 	uint32_t m_Period;
 	bool m_Paused;
-
+	static uint32_t m_Tick;
 };
 
 } // namespace Edf
