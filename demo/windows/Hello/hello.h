@@ -36,9 +36,8 @@ enum
 	TEST3_SIG,
 	TEST4_SIG,
 	TEST5_SIG,
+	MAX_SIG
 };
-
-uint32_t MAX_SIG = TEST5_SIG + 1;
 
 class CTestEvent : public Edf::Event
 {

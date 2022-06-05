@@ -23,6 +23,8 @@ Contact information:
 namespace Edf
 {
 
+void InitPublish(uint32_t SigNum);
+
 void Subscribe(Signal Sig, CActive const * const Act);
 
 void UnSubscribe(Signal Sig, CActive const * const Act);

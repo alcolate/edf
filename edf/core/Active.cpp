@@ -125,8 +125,9 @@ void CActive::ClearDeferedEvent()
 
 
 
-void EdfStart(void)
+void EdfStart(uint32_t SigNum)
 {
+	InitPublish(SigNum);
 	OS_Start();
 }
 

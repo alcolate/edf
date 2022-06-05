@@ -18,8 +18,6 @@ Contact information:
 *****************************************************************************/
 #include "Active.h"
 
-extern uint32_t MAX_SIG;
-
 namespace Edf
 {
 class CSubscriber
@@ -53,6 +51,17 @@ public:
 	{
 		static CPublisher puber;
 		return &puber;
+	}
+
+	void Init(uint32_t SigNum)
+	{
+		m_SigNum = SigNum;
+		this->m_Subs = new CList <CSubscriber> [SigNum];
+	}
+
+	inline uint32_t SigNum()
+	{
+		return m_SigNum;
 	}
 
 	void Subscribe(Signal Sig, CActive const * const Act)
@@ -109,11 +118,11 @@ public:
 private:
 	CPublisher()
 	{
-		this->m_Subs = new CList <CSubscriber> [MAX_SIG] ;
+		
 	}	
 	~CPublisher()
 	{
-		for (uint32_t i = 0; i < MAX_SIG; i ++)
+		for (uint32_t i = 0; i < m_SigNum; i ++)
 		{
 			for (CSubscriber* p = m_Subs[i].RemoveHead(); p; delete p, p = m_Subs[i].RemoveHead());
 		}
@@ -121,6 +130,7 @@ private:
 
 private:
 	CList <CSubscriber> *m_Subs;
+	uint32_t m_SigNum;
 
 };
 
@@ -128,16 +138,21 @@ private:
 
 namespace Edf
 {
+void InitPublish(uint32_t SigNum)
+{
+	Edf::CPublisher::Instance()->Init(SigNum);
+}
+
 void Subscribe(Signal Sig, CActive const * const Act)
 {
-	ASSERT(Sig < MAX_SIG);
+	ASSERT(Sig < Edf::CPublisher::Instance()->SigNum());
 	ASSERT(Act);
 	Edf::CPublisher::Instance()->Subscribe(Sig, Act);
 }
 
 void UnSubscribe(Signal Sig, CActive const * const Act)
 {
-	ASSERT(Sig < MAX_SIG);
+	ASSERT(Sig < Edf::CPublisher::Instance()->SigNum());
 	ASSERT(Act);
 	Edf::CPublisher::Instance()->UnSubscribe(Sig, Act);
 }
@@ -145,8 +160,7 @@ void UnSubscribe(Signal Sig, CActive const * const Act)
 void Publish(Event const * const e, bool FromISR)
 {
 	ASSERT(e);
-	ASSERT(e->Sig < MAX_SIG);
-
+	ASSERT(e->Sig < Edf::CPublisher::Instance()->SigNum());
 	Edf::CPublisher::Instance()->Publish( e, FromISR);
 }
 }

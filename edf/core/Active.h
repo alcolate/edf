@@ -76,12 +76,9 @@ private:
     Q_HANDLE m_Queue;    
     uint32_t m_Priority;
 	uint32_t m_StackSize;
-
-
-
 };
 
-void EdfStart(void);
+void EdfStart(uint32_t SigNum);
     
 } // namespace Edf
 
