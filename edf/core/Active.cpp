@@ -58,6 +58,11 @@ void CActive::Start(uint32_t Priority, uint32_t StackSize, uint32_t EQSize)
 	ASSERT(this->m_Thread); 
 }
 
+void CActive::SetPriority(uint32_t Priority)
+{
+	OS_TastSetPriority(m_Thread, Priority);
+}
+
 bool CActive::Post(Event const *const e, bool FromISR)
 {
 	bool result = OS_QueueSend(Q(), e, FromISR);
@@ -70,8 +75,6 @@ void CActive::Run(void)
 	Event* e;
 	
 	this->Initial();
-
-	//OS_Sleep(10);
 
 	for (;;) 
 	{

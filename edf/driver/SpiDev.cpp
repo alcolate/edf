@@ -25,7 +25,7 @@ namespace Edf
 {
 
 CSpiEvent::CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle, 	
-						uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Releasable)
+						uint8_t *Tx, uint16_t TxLen, uint16_t RxLen, bool Releasable)
 	: CDeviceEvent(Sig, SpiHandle, RxLen, Releasable)
 {
 	m_TxLen = TxLen;
@@ -134,7 +134,7 @@ void CSPI::Release()
 	}
 }
 
-void CSPI::Send(uint8_t *Tx, uint8_t TxLen, uint8_t RxLen)
+void CSPI::Send(uint8_t *Tx, uint16_t TxLen, uint16_t RxLen)
 {
 	m_Mode == CDevice::MODE::MODE_ASYNC;
 
@@ -143,7 +143,7 @@ void CSPI::Send(uint8_t *Tx, uint8_t TxLen, uint8_t RxLen)
 	Publish(se);
 }
 
-bool CSPI::SendSync(uint8_t *Tx, uint8_t TxLen, uint8_t *Rx, uint8_t RxLen)
+bool CSPI::SendSync(uint8_t *Tx, uint16_t TxLen, uint8_t *Rx, uint16_t RxLen)
 {
 	bool result = false;
 
@@ -200,7 +200,11 @@ bool CSPI::MacCall(uint8_t *Data, uint32_t Len)
 
 void Spi_SendComplete(DEV_HANDLE Spi)
 {
-	Edf::CDevKeeper::Instance()->SendComplete(Spi);
+	Edf::CSPI *dev = static_cast<Edf::CSPI *>(Edf::CDevKeeper::Instance()->GetDevice(Spi));
+	if (dev->m_Mode == Edf::CDevice::MODE::MODE_ASYNC)
+	{
+		Edf::CDevKeeper::Instance()->SendComplete(Spi);
+	}
 }
 void Spi_Recv(DEV_HANDLE Spi)
 {

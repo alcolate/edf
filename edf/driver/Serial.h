@@ -39,6 +39,8 @@ public:
 	virtual void PostIrqRecvEvent() override;
 
 	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
+
+	virtual void Reset() override;
 protected:
 	virtual bool Send(Event const* const e) override;
 

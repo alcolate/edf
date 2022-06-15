@@ -27,14 +27,14 @@ Contact information:
 namespace Edf
 {
 
-#if (MAX_PRIORITIES < 5)
-	#error "The maximum priority must be greater than 5"
+#if (MAX_PRIORITIES < 30)
+	#error "The maximum priority must be greater than 30"
 #endif
 
 class CActive
 {
 public:
-	static constexpr uint32_t DEF_PRIOITY = (MAX_PRIORITIES - 5);
+	static constexpr uint32_t DEF_PRIOITY = (MAX_PRIORITIES - 30);
 	static constexpr uint32_t DEF_EQ_SIZE = 20;
 	static constexpr uint32_t DEF_STACK_SIZE = MINIMAL_STACK_SIZE;
 public:
@@ -42,6 +42,8 @@ public:
 	virtual ~CActive();
 
 	virtual void Start();
+
+	void SetPriority(uint32_t Priority);
 
 	bool Post(Event const *const e, bool FromISR = false);
 

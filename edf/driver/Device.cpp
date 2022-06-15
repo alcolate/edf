@@ -89,13 +89,20 @@ void CDevice::Initial(CActive *Owner)
 	INIT_TRANS(&CDevice::S_Idle);
 }
 
+void CDevice::Reset()
+{
+
+}
 void CDevice::S_Idle(Event const* const e)
 {
 	switch (e->Sig)
 	{
 	case MAC_REQ_SIG:
-		DeferEvent(e);
+	{
+		bool Ret = DeferEvent(e);
+		ASSERT(Ret);
 		TRANS(&CDevice::S_Sending);
+	}
 		break;
 
 	default:
@@ -168,8 +175,7 @@ void CDevice::RecycleEvent(Event const* const e)
 
 CDevKeeper::CDevKeeper() : CActive((char*)"DevKeeper")
 {
-	Edf::Subscribe(MAC_REQ_SIG, this);
-	Edf::Subscribe(HW_OUT_COMPLETE_SIG, this);
+
 }
 
 CDevKeeper* CDevKeeper::Instance()
@@ -204,12 +210,14 @@ CDevice* CDevKeeper::GetDevice(DEV_HANDLE DevHandle)
 
 void CDevKeeper::Start()
 {
-	CActive::Start(DEF_PRIOITY, DEF_STACK_SIZE, DEF_EQ_SIZE * 3);
+	CActive::Start(DEF_PRIOITY + 1, DEF_STACK_SIZE, DEF_EQ_SIZE * 3);
 }
 
 
 void CDevKeeper::Initial()
 {
+	Edf::Subscribe(MAC_REQ_SIG, this);
+	Edf::Subscribe(HW_OUT_COMPLETE_SIG, this);
 	INIT_TRANS(&CDevKeeper::S_Run);
 }
 

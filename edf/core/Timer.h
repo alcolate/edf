@@ -33,7 +33,7 @@ public:
 
 	void Stop();
 
-	void Pause();
+	uint32_t Pause();
 
 	void Resume();
 

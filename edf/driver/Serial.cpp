@@ -61,6 +61,13 @@ void CSerial::Initial(CActive *Owner)
 
 	CDevice::Initial(Owner);
 }
+
+void CSerial::Reset()
+{
+	bool result = Uart_Init(m_HwHandle, &m_Config);
+	ASSERT(result);
+}
+
 bool CSerial::Send(Event const* const e)
 {
 	return Uart_Send(m_HwHandle, const_cast<uint8_t *>(EventCast(CDeviceEvent)->m_Data), EventCast(CDeviceEvent)->m_DataLen);

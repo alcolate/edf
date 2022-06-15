@@ -45,13 +45,13 @@ public:
 	enum {MAX_SIZE = 256};
 public:
 	CSpiEvent(Signals Sig, DEV_HANDLE SpiHandle,
-			uint8_t *Tx, uint32_t TxLen, uint32_t RxLen, bool Releasable = true);
+			uint8_t *Tx, uint16_t TxLen, uint16_t RxLen, bool Releasable = true);
 
 	virtual ~CSpiEvent();
 
 	uint8_t *m_Tx;
-	uint32_t m_TxLen;
-	uint32_t m_RxLen;
+	uint16_t m_TxLen;
+	uint16_t m_RxLen;
 };
 
 
@@ -142,6 +142,8 @@ public:
 	void Dispatcher(Event const* const e);
 
 	virtual void Initial(CActive *Owner);
+
+	virtual void Reset();
 
 	void S_Idle(Event const* const e);
 	void S_Sending(Event const* const e);

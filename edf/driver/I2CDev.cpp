@@ -40,8 +40,8 @@ CI2CEvent::~CI2CEvent()
 
 CI2C::CI2C(char* Name, DEV_HANDLE I2C)
 	: CDevice(Name, I2C, EDeviceType::I2C, 8)
-	  , m_IrqRecvEvent(I2C_RSP_SIG, I2C, (uint8_t *)"hello world", CI2CEvent::MAX_SIZE, false)
 {
+	m_IrqRecvEvent = new CI2CEvent(I2C_RSP_SIG, I2C, (uint8_t *)"hello world", CI2CEvent::MAX_SIZE, false);
 
 	CDevKeeper::Instance()->RegDevice(this);
 }
@@ -182,7 +182,11 @@ bool CI2C::MacCall(uint8_t *Data, uint32_t Len)
 
 void I2C_SendComplete(DEV_HANDLE I2C)
 {
-	Edf::CDevKeeper::Instance()->SendComplete(I2C);
+	Edf::CI2C *dev = static_cast<Edf::CI2C *>(Edf::CDevKeeper::Instance()->GetDevice(I2C));
+	if (dev->m_Mode == Edf::CDevice::MODE::MODE_ASYNC)
+	{
+		Edf::CDevKeeper::Instance()->SendComplete(I2C);
+	}
 }
 
 void I2C_Recv(DEV_HANDLE I2C, uint8_t* Data, uint32_t Len)

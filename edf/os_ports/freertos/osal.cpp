@@ -45,6 +45,10 @@ T_HANDLE OS_TaskCreate(    const char * const pcName,
     return CreatedTask;
 }
 
+void OS_TastSetPriority(T_HANDLE Task, uint32_t Priority)
+{
+	vTaskPrioritySet(Task, Priority);
+}
 
 Q_HANDLE OS_QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize)
 {
@@ -96,6 +100,16 @@ void OS_ExitCritical(uint32_t Flag, bool FromISR)
 void OS_Start(void)
 {
 	vTaskStartScheduler();
+}
+extern "C" void HAL_NVIC_SystemReset(void);
+static void SoftReset(void)
+{
+	HAL_NVIC_SystemReset();
+}
+void OS_Restart()
+{
+	SoftReset();
+	return 0;
 }
 
 uint32_t OS_Tick(void)

@@ -58,11 +58,13 @@ void CTimeEvent::Stop()
 	OS_ExitCritical();
 }
 
-void CTimeEvent::Pause()
+uint32_t CTimeEvent::Pause()
 {
 	OS_EnterCritical();
 	this->m_Paused = true;
+	uint32_t Tick = CTimeEvent::m_Tick;
 	OS_ExitCritical();
+	return Tick;
 }
 
 void CTimeEvent::Resume()

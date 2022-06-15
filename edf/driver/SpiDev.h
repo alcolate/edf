@@ -40,9 +40,9 @@ public:
 
 	virtual bool MacCall(uint8_t *Data, uint32_t Len) override;
 
-	void Send(uint8_t *Tx, uint8_t TxLen, uint8_t RxLen);
+	void Send(uint8_t *Tx, uint16_t TxLen, uint16_t RxLen);
 
-	bool SendSync(uint8_t *Tx, uint8_t TxLen, uint8_t *Rx, uint8_t RxLen);
+	bool SendSync(uint8_t *Tx, uint16_t TxLen, uint8_t *Rx, uint16_t RxLen);
 
 	void Release();
 
@@ -56,8 +56,8 @@ public:
 
 	uint8_t *m_Tx;
 	uint8_t *m_Rx;
-	uint8_t m_TxLen;
-	uint8_t m_RxLen;
+	uint16_t m_TxLen;
+	uint16_t m_RxLen;
 
 	DEV_HANDLE m_CS;
 
