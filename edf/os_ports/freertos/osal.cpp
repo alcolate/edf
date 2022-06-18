@@ -20,7 +20,7 @@ Contact information:
 #include "queue.h"
 #include "Edf.h"
 
-static Q_HANDLE OS_QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
+extern void SystemReset(void);
 
 static void ThreadExe(void *p)
 {
@@ -101,15 +101,10 @@ void OS_Start(void)
 {
 	vTaskStartScheduler();
 }
-extern "C" void HAL_NVIC_SystemReset(void);
-static void SoftReset(void)
-{
-	HAL_NVIC_SystemReset();
-}
+
 void OS_Restart()
 {
-	SoftReset();
-	return 0;
+	SystemReset();
 }
 
 uint32_t OS_Tick(void)

@@ -115,40 +115,30 @@ bool CI2C::Write(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
 
 bool CI2C::ReadSync(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
 {
-	uint8_t d_result, result;
-
 	m_Mode = CDevice::MODE::MODE_SYNC;
 
-	d_result = I2C_Read7(m_HwHandle, Address << 1, Reg, Data, DataLen);
-
-	ASSERT(d_result == 1);
+	if (I2C_Read7(m_HwHandle, Address << 1, Reg, Data, DataLen) == 0)
+	{
+		return false;
+	}
 
 	CSpiEvent *e;
 
-	result = OS_QueueReceive(m_RecvQ, &e, MAX_DELAY);
-
-	ASSERT(result);
-
-	return result;
+	return OS_QueueReceive(m_RecvQ, &e, 100);
 }
 
 bool CI2C::WriteSync(uint8_t Address, uint8_t Reg, uint8_t *Data, uint8_t DataLen)
 {
-	uint8_t d_result, result;
-
 	m_Mode = CDevice::MODE::MODE_SYNC;
 
-	d_result = I2C_Write7(m_HwHandle, Address << 1, Reg, Data, DataLen);
-
-	ASSERT(d_result == 1);
+	if (I2C_Write7(m_HwHandle, Address << 1, Reg, Data, DataLen) == 0)
+	{
+		return false;
+	}
 
 	CSpiEvent *e;
 
-	result = OS_QueueReceive(m_RecvQ, &e, MAX_DELAY);
-
-	ASSERT(result);
-
-	return result;
+	return OS_QueueReceive(m_RecvQ, &e, 100);;
 }
 
 void CI2C::PostIrqRecvEvent()

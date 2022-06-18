@@ -161,16 +161,24 @@ bool CSPI::SendSync(uint8_t *Tx, uint16_t TxLen, uint8_t *Rx, uint16_t RxLen)
 
 	result = Spi_TransmitReceive(m_HwHandle, Tx, RxBuff, TxLen + RxLen);
 
-	ASSERT(result);
+	if (false == result)
+	{
+		goto DONE;
+	}
 
-	result = OS_QueueReceive(m_RecvQ, &e, MAX_DELAY);
+	result = OS_QueueReceive(m_RecvQ, &e, 100);
 
-	ASSERT(result);
+	if (false == result)
+	{
+		goto DONE;
+	}
+
 	if (RxLen)
 	{
 		memcpy(Rx, RxBuff + TxLen, RxLen);
 	}
 
+DONE:
 	delete [] RxBuff;
 	delete m_IrqRecvEvent;
 
