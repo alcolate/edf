@@ -26,6 +26,7 @@ Contact information:
 int main()
 {
     std::cout << "Hello World!\n";
+    Edf::EdfStart(MAX_SIG);
 
     CHello::Instance()->Start();
     CWorld::Instance()->Start();
@@ -44,7 +45,10 @@ int main()
         world[i]->Start();
     }
 #endif
-    Edf::EdfStart(MAX_SIG);
+    while (true)
+    {
+        OS_Sleep(1000);
+    }
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单

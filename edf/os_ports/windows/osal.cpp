@@ -21,7 +21,7 @@ Contact information:
 #include "osal.h"
 #include "Edf.h"
 
-Q_HANDLE OS_QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
+extern void TimeEvent_Tick(bool FromISR);
 
 static DWORD WINAPI ThreadExe(LPVOID p) 
 {
@@ -31,7 +31,18 @@ static DWORD WINAPI ThreadExe(LPVOID p)
 
     return 0;
 }
-
+static DWORD WINAPI TimerExe(LPVOID p)
+{
+    while (1)
+    {
+        Sleep(TICK_RATE_MS);
+        TimeEvent_Tick(false);
+    }
+}
+void OS_TastSetPriority(T_HANDLE Task, uint32_t Priority)
+{
+	//vTaskPrioritySet(Task, Priority);
+}
 T_HANDLE OS_TaskCreate(	const char * const pcName,
                         uint16_t usStackDepth,
                         void * const pvParameters,
@@ -121,13 +132,29 @@ void OS_Sleep(uint32_t Milliseconds)
 
 void OS_Start(void)
 {
-    extern void TimeEvent_Tick(bool FromISR);
-    
-    while (1)
-    {
-        Sleep(TICK_RATE_MS);
-        TimeEvent_Tick(false);
-    }
+    CreateThread(
+        NULL,
+        1024,
+        &TimerExe,
+        NULL,
+        0,
+        NULL);   
+
+}
+
+void OS_Restart()
+{
+
+}
+
+uint32_t OS_Tick(void)
+{
+    return 0;
+}
+
+void OS_MemoryUsage(size_t &Free, size_t &Minimum)
+{
+
 }
 /*..........................................................................*/
 
