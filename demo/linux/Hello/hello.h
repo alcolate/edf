@@ -20,16 +20,28 @@ Contact information:
 
 #include <string.h>
 #include <atomic>
+#include <random>
 
 #include "Edf.h"
+
 
 std::atomic<uint32_t> create_c(0);
 std::atomic<uint32_t> recycle_c(0);
 
-class CTestEvent : public Event
+enum
+{
+	TEST_SIG = Edf::USER_SIG,
+	TEST2_SIG,
+	TEST3_SIG,
+	TEST4_SIG,
+	TEST5_SIG,
+	MAX_SIG
+};
+
+class CTestEvent : public Edf::Event
 {
 public:
-	CTestEvent(Signal Sig, const char *Str) : Event(Sig, true)
+	CTestEvent(Edf::Signal Sig, const char *Str) : Event(Sig, true)
 	{
 		m_Name = new char[1 * 1024 * 1024];
 		strcpy(m_Name, Str);
@@ -46,15 +58,14 @@ public:
 	char* m_Name;
 };
 
-class CHello : public CActive
+class CHello : public Edf::CActive
 {
 public:
-	CHello() : CActive((char*)"Hello"), m_Time(TIMEOUT_SIG, this)
+	CHello() : Edf::CActive((char*)"Hello", 10), m_Time(Edf::TIMEOUT_SIG, this)
 	{
 		static int ObjCount = 0;
 		char* name = new char[50];
 		sprintf(name, "%s%3d", m_Name, ObjCount ++);
-		m_Name = name;
 	}
 
 	static CHello* Instance()
@@ -71,21 +82,21 @@ public:
 		INIT_TRANS(&CHello::State1);
 	}
 
-	void State1(Event const* const e)
+	void State1(Edf::Event const* const e)
 	{
 		switch (e->Sig)
 		{
-		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(20 + (((uint32_t)this) % 10)), 0U);
+		case Edf::ENTRY_SIG:
+			m_Time.Start(MilliSecond(200 + (rand() % 10)), 0U);
 			{
 				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);
 			}
 			break;
-		case EXIT_SIG:
+		case Edf::EXIT_SIG:
 			break;
 
-		case TIMEOUT_SIG:
+		case Edf::TIMEOUT_SIG:
 			{
 				CTestEvent* de = new CTestEvent(TEST2_SIG, __FUNCTION__);
 				Publish(de);
@@ -104,21 +115,21 @@ public:
 		}
 	}
 
-	void State2(Event const* const e)
+	void State2(Edf::Event const* const e)
 	{
 		switch (e->Sig)
 		{
-		case ENTRY_SIG:
-			m_Time.Trigger(MilliSecond(20 + (((uint32_t)this) % 10)), 0U);
+		case Edf::ENTRY_SIG:
+			m_Time.Start(MilliSecond(200 + (rand() % 10)), 0U);
 			{
 				CTestEvent* de = new CTestEvent(TEST_SIG, __FUNCTION__);
 				Publish(de);
 			}
 			break;
-		case EXIT_SIG:
+		case Edf::EXIT_SIG:
 			break;
 
-		case TIMEOUT_SIG:
+		case Edf::TIMEOUT_SIG:
 			TRANS(&CHello::State1);
 			break;
 
@@ -135,22 +146,21 @@ public:
 
 public:
 
-	CTimeEvent m_Time;
+	Edf::CTimeEvent m_Time;
 
 public:
 	DEF_STATEMACHINE(CHello);
 };
 
 
-class CWorld : public CActive
+class CWorld : public Edf::CActive
 {
 public:
-	CWorld() : CActive((char*)"World")
+	CWorld() : Edf::CActive((char*)"World", 10)
 	{
 		static int ObjCount = 0;
 		char* name = new char[50];
 		sprintf(name, "%s%3d", m_Name, ObjCount ++);
-		m_Name = name;
 	}
 
 	static CWorld* Instance()
@@ -168,20 +178,19 @@ public:
 		INIT_TRANS(&CWorld::State1);
 	}
 
-	void State1(Event const* const e)
+	void State1(Edf::Event const* const e)
 	{
 		switch (e->Sig)
 		{
-		case ENTRY_SIG:
+		case Edf::ENTRY_SIG:
 
 			break;
-		case EXIT_SIG:
+		case Edf::EXIT_SIG:
 			break;
 
 		case TEST_SIG:
 		{
-			CTestEvent const* te = static_cast<CTestEvent const*>(e);
-			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
+			DeferEvent(e);
 			TRANS(&CWorld::State2);
 			break;
 		}
@@ -191,7 +200,7 @@ public:
 			CTestEvent* de = new CTestEvent(TEST4_SIG, __FUNCTION__);
 			Publish(de);
 		}
-		{			
+		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
 			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			TRANS(&CWorld::State2);
@@ -211,14 +220,14 @@ public:
 		}
 	}
 
-	void State2(Event const* const e)
+	void State2(Edf::Event const* const e)
 	{
 		switch (e->Sig)
 		{
-		case ENTRY_SIG:
-
+		case Edf::ENTRY_SIG:
+			FetchDeferedEvent();
 			break;
-		case EXIT_SIG:
+		case Edf::EXIT_SIG:
 			break;
 
 		case TEST_SIG:
@@ -226,7 +235,7 @@ public:
 			CTestEvent* de = new CTestEvent(TEST5_SIG, __FUNCTION__);
 			Publish(de);
 		}
-		{			
+		{
 			CTestEvent const* te = static_cast<CTestEvent const*>(e);
 			//LOG_DEBUG("msg: %s in %s\r\n", te->m_Name, __FUNCTION__);
 			TRANS(&CWorld::State1);

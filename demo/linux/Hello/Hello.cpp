@@ -16,33 +16,36 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
-// Hello.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
-//
 
 #include <iostream>
 #include "hello.h"
 
+
 int main()
 {
     std::cout << "Hello World!\n";
+    Edf::EdfStart(MAX_SIG);
 
     CHello::Instance()->Start();
     CWorld::Instance()->Start();
 #if 1
     CHello* hello[10];
-    for (uint32_t i = 0; i < sizeof(hello) / sizeof(hello[0]); i++)
+    for (size_t i = 0; i < sizeof(hello) / sizeof(hello[0]); i++)
     {
         hello[i] = new CHello();
         hello[i]->Start();
     }
 
     CWorld* world[10];
-    for (uint32_t i = 0; i < sizeof(world)/sizeof(world[0]); i++)
+    for (size_t i = 0; i < sizeof(world)/sizeof(world[0]); i++)
     {
         world[i] = new CWorld();
         world[i]->Start();
     }
 #endif
-    Edf::EdfStart();
+    while (true)
+    {
+        OS_Sleep(1000);
+    }
 }
 

@@ -55,13 +55,27 @@ struct MQMessage
 
 static time_t StartTime = (time_t)0;
 
-Q_HANDLE OS_QueueCreate(uint32_t uxQueueLength, uint32_t uxItemSize);
+extern void TimeEvent_Tick(bool FromISR);
 
 static void * ThreadExe(void *p)
 {
-    (static_cast<CActive*>(p))->Run();
+    (static_cast<Edf::CActive*>(p))->Run();
 
     return NULL;
+}
+
+static void * TimerExe(void *p)
+{
+    while (1)
+    {
+        usleep(TICK_RATE_MS * 1000);
+        TimeEvent_Tick(false);
+    }
+}
+
+void OS_TastSetPriority(T_HANDLE Task, uint32_t Priority)
+{
+	
 }
 
 T_HANDLE OS_TaskCreate(	const char * const pcName,
@@ -272,15 +286,60 @@ void OS_ExitCritical(uint32_t Flag, bool FromISR)
     pthread_mutex_unlock(g_CriticalMutex);
 }
 
-void OS_Start(void)
+void OS_Sleep(uint32_t Milliseconds)
 {
-    extern void TimeEvent_Tick(bool FromISR);
-    
-    while (1)
-    {   
-        usleep(TICK_RATE_MS * 1000);
-        TimeEvent_Tick(false);
-    } 
+    usleep(Milliseconds * 1000);
+}
+
+
+void OS_Start(void)
+
+{
+    pthread_t CreatedTask;
+
+    pthread_attr_t attr;
+    int result;
+
+
+    result = pthread_attr_init(&attr);
+    ASSERT(result == 0);
+
+    pthread_attr_setschedpolicy (&attr, SCHED_FIFO);
+    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+    pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
+
+    struct sched_param param;
+    param.sched_priority = (sched_get_priority_max(SCHED_FIFO) - MAX_PRIORITIES - 3U);
+    //LOG_DEBUG("prio = %d\r\n", param.sched_priority);
+    result = pthread_attr_setschedparam(&attr, &param);
+    ASSERT(result == 0);
+
+    pthread_attr_setstacksize(&attr, 1024);
+
+    int err = pthread_create(&CreatedTask, &attr, &TimerExe, NULL);
+
+    pthread_attr_destroy(&attr);
+
+    if (err != 0) 
+    {
+        err = pthread_create(&CreatedTask, NULL, &TimerExe, NULL);
+    }
+
+}
+
+void OS_Restart()
+{
+
+}
+
+uint32_t OS_Tick(void)
+{
+    return 0;
+}
+
+void OS_MemoryUsage(size_t &Free, size_t &Minimum)
+{
+
 }
 /*..........................................................................*/
 

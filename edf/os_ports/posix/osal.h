@@ -16,13 +16,13 @@ limitations under the License.
 Contact information:
 <9183399@qq.com>
 *****************************************************************************/
+#pragma once
+
 #include <stdint.h>
 #include <assert.h>
 #include <stdio.h>
 
-#pragma once
-
-#define MAX_PRIORITIES 			10
+#define MAX_PRIORITIES 			50
 #define MINIMAL_STACK_SIZE 		1024
 #define MAX_DELAY 				((long)-1)
 #define TICK_RATE_MS			10
@@ -39,17 +39,24 @@ Contact information:
 
 #define LOG_POS					OS_LOG("%s(%d)\r\n", __FUNCTION__, __LINE__)
 
-typedef int	 Q_HANDLE;
+typedef uint32_t Q_HANDLE;
 typedef void *T_HANDLE;
 
 T_HANDLE OS_TaskCreate(const char *const pcName,
 		uint16_t usStackDepth, void *const pvParameters,
 		uint32_t uxPriority, Q_HANDLE *Q, uint32_t Q_Size);
-
+void OS_TastSetPriority(T_HANDLE Task, uint32_t Priority);
+Q_HANDLE OS_QueueCreate( uint32_t uxQueueLength, uint32_t uxItemSize);
 bool OS_QueueReceive(Q_HANDLE Q, void *const P, uint32_t TimeOut);
 bool OS_QueueSend(Q_HANDLE Q, void const *const P, bool FromISR = false);
 
 uint32_t OS_EnterCritical(bool FromISR = false);
 void OS_ExitCritical(uint32_t Flag = 0, bool FromISR = false);
-
+void OS_Sleep(uint32_t Milliseconds);
 void OS_Start(void);
+
+uint32_t OS_Tick(void);
+
+void OS_Restart();
+
+void OS_MemoryUsage(size_t &Free, size_t &Minimum);
